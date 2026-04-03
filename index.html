@@ -362,6 +362,14 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
     <div id="link-fechado" style="margin-top:12px;">
       <div class="alert aw">⛔ Nenhum lote ativo. Ative um lote para gerar o link de inscrição.</div>
     </div>
+    <!-- Status Firebase -->
+    <div style="margin-top:16px;padding:12px 14px;background:rgba(0,0,0,0.2);border-radius:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:0.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Sincronização Firebase</div>
+        <div id="fb-status" style="font-size:0.82rem;color:var(--text2);">⚪ Não configurado</div>
+      </div>
+      <button class="btn bgh sm" onclick="mostrarGuiaFirebase()" style="flex-shrink:0;">⚙️ Configurar</button>
+    </div>
   </div>
 
   <!-- Estatísticas por lote -->
@@ -585,6 +593,35 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
   </div>
 </div>
 
+<!-- MODAL FIREBASE CONFIG -->
+<div id="fb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:3000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;backdrop-filter:blur(4px);" onclick="if(event.target===this)document.getElementById('fb-modal').style.display='none'">
+  <div style="background:linear-gradient(160deg,#2A1550,#1E0F38);border:2px solid rgba(180,130,255,0.3);border-radius:20px;padding:24px 20px;max-width:480px;width:100%;margin:20px auto;box-shadow:0 20px 60px rgba(0,0,0,0.7);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'Abril Fatface',cursive;font-size:1.1rem;color:#F5C842;">🔥 Configurar Firebase</div>
+      <button onclick="document.getElementById('fb-modal').style.display='none'" style="background:rgba(255,255,255,0.08);border:none;color:var(--text2);font-size:1.1rem;cursor:pointer;width:28px;height:28px;border-radius:50%;">✕</button>
+    </div>
+    <div style="font-size:0.82rem;color:var(--text2);line-height:1.7;">
+      <p style="margin-bottom:10px;color:var(--text);">Com o Firebase, qualquer celular acessa a lista em tempo real — sem precisar do mesmo dispositivo.</p>
+      <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:14px;margin-bottom:12px;">
+        <div style="font-weight:800;color:#F5C842;margin-bottom:8px;font-size:0.85rem;">📋 Passo a passo:</div>
+        <ol style="padding-left:16px;display:flex;flex-direction:column;gap:6px;font-size:0.8rem;">
+          <li>Acesse <strong style="color:#F5C842">console.firebase.google.com</strong></li>
+          <li>Clique <strong>"Criar projeto"</strong> → dê um nome → desative o Google Analytics</li>
+          <li>No menu lateral, clique <strong>"Firestore Database"</strong> → Criar banco → <strong>Modo de teste</strong></li>
+          <li>Clique no ícone <strong>&lt;/&gt;</strong> (Web) → registre o app → copie o objeto <code>firebaseConfig</code></li>
+          <li>Abra o arquivo <strong>ResenhaJunina2026.html</strong> num editor de texto</li>
+          <li>Procure <code>FIREBASE_CONFIG</code> e substitua pelos valores copiados</li>
+          <li>Salve e suba o arquivo atualizado no GitHub</li>
+        </ol>
+      </div>
+      <div style="background:rgba(245,200,66,0.08);border:1px solid rgba(245,200,66,0.25);border-radius:8px;padding:10px;font-size:0.78rem;color:var(--text2);">
+        💡 O plano gratuito do Firebase suporta até 50.000 leituras/dia — mais que suficiente para a festa.
+      </div>
+    </div>
+    <button class="btn bg2 sm" onclick="document.getElementById('fb-modal').style.display='none'" style="margin-top:14px;width:100%;">Entendi</button>
+  </div>
+</div>
+
 <!-- MODAL QR INDIVIDUAL -->
 <div id="qr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:2000;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);" onclick="if(event.target===this)fecharQR()">
   <div style="background:linear-gradient(160deg,#2A1550,#1E0F38);border:2px solid var(--border2);border-radius:20px;padding:24px 20px 20px;max-width:360px;width:100%;text-align:center;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.7);">
@@ -610,6 +647,9 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <script>
 // ══════════════════════════════════════════════
 // DADOS INICIAIS
@@ -705,13 +745,151 @@ const DI={
 };
 
 // ══════════════════════════════════════════════
+// FIREBASE CONFIG — preencha após criar o projeto
+// console.firebase.google.com → Configurações → Seus apps
+// ══════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
+  authDomain:        "resenha-junina-2026.firebaseapp.com",
+  databaseURL:       "https://resenha-junina-2026-default-rtdb.firebaseio.com",
+  projectId:         "resenha-junina-2026",
+  storageBucket:     "resenha-junina-2026.firebasestorage.app",
+  messagingSenderId: "711313591458",
+  appId:             "1:711313591458:web:58f37b25c5c41d15a25bfb"
+};
+
+// ══════════════════════════════════════════════
 // ESTADO
 // ══════════════════════════════════════════════
 let ST=load();
+let db=null, fbReady=false, _fbListeners=[];
+
 function load(){try{const s=localStorage.getItem('rj26');return s?JSON.parse(s):clone(DI);}catch{return clone(DI);}}
 function save(){localStorage.setItem('rj26',JSON.stringify(ST));}
 function clone(o){return JSON.parse(JSON.stringify(o));}
-function reset(){if(!confirm('Resetar todos os dados?'))return;ST=clone(DI);save();renderAll();}
+
+function reset(){
+  if(!confirm('Resetar todos os dados locais e do Firebase?'))return;
+  ST=clone(DI); save();
+  if(fbReady) fbResetParts();
+  renderAll();
+  toast('🔄 Dados resetados');
+}
+
+// ── Firebase init ──
+function initFirebase(){
+  try{
+    if(FIREBASE_CONFIG.apiKey==='SUA_API_KEY'){
+      console.warn('Firebase não configurado — usando modo offline (localStorage)');
+      document.getElementById('fb-status').innerHTML='⚪ Offline (sem Firebase)';
+      return;
+    }
+    const app = firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    fbReady = true;
+    document.getElementById('fb-status').innerHTML='🟡 Conectando...';
+    fbSetupListeners();
+  }catch(e){
+    console.warn('Firebase erro:', e.message);
+    document.getElementById('fb-status').innerHTML='🔴 Erro Firebase';
+  }
+}
+
+// ── Listeners em tempo real ──
+function fbSetupListeners(){
+  if(!db) return;
+
+  // Participantes — sync em tempo real
+  const u1 = db.collection('rj26_participantes')
+    .onSnapshot(snap => {
+      const parts=[];
+      snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
+      ST.participantes = parts;
+      save();
+      renderAll();
+      document.getElementById('fb-status').innerHTML=
+        '🟢 Online · '+parts.length+' participantes';
+    }, err=>{
+      document.getElementById('fb-status').innerHTML='🔴 Erro: '+err.message;
+    });
+
+  // Log de entradas — sync em tempo real
+  const u2 = db.collection('rj26_log').orderBy('ts','desc').limit(100)
+    .onSnapshot(snap => {
+      const logs=[];
+      snap.forEach(doc=>logs.push({...doc.data(),_fbId:doc.id}));
+      ST.log = logs;
+      save();
+      renderPort();
+    });
+
+  // Config (lotes ativos/tokens) — sync
+  const u3 = db.collection('rj26_config').doc('main')
+    .onSnapshot(doc => {
+      if(doc.exists){
+        const d=doc.data();
+        if(d.vendas) ST.vendas=d.vendas;
+        if(d.taxaCredito) ST.config.taxaCredito=d.taxaCredito;
+        save();
+        renderVendas();
+      }
+    });
+
+  _fbListeners=[u1,u2,u3];
+}
+
+// ── Escrita: participante ──
+async function fbSavePart(p){
+  if(!db) return;
+  try{
+    const data={...p}; delete data._fbId;
+    if(p._fbId){
+      await db.collection('rj26_participantes').doc(p._fbId).set(data);
+    } else {
+      const ref = await db.collection('rj26_participantes').add(data);
+      p._fbId = ref.id;
+    }
+  }catch(e){ console.warn('FB write error:', e); toast('⚠️ Erro ao salvar no Firebase'); }
+}
+
+async function fbDeletePart(fbId){
+  if(!db||!fbId) return;
+  try{ await db.collection('rj26_participantes').doc(fbId).delete(); }
+  catch(e){ console.warn('FB delete error:', e); }
+}
+
+async function fbLogEntrada(entry){
+  if(!db) return;
+  try{
+    const data={...entry}; delete data._fbId;
+    await db.collection('rj26_log').add(data);
+  }catch(e){ console.warn('FB log error:', e); }
+}
+
+async function fbSaveConfig(){
+  if(!db) return;
+  try{
+    await db.collection('rj26_config').doc('main').set({
+      vendas: ST.vendas,
+      taxaCredito: ST.config.taxaCredito
+    });
+  }catch(e){ console.warn('FB config error:', e); }
+}
+
+async function fbResetParts(){
+  if(!db) return;
+  try{
+    const snap = await db.collection('rj26_participantes').get();
+    const batch = db.batch();
+    snap.forEach(doc=>batch.delete(doc.ref));
+    await batch.commit();
+    const snap2 = await db.collection('rj26_log').get();
+    const b2 = db.batch();
+    snap2.forEach(doc=>b2.delete(doc.ref));
+    await b2.commit();
+    toast('🔥 Firebase resetado');
+  }catch(e){ toast('Erro ao resetar Firebase'); }
+}
 
 // migração
 (function migrarVendas(){
@@ -970,7 +1148,13 @@ function salvarPart(){
   const rv=document.getElementById('p-valor').value,recebido=rv?parseFloat(rv):null;
   if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,lote:loteFinal,pgto,recebido,valor:PRECO[loteFinal]};}
   else{const nid=ST.ids.part++;ST.participantes.push({id:nid,codigo:'RESENHA-'+String(nid).padStart(4,'0'),nome,fone,lote:loteFinal,valor:PRECO[loteFinal],pgto,recebido,origem:'admin',entrou:false});}
-  save();cancelPart();renderPart();renderDash();atualizarSelectLote();toast('✅ Participante salvo!');
+  save();
+  // Salva no Firebase (se configurado)
+  const partSalvo = eid
+    ? ST.participantes.find(p=>p.id==eid)
+    : ST.participantes[ST.participantes.length-1];
+  if(partSalvo) fbSavePart(partSalvo);
+  cancelPart();renderPart();renderDash();atualizarSelectLote();toast('✅ Participante salvo!');
 }
 function editPart(id){
   const p=ST.participantes.find(x=>x.id===id);if(!p)return;
@@ -988,7 +1172,13 @@ function cancelPart(){
   document.getElementById('form-ttl').textContent='Novo Participante';
   autoLote();
 }
-function delPart(id){const p=ST.participantes.find(x=>x.id===id);if(!p||!confirm(`Remover "${p.nome}"?`))return;ST.participantes=ST.participantes.filter(x=>x.id!==id);save();renderPart();renderDash();}
+function delPart(id){
+  const p=ST.participantes.find(x=>x.id===id);
+  if(!p||!confirm(`Remover "${p.nome}"?`))return;
+  if(p._fbId) fbDeletePart(p._fbId);
+  ST.participantes=ST.participantes.filter(x=>x.id!==id);
+  save();renderPart();renderDash();
+}
 function exportCSV(){
   const h=['Código','Nome','WhatsApp','Lote','Valor','Pgto','Recebido','Entrou','Origem'];
   const r=ST.participantes.map(p=>[p.codigo,`"${p.nome}"`,p.fone||'',p.lote,p.valor||'',p.pgto||'',p.recebido||'',p.entrou?'Sim':'Não',p.origem||'admin']);
@@ -1457,7 +1647,9 @@ async function confirmarEEnviar(id){
   // Marca como pago
   p.pgto     = p.pgto==='Pendente' ? 'Pix' : p.pgto;
   p.recebido = p.recebido || p.valor || PRECO[p.lote];
-  save(); renderPart(); renderDash();
+  save();
+  fbSavePart(p); // sync Firebase
+  renderPart(); renderDash();
 
   toast('✅ Pagamento confirmado!');
 
@@ -1964,7 +2156,7 @@ function ativarLote(loteId){
     ST.vendas.loteAtivo=loteId;
     ST.vendas.token=ST.vendas.token||gerarToken();
   }
-  save(); renderVendas();
+  save(); fbSaveConfig(); renderVendas();
 }
 
 function getLinkBase(){
@@ -2076,6 +2268,11 @@ document.getElementById('taxa-cred').value=ST.config.taxaCredito||5.09;
 
 renderAll();
 setTimeout(checarBackup, 2000);
+initFirebase();
+
+function mostrarGuiaFirebase(){
+  document.getElementById('fb-modal').style.display='flex';
+}
 </script>
 </body>
 </html>
