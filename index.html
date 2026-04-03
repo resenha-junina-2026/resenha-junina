@@ -238,6 +238,17 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
   .pt-row{grid-template-columns:1fr 75px 85px 65px;}
   .pgrid{grid-template-columns:1fr 1fr!important;}
 }
+/* MODO PORTARIA FULL SCREEN */
+body.modo-portaria header,
+body.modo-portaria nav,
+body.modo-portaria .page:not(#pg-portaria),
+body.modo-portaria .flags-bar{display:none!important;}
+body.modo-portaria #pg-portaria{display:block!important;}
+body.modo-portaria .pbox{border-radius:0;border-left:none;border-right:none;}
+.btn-fullport{position:fixed;bottom:16px;right:16px;z-index:1000;padding:10px 16px;
+  background:rgba(91,45,138,0.9);color:#fff;border:none;border-radius:20px;
+  font-size:0.8rem;font-weight:800;cursor:pointer;backdrop-filter:blur(4px);display:none;}
+body.modo-portaria .btn-fullport{display:block;}
 @media print{
   body{background:white;color:black;}
   header,nav,.flags-bar,.no-print,.toast{display:none!important;}
@@ -320,12 +331,12 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
   </div>
   <div class="panel">
     <div class="sb">
-      <input type="text" id="bp-busca" placeholder="🔍 Buscar nome ou código..." oninput="renderPart()">
+      <input type="text" id="bp-busca" placeholder="🔍 Nome, código ou WhatsApp..." oninput="renderPart()" style="min-width:200px;">
       <select id="bp-lote" onchange="renderPart()">
         <option value="">Todos os lotes</option><option value="1°">1°</option><option value="2°">2°</option><option value="3°">3°</option>
       </select>
       <select id="bp-pgto" onchange="renderPart()">
-        <option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option>
+        <option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option><option value="online-pend">🌐 Online Pendente</option>
       </select>
     </div>
     <div class="tw"><table>
@@ -398,7 +409,7 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
       <div class="ci"><div class="cn" id="c-total" style="color:var(--yellow2)">0</div><div class="cl">Cadastrados</div></div>
       <div class="ci"><div class="cn" id="c-fora" style="color:var(--text2)">0</div><div class="cl">Aguardando</div></div>
     </div>
-    <div style="margin-top:8px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><span class="som-tog" id="btn-som" onclick="toggleSom()">🔇 Som desligado</span><button class="btn bb2 sm" id="btn-port-cam" onclick="togglePortCam()">📷 Ligar Câmera</button><button class="btn bgh sm" id="btn-port-flip" onclick="flipPortCam()" style="display:none">🔄 Virar</button></div>
+    <div style="margin-top:8px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><span class="som-tog" id="btn-som" onclick="toggleSom()">🔇 Som desligado</span><button class="btn bb2 sm" id="btn-port-cam" onclick="togglePortCam()">📷 Ligar Câmera</button><button class="btn bgh sm" id="btn-port-flip" onclick="flipPortCam()" style="display:none">🔄 Virar</button><button class="btn bg2 sm" onclick="toggleModoPortaria()" id="btn-modo-port">⛶ Tela cheia</button></div>
     <div class="sep no-print"></div>
     <!-- CÂMERA QR INLINE -->
     <div id="cam-section" style="display:none;margin-top:12px;">
@@ -420,6 +431,7 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
       <div class="stitle" style="margin:0">📋 Log de Entradas</div>
       <div class="flex gap8">
         <button class="btn bgh sm" onclick="desfazer()">↩ Desfazer</button>
+        <button class="btn bb2 sm" onclick="exportarLog()">⬇️ CSV</button>
         <button class="btn bdn sm" onclick="limparLog()">🗑 Log</button>
       </div>
     </div>
@@ -644,6 +656,7 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
   </div>
 </div>
 </main>
+<button class="btn-fullport" onclick="toggleModoPortaria()">✕ Sair da tela cheia</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -1122,8 +1135,9 @@ function renderPart(){
   const fl=(document.getElementById('bp-lote')||{value:''}).value;
   const fp=(document.getElementById('bp-pgto')||{value:''}).value;
   const lista=ST.participantes.filter(p=>
-    (!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b))&&
-    (!fl||p.lote===fl)&&(!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))));
+    (!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b)||(p.fone||'').includes(b))&&
+    (!fl||p.lote===fl)&&
+    (!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))));
   const tb=document.getElementById('t-part');if(!tb)return;
   tb.innerHTML=lista.map(p=>`<tr>
     <td><span class="badge bb">${p.codigo}</span></td>
@@ -1234,6 +1248,20 @@ function renderPort(){
 }
 function desfazer(){if(!ST.log.length){alert('Nenhuma entrada para desfazer');return;}const u=ST.log[0],p=ST.participantes.find(x=>x.id===u.id||x.codigo===u.codigo);if(p)p.entrou=false;ST.log.shift();save();renderPort();renderDash();toast('↩ Última entrada desfeita');}
 function limparLog(){if(!confirm('Limpar log?'))return;ST.log=[];save();renderPort();}
+function exportarLog(){
+  if(!ST.log.length){toast('Nenhuma entrada registrada');return;}
+  const h=['Hora','Nome','Código','Lote'];
+  const rows=ST.log.map(e=>{
+    const p=ST.participantes.find(x=>x.id===e.id||x.codigo===e.codigo);
+    return [e.hora||'—',e.nome,e.codigo,p?p.lote:'—'];
+  });
+  const csv=[h,...rows].map(r=>r.join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='log_entradas_rj2026.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('⬇️ Log exportado!');
+}
 
 // ══════════════════════════════════════════════
 // CÂMERA NA PORTARIA
@@ -2079,11 +2107,20 @@ function abrirRelatorio(){
       <div class="fr"><span>Despesas totais</span><span class="bold" style="color:var(--red2)">${R(fin.totDesp)}</span></div>
       <div class="fr" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span class="bold">Saldo final</span><span class="bold" style="color:${fin.saldo>=0?'var(--green2)':'var(--red2)'}">${R(fin.saldo)}</span></div>
     </div>
-    <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;">
+    <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;margin-bottom:12px;">
       <div style="font-size:0.7rem;font-weight:800;color:var(--yellow2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🤝 Pagamentos</div>
       <div class="fr"><span>Pulseiras pagas</span><span class="bold" style="color:var(--green2)">${pagos}/${total}</span></div>
       <div class="fr"><span>Pulseiras pendentes</span><span class="bold" style="color:var(--red2)">${pend}</span></div>
       <div class="fr"><span>Patrocínios pagos</span><span class="bold">${patPagos}/${patTotal}</span></div>
+    </div>
+    <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;">
+      <div style="font-size:0.7rem;font-weight:800;color:var(--yellow2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">😔 Não compareceram</div>
+      ${faltou===0
+        ? '<div class="fr"><span class="muted">Todos os cadastrados compareceram 🎉</span></div>'
+        : ps.filter(p=>!p.entrou&&pagou(p)).slice(0,8).map(p=>
+            `<div class="fr"><span class="sm-txt">${p.nome}</span><span class="badge bb sm-txt">${p.lote}</span></div>`
+          ).join('')+(ps.filter(p=>!p.entrou&&pagou(p)).length>8?`<div class="fr muted sm-txt">...e mais ${ps.filter(p=>!p.entrou&&pagou(p)).length-8} pessoas</div>`:'')
+      }
     </div>`;
 }
 
@@ -2108,7 +2145,10 @@ function exportarRelatorioCSV(){
     ['Saldo final', R(fin.saldo)],
     [''],['PARTICIPANTES'],
     ['Código','Nome','WhatsApp','Lote','Pagamento','Recebido','Entrou'],
-    ...ps.map(p=>[p.codigo,p.nome,p.fone||'',p.lote,p.pgto||'',R(p.recebido),p.entrou?'Sim':'Não'])
+    ...ps.map(p=>[p.codigo,p.nome,p.fone||'',p.lote,p.pgto||'',R(p.recebido),p.entrou?'Sim':'Não',p.origem||'admin']),
+    [''],['NÃO COMPARECERAM (pagos)'],
+    ['Código','Nome','WhatsApp','Lote'],
+    ...ps.filter(p=>!p.entrou&&pagou(p)).map(p=>[p.codigo,p.nome,p.fone||'',p.lote])
   ];
   const csv = rows.map(r=>Array.isArray(r)?r.join(';'):r).join('\n');
   const a = document.createElement('a');
@@ -2234,9 +2274,11 @@ function renderVendas(){
   // Stats
   const st=document.getElementById('vendas-stats');
   if(st){
+    let totalGeral=0;
     const rows=LOTES_CONFIG.map(l=>{
       const q=ST.participantes.filter(p=>p.lote===l.id).length;
       const rec=ST.participantes.filter(p=>p.lote===l.id&&p.recebido).reduce((a,p)=>a+(p.recebido||0),0);
+      totalGeral+=rec;
       return `<div class="fr">
         <span style="color:${CL[l.id]}">${l.nome}</span>
         <div style="display:flex;gap:16px;align-items:center;">
@@ -2245,7 +2287,13 @@ function renderVendas(){
         </div>
       </div>`;
     }).join('');
-    st.innerHTML=rows;
+    const totalOnlinePend=ST.participantes.filter(p=>p.origem==='online'&&!pagou(p)).length;
+    st.innerHTML=rows+`
+      <div class="fr" style="border-top:2px solid var(--border);margin-top:8px;padding-top:10px;">
+        <span class="bold">Total arrecadado</span>
+        <span class="bold v pos" style="font-size:1rem;">${R(totalGeral)}</span>
+      </div>
+      ${totalOnlinePend?`<div class="fr"><span class="muted sm-txt">🌐 Pedidos online pendentes</span><span class="badge br">${totalOnlinePend}</span></div>`:''}`;
   }
 }
 
@@ -2269,6 +2317,20 @@ document.getElementById('taxa-cred').value=ST.config.taxaCredito||5.09;
 renderAll();
 setTimeout(checarBackup, 2000);
 initFirebase();
+
+function toggleModoPortaria(){
+  const body=document.body;
+  const btn=document.getElementById('btn-modo-port');
+  if(body.classList.contains('modo-portaria')){
+    body.classList.remove('modo-portaria');
+    if(btn) btn.textContent='⛶ Tela cheia';
+    if(screen.exitFullscreen) screen.exitFullscreen().catch(()=>{});
+  } else {
+    body.classList.add('modo-portaria');
+    if(btn) btn.textContent='⛶ Sair';
+    if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+  }
+}
 
 function mostrarGuiaFirebase(){
   document.getElementById('fb-modal').style.display='flex';
