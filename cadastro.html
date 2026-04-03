@@ -484,8 +484,7 @@ function iniciar(){
   document.getElementById('lote-info').innerHTML=`
     <div class="lote-nome">${lote.nome}</div>
     <div class="lote-preco">R$ ${lote.preco.toFixed(2).replace('.',',')}</div>
-    <div class="lote-vagas">Restam <strong>${restam} vagas</strong> de ${lote.vagas}</div>
-    <div class="lote-vagas-bar"><div class="lote-vagas-fill" style="width:${pct}%"></div></div>
+
     <div class="qty-lbl" style="margin-top:14px;">Quantidade de ingressos</div>
     <div class="qty-wrap">
       <button class="qty-btn" onclick="mudaQty(-1)">−</button>
