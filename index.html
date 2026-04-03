@@ -88,7 +88,8 @@ main{padding:14px;max-width:1100px;margin:0 auto;}
 .lmeta{width:100px;text-align:right;font-size:0.75rem;color:var(--text2);flex-shrink:0;}
 
 /* ── TABLE ── */
-.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+.tw{overflow-x:auto;border-radius:10px;border:1px solid var(--border);-webkit-overflow-scrolling:touch;}
+.tw table{min-width:700px;}
 table{width:100%;border-collapse:collapse;font-size:0.8rem;}
 th{background:rgba(232,160,32,0.12);color:var(--yellow2);font-weight:800;text-transform:uppercase;font-size:0.67rem;letter-spacing:0.5px;padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
 td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
@@ -106,7 +107,7 @@ tr:hover td{background:rgba(255,240,200,0.03);}
 input,select,textarea{background:rgba(255,240,200,0.07);border:1px solid var(--border);border-radius:8px;
   color:var(--text);padding:8px 11px;font-family:'Nunito',sans-serif;font-size:0.83rem;width:100%;transition:border-color 0.2s;}
 input:focus,select:focus{outline:none;border-color:var(--yellow2);}
-select option{background:#2E1200;}
+select option{background:#1E0F38;color:var(--text);}
 input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
 .hint{font-size:0.66rem;color:var(--green2);margin-top:2px;display:none;}
 .hint.on{display:block;}
@@ -179,11 +180,11 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
 
 /* ── IMPRESSÃO ── */
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;}
-.pcred{background:#F5F0FF;border:2px dashed #7B2FBE;border-radius:10px;padding:12px;text-align:center;color:#1C0A00;}
-.pcred .ce{font-family:'Abril Fatface',cursive;font-size:0.72rem;color:#7B2FBE;margin-bottom:2px;}
+.pcred{background:#F5F0FF;border:2px dashed #7B2FBE;border-radius:10px;padding:12px;text-align:center;color:#2A1550;}
+.pcred .ce{font-family:'Abril Fatface',cursive;font-size:0.72rem;color:#5B2D8A;margin-bottom:2px;}
 .pcred .cl2{font-size:0.63rem;font-weight:800;text-transform:uppercase;color:#7B2FBE;margin-bottom:4px;}
-.pcred .cc{font-family:'Abril Fatface',cursive;font-size:0.9rem;color:#1C0A00;margin-top:4px;}
-.pcred .cn2{font-size:0.72rem;font-weight:700;color:#2E1200;margin-top:2px;}
+.pcred .cc{font-family:'Abril Fatface',cursive;font-size:0.9rem;color:#2A1550;margin-top:4px;}
+.pcred .cn2{font-size:0.72rem;font-weight:700;color:#3D1A6E;margin-top:2px;}
 .pcred .ci2{font-size:0.58rem;color:#888;margin-top:3px;}
 
 /* ── TOAST ── */
@@ -245,9 +246,11 @@ body.modo-portaria .page:not(#pg-portaria),
 body.modo-portaria .flags-bar{display:none!important;}
 body.modo-portaria #pg-portaria{display:block!important;}
 body.modo-portaria .pbox{border-radius:0;border-left:none;border-right:none;}
-.btn-fullport{position:fixed;bottom:16px;right:16px;z-index:1000;padding:10px 16px;
-  background:rgba(91,45,138,0.9);color:#fff;border:none;border-radius:20px;
-  font-size:0.8rem;font-weight:800;cursor:pointer;backdrop-filter:blur(4px);display:none;}
+.btn-fullport{position:fixed;bottom:16px;right:16px;z-index:1000;padding:10px 18px;
+  background:rgba(91,45,138,0.92);color:#fff;border:none;border-radius:20px;
+  font-size:0.8rem;font-weight:800;cursor:pointer;backdrop-filter:blur(6px);display:none;
+  box-shadow:0 4px 16px rgba(0,0,0,0.4);transition:all 0.2s;border:1px solid rgba(180,130,255,0.3);}
+.btn-fullport:hover{background:rgba(123,47,190,0.95);transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,0.5);}
 body.modo-portaria .btn-fullport{display:block;}
 @media print{
   body{background:white;color:black;}
@@ -2095,26 +2098,26 @@ function abrirRelatorio(){
 
   document.getElementById('rel-body').innerHTML = `
     <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;margin-bottom:12px;">
-      <div style="font-size:0.7rem;font-weight:800;color:var(--yellow2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🎪 Presença</div>
+      <div style="font-size:0.7rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🎪 Presença</div>
       <div class="fr"><span>Total cadastrados</span><span class="bold">${total}</span></div>
       <div class="fr"><span>Compareceram</span><span class="bold" style="color:var(--green2)">${dentro} (${total>0?Math.round(dentro/total*100):0}%)</span></div>
       <div class="fr"><span>Não compareceram</span><span class="bold" style="color:var(--red2)">${faltou}</span></div>
       ${loteRows}
     </div>
     <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;margin-bottom:12px;">
-      <div style="font-size:0.7rem;font-weight:800;color:var(--yellow2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">💰 Financeiro</div>
+      <div style="font-size:0.7rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">💰 Financeiro</div>
       <div class="fr"><span>Receita total</span><span class="bold" style="color:var(--green2)">${R(fin.totRec)}</span></div>
       <div class="fr"><span>Despesas totais</span><span class="bold" style="color:var(--red2)">${R(fin.totDesp)}</span></div>
       <div class="fr" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span class="bold">Saldo final</span><span class="bold" style="color:${fin.saldo>=0?'var(--green2)':'var(--red2)'}">${R(fin.saldo)}</span></div>
     </div>
     <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;margin-bottom:12px;">
-      <div style="font-size:0.7rem;font-weight:800;color:var(--yellow2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🤝 Pagamentos</div>
+      <div style="font-size:0.7rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🤝 Pagamentos</div>
       <div class="fr"><span>Pulseiras pagas</span><span class="bold" style="color:var(--green2)">${pagos}/${total}</span></div>
       <div class="fr"><span>Pulseiras pendentes</span><span class="bold" style="color:var(--red2)">${pend}</span></div>
       <div class="fr"><span>Patrocínios pagos</span><span class="bold">${patPagos}/${patTotal}</span></div>
     </div>
     <div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;">
-      <div style="font-size:0.7rem;font-weight:800;color:var(--yellow2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">😔 Não compareceram</div>
+      <div style="font-size:0.7rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">😔 Não compareceram</div>
       ${faltou===0
         ? '<div class="fr"><span class="muted">Todos os cadastrados compareceram 🎉</span></div>'
         : ps.filter(p=>!p.entrou&&pagou(p)).slice(0,8).map(p=>
