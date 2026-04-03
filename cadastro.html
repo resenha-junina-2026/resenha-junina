@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resenha Junina 2026 — Inscrição</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --roxo:#5B2D8A;--roxo2:#7B2FBE;--roxo3:#3D1A6E;--roxo-light:#F4F0FA;
+  --amarelo:#F5C842;--amarelo2:#FFD966;
+  --text:#1A1030;--muted:#7A6A95;--border:rgba(91,45,138,0.14);
+  --white:#fff;--r:14px;
+}
+body{background:var(--roxo-light);font-family:Arial,sans-serif;min-height:100vh;color:var(--text);}
+.hdr{position:relative;overflow:hidden;text-align:center;
+  background:linear-gradient(150deg,var(--roxo3) 0%,var(--roxo2) 100%);padding:40px 20px 36px;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--amarelo),var(--amarelo2),var(--amarelo));}
+.hdr-eyebrow{display:inline-flex;align-items:center;gap:6px;
+  background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.3);
+  color:var(--amarelo);font-size:0.7rem;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:5px 14px;border-radius:20px;margin-bottom:18px;}
+.hdr h1{font-size:clamp(1.8rem,8vw,2.6rem);font-weight:900;color:var(--amarelo);
+  letter-spacing:1px;line-height:1;margin-bottom:8px;}
+.hdr h1 small{display:block;color:rgba(255,255,255,0.85);font-size:0.4em;
+  font-weight:700;letter-spacing:6px;margin-top:6px;}
+.hdr-info{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-top:14px;}
+.hdr-chip{font-size:0.78rem;color:rgba(255,255,255,0.7);}
+main{max-width:460px;margin:0 auto;padding:24px 16px 72px;}
+.screen{display:none;}.screen.on{display:block;animation:up 0.28s ease;}
+@keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.prog{display:flex;align-items:center;justify-content:center;margin:24px 0 20px;}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.prog-circle{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);
+  background:var(--white);color:var(--muted);font-size:0.75rem;font-weight:800;
+  display:flex;align-items:center;justify-content:center;transition:all 0.3s;z-index:1;}
+.prog-label{font-size:0.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;
+  letter-spacing:0.3px;white-space:nowrap;}
+.prog-line{width:48px;height:2px;background:var(--border);margin-top:-20px;transition:background 0.3s;}
+.prog-step.done .prog-circle{background:var(--roxo2);border-color:var(--roxo2);color:#fff;}
+.prog-step.done .prog-label{color:var(--roxo2);}
+.prog-step.cur .prog-circle{background:var(--amarelo);border-color:var(--amarelo);color:var(--text);}
+.prog-step.cur .prog-label{color:var(--roxo2);font-weight:800;}
+.prog-line.done{background:var(--roxo2);}
+.card{background:var(--white);border-radius:var(--r);padding:22px;margin-bottom:14px;
+  box-shadow:0 2px 20px rgba(91,45,138,0.08);border:1px solid var(--border);}
+.card-title{font-size:0.9rem;font-weight:800;color:var(--roxo);margin-bottom:18px;
+  display:flex;align-items:center;gap:10px;}
+.card-title .num{width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--roxo3),var(--roxo2));
+  color:#fff;font-size:0.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lote-hero{border:2px solid var(--border);border-radius:var(--r);padding:20px;
+  background:linear-gradient(135deg,rgba(91,45,138,0.04),rgba(123,47,190,0.06));
+  position:relative;overflow:hidden;}
+.lote-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--roxo3),var(--roxo2),var(--amarelo));}
+.lote-nome{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;}
+.lote-preco{font-size:2.2rem;font-weight:900;color:var(--roxo2);line-height:1;margin-bottom:2px;}
+.lote-vagas{font-size:0.78rem;color:var(--muted);margin-top:6px;}
+.lote-vagas strong{color:var(--roxo2);}
+.lote-vagas-bar{height:4px;background:var(--border);border-radius:20px;margin-top:8px;overflow:hidden;}
+.lote-vagas-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--roxo2),var(--amarelo));}
+.qty-wrap{display:flex;align-items:center;margin-top:16px;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:var(--white);}
+.qty-btn{width:44px;height:44px;border:none;background:rgba(91,45,138,0.06);color:var(--roxo2);
+  font-size:1.3rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.qty-btn:hover{background:rgba(91,45,138,0.14);}
+.qty-val{flex:1;text-align:center;font-size:1.1rem;font-weight:800;color:var(--text);}
+.qty-lbl{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:10px;}
+.qty-total{font-size:0.85rem;color:var(--roxo2);font-weight:700;margin-top:6px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:0.72rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.fg input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;
+  font-size:0.95rem;font-family:Arial,sans-serif;color:var(--text);outline:none;transition:all 0.2s;background:var(--white);}
+.fg input:focus{border-color:var(--roxo2);box-shadow:0 0 0 3px rgba(123,47,190,0.08);}
+.fg input.err{border-color:#d32f2f;box-shadow:0 0 0 3px rgba(211,47,47,0.06);}
+.err-msg{color:#d32f2f;font-size:0.72rem;margin-top:4px;display:none;font-weight:600;}
+.lgpd{background:rgba(91,45,138,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
+.lgpd label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
+.lgpd input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--roxo2);cursor:pointer;}
+.lgpd span{font-size:0.78rem;color:var(--muted);line-height:1.55;}
+.lgpd a{color:var(--roxo2);text-decoration:none;font-weight:700;}
+.pol{background:var(--white);border:1px solid var(--border);border-radius:var(--r);
+  padding:18px;margin-bottom:14px;font-size:0.75rem;color:var(--muted);line-height:1.65;display:none;}
+.pol h4{font-size:0.78rem;font-weight:800;color:var(--roxo);margin-bottom:8px;}
+.pol p{margin-bottom:6px;}
+/* PAGAMENTO */
+.pgto-card{border-radius:var(--r);overflow:hidden;margin-bottom:14px;border:1.5px solid rgba(91,45,138,0.15);}
+.pgto-header{background:linear-gradient(135deg,var(--roxo3),var(--roxo2));padding:14px 18px;}
+.pgto-header .pgto-title{color:#fff;font-weight:800;font-size:0.95rem;}
+.pgto-header .pgto-sub{color:rgba(255,255,255,0.75);font-size:0.74rem;margin-top:2px;}
+.pgto-body{background:var(--white);border-top:none;padding:18px;}
+.pgto-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.pgto-tab{flex:1;padding:11px 8px;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--white);cursor:pointer;text-align:center;transition:all 0.18s;
+  font-size:0.82rem;font-weight:700;color:var(--muted);font-family:Arial,sans-serif;}
+.pgto-tab:hover{border-color:var(--roxo2);color:var(--roxo2);}
+.pgto-tab.active{border-color:var(--roxo2);background:rgba(91,45,138,0.06);color:var(--roxo2);}
+.pgto-tab .tab-ico{font-size:1.1rem;display:block;margin-bottom:3px;}
+.pgto-panel{display:none;}.pgto-panel.on{display:block;}
+.pix-valor{background:rgba(91,45,138,0.05);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;text-align:center;margin-bottom:14px;}
+.pix-valor .v-label{font-size:0.72rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.pix-valor .v-val{font-size:1.5rem;font-weight:900;color:var(--roxo2);margin-top:4px;}
+.pix-box{background:#f0faf5;border:1.5px solid rgba(0,160,80,0.25);border-radius:10px;
+  padding:14px 16px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.pix-chave{font-family:monospace;font-size:0.88rem;font-weight:700;color:#00875a;word-break:break-all;}
+.pix-copy{background:#00875a;color:#fff;border:none;border-radius:8px;padding:8px 14px;
+  font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:Arial,sans-serif;flex-shrink:0;}
+.mp-info{background:rgba(0,119,194,0.05);border:1px solid rgba(0,119,194,0.15);
+  border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:0.8rem;color:#005a8e;line-height:1.5;}
+.res-row{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border);font-size:0.88rem;}
+.res-row:last-child{border:none;}
+.res-row .lbl{color:var(--muted);}
+.res-row .val{font-weight:700;color:var(--text);}
+.res-total{display:flex;justify-content:space-between;align-items:center;
+  background:rgba(91,45,138,0.05);border-radius:10px;padding:14px 16px;margin-top:10px;
+  border:1px solid rgba(91,45,138,0.12);}
+.res-total .lbl{font-weight:700;font-size:0.9rem;}
+.res-total .val{font-weight:900;font-size:1.15rem;color:var(--roxo2);}
+.btn{width:100%;padding:15px;border:none;border-radius:12px;font-size:0.95rem;font-weight:800;
+  cursor:pointer;transition:all 0.18s;font-family:Arial,sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:linear-gradient(135deg,var(--roxo3),var(--roxo2));color:#fff;box-shadow:0 4px 18px rgba(91,45,138,0.3);}
+.btn-enviar{background:linear-gradient(135deg,#b88000,var(--amarelo));color:var(--text);box-shadow:0 4px 14px rgba(245,200,66,0.35);}
+.btn-mp{background:linear-gradient(135deg,#006fad,#009ee3);color:#fff;box-shadow:0 4px 14px rgba(0,158,227,0.3);}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-green{background:linear-gradient(135deg,#1a7a3a,#25D366);color:#fff;box-shadow:0 4px 14px rgba(37,211,102,0.25);}
+/* AGUARDANDO */
+.aguard-ico{width:80px;height:80px;margin:0 auto 20px;
+  background:linear-gradient(135deg,var(--roxo3),var(--roxo2));border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+  box-shadow:0 8px 24px rgba(91,45,138,0.3);}
+.aguard-steps{display:flex;flex-direction:column;gap:10px;margin:20px 0;}
+.aguard-step{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;
+  background:rgba(91,45,138,0.04);border:1px solid var(--border);border-radius:10px;}
+.aguard-step .sn{width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,var(--roxo3),var(--roxo2));
+  color:#fff;font-size:0.7rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.aguard-step .st{font-size:0.82rem;line-height:1.5;color:var(--text);}
+.aguard-step .st strong{color:var(--roxo2);}
+.pedido-box{background:rgba(245,200,66,0.08);border:1.5px solid rgba(245,200,66,0.3);
+  border-radius:12px;padding:16px;margin:16px 0;text-align:center;}
+.pedido-cod{font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.pedido-num{font-family:monospace;font-size:1rem;font-weight:800;color:var(--roxo2);}
+/* FECHADO */
+.fechado{text-align:center;padding:40px 20px;}
+.fechado-ico{font-size:3rem;margin-bottom:16px;}
+.fechado h2{font-size:1.2rem;font-weight:800;color:var(--roxo);margin-bottom:8px;}
+.fechado p{font-size:0.88rem;color:var(--muted);line-height:1.6;}
+.alert{padding:12px 14px;border-radius:10px;font-size:0.82rem;margin-bottom:12px;line-height:1.5;}
+.a-info{background:rgba(91,45,138,0.05);border:1px solid var(--border);color:var(--roxo);}
+.a-warn{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.4);color:#7A5500;}
+.a-ok{background:rgba(45,106,45,0.07);border:1px solid rgba(45,106,45,0.3);color:#2D6A2D;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-eyebrow">🎪 Ingresso Oficial</div>
+  <h1>RESENHA JUNINA<small>2 0 2 6</small></h1>
+  <div class="hdr-info">
+    <span class="hdr-chip">📍 Chácara do Nardo</span>
+    <span class="hdr-chip">📅 13 de junho de 2026</span>
+    <span class="hdr-chip">⏰ 20:30</span>
+  </div>
+  <div id="countdown" style="margin-top:14px;font-size:0.82rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;"></div>
+</div>
+
+<main>
+
+  <!-- FECHADO -->
+  <div class="screen on" id="scr-fechado">
+    <div class="fechado">
+      <div class="fechado-ico">🔒</div>
+      <h2>Inscrições não disponíveis</h2>
+      <p>As inscrições para este lote ainda não foram abertas ou já foram encerradas.<br><br>
+      Fique de olho nas redes sociais para saber quando o próximo lote abre.</p>
+    </div>
+  </div>
+
+  <!-- ESGOTADO -->
+  <div class="screen" id="scr-esgotado">
+    <div class="fechado">
+      <div class="fechado-ico">⚡</div>
+      <h2 id="msg-esgotado">Este lote está esgotado</h2>
+      <p>Todas as vagas deste lote foram preenchidas. Aguarde a abertura do próximo lote.</p>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO -->
+  <div class="screen" id="scr-form">
+    <div class="prog" id="prog-bar"></div>
+
+    <!-- Step 1: Ingresso + Dados -->
+    <div class="screen on" id="step-1">
+      <div class="card">
+        <div class="card-title"><div class="num">1</div>Seu ingresso</div>
+        <div class="lote-hero" id="lote-info"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="num">2</div>Seus dados</div>
+        <div class="fg">
+          <label>Nome completo *</label>
+          <input type="text" id="f-nome" placeholder="Seu nome completo" autocomplete="name">
+          <div class="err-msg" id="err-nome">Informe nome e sobrenome</div>
+        </div>
+        <div class="fg">
+          <label>WhatsApp *</label>
+          <input type="tel" id="f-fone" placeholder="(17) 99999-9999" autocomplete="tel" oninput="mascaraFone(this)">
+          <div class="err-msg" id="err-fone">Informe um WhatsApp válido</div>
+        </div>
+        <div class="fg">
+          <label>E-mail <span style="font-weight:400;text-transform:none;font-size:0.85em">(opcional)</span></label>
+          <input type="email" id="f-email" placeholder="seu@email.com" autocomplete="email">
+        </div>
+        <div class="lgpd">
+          <label>
+            <input type="checkbox" id="chk-lgpd">
+            <span>Li e aceito o <a href="#" onclick="togglePol(event)">tratamento dos meus dados</a> para este evento, conforme a LGPD — Lei 13.709/2018.</span>
+          </label>
+          <div class="err-msg" id="err-lgpd">É necessário aceitar para continuar</div>
+        </div>
+      </div>
+      <div class="pol" id="pol-box">
+        <h4>🔒 Política de Privacidade</h4>
+        <p><strong>Dados coletados:</strong> nome, WhatsApp e e-mail (opcional).</p>
+        <p><strong>Finalidade:</strong> confirmação de presença e envio do QR Code via WhatsApp.</p>
+        <p><strong>Compartilhamento:</strong> dados não são vendidos nem compartilhados com terceiros.</p>
+        <p><strong>Armazenamento:</strong> dados ficam no seu dispositivo. Nada é enviado a servidores externos.</p>
+        <p><strong>Seus direitos (LGPD):</strong> acesso, correção ou exclusão mediante solicitação ao organizador.</p>
+        <p><strong>Retenção:</strong> dados removidos 90 dias após o evento.</p>
+      </div>
+      <button class="btn btn-primary" onclick="irStep2()">Ver formas de pagamento →</button>
+    </div>
+
+    <!-- Step 2: Pagamento -->
+    <div class="screen" id="step-2">
+      <div class="card">
+        <div class="card-title"><div class="num">3</div>Resumo do pedido</div>
+        <div id="resumo"></div>
+      </div>
+
+      <div class="pgto-card">
+        <div class="pgto-header">
+          <div class="pgto-title">💳 Forma de pagamento</div>
+          <div class="pgto-sub">Escolha como prefere pagar</div>
+        </div>
+        <div class="pgto-body">
+          <div class="pix-valor">
+            <div class="v-label">Valor total</div>
+            <div class="v-val" id="pix-total">R$ —</div>
+          </div>
+          <div class="pgto-tabs">
+            <div class="pgto-tab active" onclick="selecionarPgto('pix',this)">
+              <span class="tab-ico">🟢</span>Pix
+            </div>
+            <div class="pgto-tab" onclick="selecionarPgto('mp',this)">
+              <span class="tab-ico">💳</span>Cartão / MP
+            </div>
+          </div>
+          <!-- Pix -->
+          <div class="pgto-panel on" id="panel-pix">
+            <p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">
+              Copie a chave Pix e transfira o valor <strong>exato</strong> pelo seu banco.
+            </p>
+            <div class="pix-box">
+              <div class="pix-chave" id="pix-chave-display">—</div>
+              <button class="pix-copy" onclick="copiarPix()">📋 Copiar</button>
+            </div>
+          </div>
+          <!-- MP -->
+          <div class="pgto-panel" id="panel-mp">
+            <div class="mp-info">
+              ℹ️ Clique abaixo para abrir o <strong>Mercado Pago</strong> e pagar com cartão ou Pix. Após pagar, volte aqui e clique em "Enviar pedido".
+            </div>
+            <button class="btn btn-mp" onclick="abrirMP()" style="margin-bottom:0;">
+              Abrir Mercado Pago →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert a-warn">
+        ⚠️ Realize o pagamento acima <strong>antes</strong> de clicar em "Enviar pedido".
+      </div>
+
+      <button class="btn btn-enviar" onclick="enviarPedido()" style="margin-bottom:10px;">
+        📲 Já paguei — Enviar pedido
+      </button>
+      <button class="btn btn-ghost" onclick="irStep1()">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- AGUARDANDO -->
+  <div class="screen" id="scr-aguard">
+    <div class="card" style="text-align:center;padding:28px 22px;">
+      <div class="aguard-ico">🎟️</div>
+      <h2 style="font-size:1.1rem;font-weight:900;color:var(--text);margin-bottom:8px;">
+        Pedido recebido!
+      </h2>
+      <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:4px;">
+        Seu ingresso será enviado pelo WhatsApp assim que o pagamento for confirmado pelo organizador.
+      </p>
+
+      <div class="pedido-box">
+        <div class="pedido-cod">Número do pedido</div>
+        <div class="pedido-num" id="aguard-cod">—</div>
+      </div>
+
+      <div class="aguard-steps">
+        <div class="aguard-step">
+          <div class="sn">1</div>
+          <div class="st">Você realizou o pagamento e <strong>enviou o pedido</strong> ✓</div>
+        </div>
+        <div class="aguard-step">
+          <div class="sn">2</div>
+          <div class="st">O organizador <strong>confirma o pagamento</strong> no extrato bancário</div>
+        </div>
+        <div class="aguard-step">
+          <div class="sn">3</div>
+          <div class="st">Seu <strong>ingresso QR Code</strong> é enviado pelo WhatsApp para <span id="aguard-fone" style="color:var(--roxo2);font-weight:700;">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert a-info">
+      💡 Guarde o número do pedido acima como comprovante. Em caso de dúvida, entre em contato com o organizador.
+    </div>
+
+    <button class="btn btn-ghost" style="margin-top:4px;" onclick="novoIngresso()">+ Comprar outro ingresso</button>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIGURAÇÃO
+// ═══════════════════════════════════════
+const LOTES = {
+  '1°': { nome:'1° Lote', preco:90,  vagas:50  },
+  '2°': { nome:'2° Lote', preco:110, vagas:100 },
+  '3°': { nome:'3° Lote', preco:130, vagas:200 },
+};
+const WPP_ORGANIZADOR = '5517997230392';
+const PIX_CHAVE       = '4250e7fa-891d-4bb3-b5d4-c65a1fafb023';
+const PIX_NOME        = 'Resenha Junina 2026';
+const LINKS_MP = {
+  '1°': 'https://mpago.la/15AYPXV',
+  '2°': 'https://link.mercadopago.com.br/SEU_LINK_LOTE2',
+  '3°': 'https://link.mercadopago.com.br/SEU_LINK_LOTE3',
+};
+
+// ═══════════════════════════════════════
+// URL PARAMS + VALIDAÇÃO
+// ═══════════════════════════════════════
+const params   = new URLSearchParams(window.location.search);
+const loteId   = params.get('lote');
+const tokenUrl = params.get('tk');
+
+function tokenValido(){
+  if(!tokenUrl) return false;
+  try{
+    const adm = JSON.parse(localStorage.getItem('rj26')||'{}');
+    if(adm.vendas && adm.vendas.token)
+      return adm.vendas.token===tokenUrl && adm.vendas.loteAtivo===loteId;
+  }catch(_){}
+  return /^[A-Z0-9]{6,12}$/i.test(tokenUrl);
+}
+function vagasUsadas(lid){
+  try{
+    const adm=JSON.parse(localStorage.getItem('rj26')||'{}');
+    if(adm.participantes) return adm.participantes.filter(p=>p.lote===lid).length;
+  }catch(_){}
+  return 0;
+}
+
+// ═══════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════
+let pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null };
+let _qty = 1;
+
+// Restaura pedido anterior se já enviado
+(function(){
+  try{
+    const s=localStorage.getItem('rj26_pedido_cad');
+    if(s){
+      const p=JSON.parse(s);
+      if(p.codigo && p.lote && p.enviado){
+        pedido=p; _qty=p.qtd||1;
+        mostrarAguardando(); return;
+      }
+    }
+  }catch(_){}
+  iniciar();
+})();
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const el=document.getElementById(id);
+  if(el){el.classList.add('on'); window.scrollTo({top:0,behavior:'smooth'});}
+}
+
+function iniciar(){
+  if(!loteId||!tokenValido()){ show('scr-fechado'); return; }
+  const lote=LOTES[loteId];
+  if(!lote){ show('scr-fechado'); return; }
+  const usadas=vagasUsadas(loteId);
+  if(usadas>=lote.vagas){
+    document.getElementById('msg-esgotado').textContent=lote.nome+' esgotado';
+    show('scr-esgotado'); return;
+  }
+  pedido.lote=loteId;
+  const restam=lote.vagas-usadas;
+  const pct=Math.round(usadas/lote.vagas*100);
+  document.getElementById('lote-info').innerHTML=`
+    <div class="lote-nome">${lote.nome}</div>
+    <div class="lote-preco">R$ ${lote.preco.toFixed(2).replace('.',',')}</div>
+    <div class="lote-vagas">Restam <strong>${restam} vagas</strong> de ${lote.vagas}</div>
+    <div class="lote-vagas-bar"><div class="lote-vagas-fill" style="width:${pct}%"></div></div>
+    <div class="qty-lbl" style="margin-top:14px;">Quantidade de ingressos</div>
+    <div class="qty-wrap">
+      <button class="qty-btn" onclick="mudaQty(-1)">−</button>
+      <div class="qty-val" id="qty-val">1</div>
+      <button class="qty-btn" onclick="mudaQty(1)">+</button>
+    </div>
+    <div class="qty-total" id="qty-total">Total: R$ ${lote.preco.toFixed(2).replace('.',',')}</div>`;
+  renderProg(1);
+  show('scr-form');
+  document.getElementById('step-1').classList.add('on');
+  document.getElementById('step-2').classList.remove('on');
+}
+
+function renderProg(cur){
+  const steps=[{n:1,l:'Dados'},{n:2,l:'Pagamento'},{n:3,l:'Aguardando'}];
+  const el=document.getElementById('prog-bar'); if(!el)return;
+  let h='';
+  steps.forEach((s,i)=>{
+    const cls=cur>s.n?'done':cur===s.n?'cur':'';
+    h+=`<div class="prog-step ${cls}"><div class="prog-circle">${cur>s.n?'✓':s.n}</div><div class="prog-label">${s.l}</div></div>`;
+    if(i<steps.length-1) h+=`<div class="prog-line ${cur>s.n?'done':''}"></div>`;
+  });
+  el.innerHTML=h;
+}
+
+// ═══════════════════════════════════════
+// STEPS
+// ═══════════════════════════════════════
+function mudaQty(delta){
+  const lote=LOTES[pedido.lote]; if(!lote)return;
+  const restam=lote.vagas-vagasUsadas(pedido.lote);
+  const max=Math.min(5,restam);
+  _qty=Math.max(1,Math.min(max,_qty+delta));
+  const el=document.getElementById('qty-val');
+  const tot=document.getElementById('qty-total');
+  if(el) el.textContent=_qty;
+  if(tot) tot.textContent='Total: R$ '+(_qty*lote.preco).toFixed(2).replace('.',',');
+}
+
+function irStep1(){
+  document.getElementById('step-1').classList.add('on');
+  document.getElementById('step-2').classList.remove('on');
+  renderProg(1);
+}
+
+function irStep2(){
+  const nome=document.getElementById('f-nome').value.trim();
+  const fone=document.getElementById('f-fone').value.trim();
+  const lgpd=document.getElementById('chk-lgpd').checked;
+  let ok=true;
+  if(!nome||nome.split(' ').filter(w=>w.length>1).length<2){
+    document.getElementById('f-nome').classList.add('err');
+    document.getElementById('err-nome').style.display='block'; ok=false;
+  }else{
+    document.getElementById('f-nome').classList.remove('err');
+    document.getElementById('err-nome').style.display='none';
+  }
+  if(!fone||fone.replace(/\D/g,'').length<10){
+    document.getElementById('f-fone').classList.add('err');
+    document.getElementById('err-fone').style.display='block'; ok=false;
+  }else{
+    document.getElementById('f-fone').classList.remove('err');
+    document.getElementById('err-fone').style.display='none';
+  }
+  if(!lgpd){
+    document.getElementById('err-lgpd').style.display='block'; ok=false;
+  }else{
+    document.getElementById('err-lgpd').style.display='none';
+  }
+  if(!ok)return;
+  pedido.nome=nome; pedido.fone=fone; pedido.email=document.getElementById('f-email').value.trim();
+  pedido.qtd=_qty;
+  const lote=LOTES[pedido.lote];
+  const total=(_qty*lote.preco).toFixed(2).replace('.',',');
+  document.getElementById('resumo').innerHTML=`
+    <div class="res-row"><span class="lbl">Evento</span><span class="val">Resenha Junina 2026</span></div>
+    <div class="res-row"><span class="lbl">Data</span><span class="val">13/06/2026 · 20:30</span></div>
+    <div class="res-row"><span class="lbl">Local</span><span class="val">Chácara do Nardo</span></div>
+    <div class="res-row"><span class="lbl">Lote</span><span class="val" style="color:var(--roxo2)">${lote.nome}</span></div>
+    <div class="res-row"><span class="lbl">Quantidade</span><span class="val">${_qty} ingresso${_qty>1?'s':''}</span></div>
+    <div class="res-row"><span class="lbl">Participante</span><span class="val">${nome}</span></div>
+    <div class="res-row"><span class="lbl">WhatsApp</span><span class="val">${fone}</span></div>
+    <div class="res-total"><span class="lbl">Total</span><span class="val">R$ ${total}</span></div>`;
+  const pixTotal=document.getElementById('pix-total');
+  const pixDisp=document.getElementById('pix-chave-display');
+  if(pixTotal) pixTotal.textContent='R$ '+total;
+  if(pixDisp) pixDisp.textContent=PIX_CHAVE==='SEU_PIX_AQUI'?'(não configurado)':PIX_CHAVE;
+  document.getElementById('step-1').classList.remove('on');
+  document.getElementById('step-2').classList.add('on');
+  renderProg(2);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════
+// PAGAMENTO
+// ═══════════════════════════════════════
+function selecionarPgto(tipo,el){
+  document.querySelectorAll('.pgto-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pgto-panel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('active');
+  document.getElementById('panel-'+tipo).classList.add('on');
+  pedido.metodoPgto=tipo;
+}
+function copiarPix(){
+  if(!PIX_CHAVE||PIX_CHAVE==='SEU_PIX_AQUI'){alert('Chave Pix não configurada.');return;}
+  navigator.clipboard.writeText(PIX_CHAVE)
+    .then(()=>{const b=document.querySelector('.pix-copy');if(b){b.textContent='✅ Copiado!';setTimeout(()=>b.textContent='📋 Copiar',2000);}})
+    .catch(()=>prompt('Copie a chave Pix:',PIX_CHAVE));
+}
+function abrirMP(){
+  const link=LINKS_MP[pedido.lote];
+  if(!link||link.includes('SEU_LINK')){alert('Link MP não configurado.\nEntre em contato com o organizador.');return;}
+  window.open(link,'_blank');
+}
+
+// ═══════════════════════════════════════
+// ENVIAR PEDIDO (sem precisar que participante confirme)
+// ═══════════════════════════════════════
+function enviarPedido(){
+  const qty=pedido.qtd||1;
+  const lote=LOTES[pedido.lote]||{preco:0};
+  const ts=Date.now();
+
+  // Gera código de pedido (sem QR ainda — organizador envia pelo admin)
+  const rand=Math.floor(Math.random()*89999)+10000;
+  pedido.codigo  = 'PED-'+String(ts).slice(-5)+rand;
+  pedido.ts      = ts;
+  pedido.status  = 'aguardando';
+  pedido.enviado = true;
+  pedido.origem  = 'online';
+
+  // Salva localmente
+  localStorage.setItem('rj26_pedido_cad', JSON.stringify(pedido));
+
+  // Registra no admin (mesmo dispositivo)
+  try{
+    const adm=JSON.parse(localStorage.getItem('rj26')||'null');
+    if(adm&&adm.participantes){
+      if(!adm.ids) adm.ids={part:16};
+      for(let i=0;i<qty;i++){
+        const idr=Math.floor(Math.random()*8999)+1000;
+        const cod='RESENHA-'+String(ts+i).slice(-4)+idr;
+        adm.participantes.push({
+          id:adm.ids.part++,
+          codigo:cod,
+          pedido:pedido.codigo,
+          nome:qty>1?pedido.nome+' ('+(i+1)+'/'+qty+')':pedido.nome,
+          fone:pedido.fone,
+          lote:pedido.lote,
+          valor:lote.preco,
+          pgto:'Pendente',
+          recebido:null,
+          entrou:false,
+          origem:'online'
+        });
+      }
+      localStorage.setItem('rj26',JSON.stringify(adm));
+    }
+  }catch(_){}
+
+  // Notifica organizador no WhatsApp
+  notificarOrganizador();
+  mostrarAguardando();
+}
+
+function notificarOrganizador(){
+  const lote=LOTES[pedido.lote];
+  const qty=pedido.qtd||1;
+  const total=(qty*lote.preco).toFixed(2).replace('.',',');
+  const metodo=pedido.metodoPgto==='mp'?'Mercado Pago':'Pix';
+  const msg=encodeURIComponent(
+    '🎪 *Novo pedido — Resenha Junina 2026*\n\n'+
+    '👤 *Nome:* '+pedido.nome+'\n'+
+    '📱 *WhatsApp:* '+pedido.fone+'\n'+
+    '🎫 *Lote:* '+lote.nome+'\n'+
+    '🔢 *Qtd:* '+qty+' ingresso'+(qty>1?'s':'')+'\n'+
+    '💰 *Total:* R$'+total+' ('+metodo+')\n'+
+    '🔑 *Pedido:* '+pedido.codigo+'\n\n'+
+    '✅ Verifique o pagamento e envie o ingresso pelo sistema.'
+  );
+  setTimeout(()=>window.open('https://wa.me/'+WPP_ORGANIZADOR+'?text='+msg,'_blank'),500);
+}
+
+// ═══════════════════════════════════════
+// TELA AGUARDANDO
+// ═══════════════════════════════════════
+function mostrarAguardando(){
+  const el=document.getElementById('aguard-cod');
+  const fl=document.getElementById('aguard-fone');
+  if(el) el.textContent=pedido.codigo;
+  if(fl) fl.textContent=pedido.fone;
+  renderProg(3);
+  show('scr-aguard');
+}
+
+// ═══════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════
+(function countdown(){
+  const target = new Date('2026-06-13T20:30:00-03:00');
+  function tick(){
+    const diff = target - new Date();
+    if(diff<=0){ const el=document.getElementById('countdown'); if(el) el.textContent='🎪 O evento está acontecendo agora!'; return; }
+    const d=Math.floor(diff/86400000),h=Math.floor(diff%86400000/3600000),m=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000);
+    const el=document.getElementById('countdown');
+    if(el) el.textContent='⏳ '+d+'d '+String(h).padStart(2,'0')+'h '+String(m).padStart(2,'0')+'m '+String(s).padStart(2,'0')+'s para a festa';
+    setTimeout(tick,1000);
+  }
+  tick();
+})();
+
+function mascaraFone(el){
+  let v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length<=2) el.value=v.length?'('+v:'';
+  else if(v.length<=6) el.value='('+v.slice(0,2)+') '+v.slice(2);
+  else if(v.length<=10) el.value='('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
+  else el.value='('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
+}
+
+function togglePol(e){
+  e.preventDefault();
+  const p=document.getElementById('pol-box');
+  p.style.display=p.style.display==='block'?'none':'block';
+}
+function novoIngresso(){
+  localStorage.removeItem('rj26_pedido_cad');
+  pedido={lote:null,nome:'',fone:'',email:'',codigo:'',ts:null};
+  _qty=1;
+  iniciar();
+}
+</script>
+</body>
+</html>
