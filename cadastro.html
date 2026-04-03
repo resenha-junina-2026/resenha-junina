@@ -603,10 +603,28 @@ function abrirMP(){
 // ═══════════════════════════════════════
 // ENVIAR PEDIDO (sem precisar que participante confirme)
 // ═══════════════════════════════════════
-function enviarPedido(){
+async function enviarPedido(){
   const qty=pedido.qtd||1;
   const lote=LOTES[pedido.lote]||{preco:0};
   const ts=Date.now();
+
+  // Verifica duplicata por WhatsApp no Firebase
+  if(db && pedido.fone){
+    try{
+      const foneNum = pedido.fone.replace(/\D/g,'');
+      const snap = await db.collection('rj26_participantes')
+        .where('fone','==',pedido.fone)
+        .where('lote','==',pedido.lote)
+        .get();
+      if(!snap.empty){
+        const jaExiste = confirm(
+          'Já encontramos um pedido com este WhatsApp para o mesmo lote.\n\n'+
+          'Deseja enviar um novo pedido mesmo assim?'
+        );
+        if(!jaExiste) return;
+      }
+    }catch(_){}
+  }
 
   // Gera código de pedido (sem QR ainda — organizador envia pelo admin)
   const rand=Math.floor(Math.random()*89999)+10000;
