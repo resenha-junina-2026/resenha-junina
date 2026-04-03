@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resenha Junina 2026 — Inscrição</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -347,6 +349,60 @@ const LOTES = {
   '3°': { nome:'3° Lote', preco:130, vagas:200 },
 };
 const WPP_ORGANIZADOR = '5517997230392';
+
+// Firebase — mesma config do admin
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
+  authDomain:        "resenha-junina-2026.firebaseapp.com",
+  databaseURL:       "https://resenha-junina-2026-default-rtdb.firebaseio.com",
+  projectId:         "resenha-junina-2026",
+  storageBucket:     "resenha-junina-2026.firebasestorage.app",
+  messagingSenderId: "711313591458",
+  appId:             "1:711313591458:web:58f37b25c5c41d15a25bfb"
+};
+
+let db = null;
+(function(){
+  try{
+    if(FIREBASE_CONFIG.apiKey==='SUA_API_KEY') return;
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  }catch(e){ console.warn('Firebase cadastro:', e.message); }
+})();
+
+async function fbRegistrarPedido(pedido, codigos){
+  if(!db) return;
+  try{
+    const lote = LOTES[pedido.lote]||{preco:0};
+    const batch = db.batch();
+    codigos.forEach((cod,i)=>{
+      const ref = db.collection('rj26_participantes').doc();
+      batch.set(ref,{
+        codigo: cod,
+        pedido: pedido.codigo,
+        nome: codigos.length>1 ? pedido.nome+' ('+(i+1)+'/'+codigos.length+')' : pedido.nome,
+        fone: pedido.fone,
+        lote: pedido.lote,
+        valor: lote.preco,
+        pgto: 'Pendente',
+        recebido: null,
+        entrou: false,
+        origem: 'online',
+        ts: Date.now()
+      });
+    });
+    await batch.commit();
+  }catch(e){ console.warn('FB registrar pedido:', e); }
+}
+
+async function fbVagasUsadas(loteId){
+  if(!db) return vagasUsadas(loteId); // fallback localStorage
+  try{
+    const snap = await db.collection('rj26_participantes')
+      .where('lote','==',loteId).get();
+    return snap.size;
+  }catch(_){ return vagasUsadas(loteId); }
+}
 const PIX_CHAVE       = '4250e7fa-891d-4bb3-b5d4-c65a1fafb023';
 const PIX_NOME        = 'Resenha Junina 2026';
 const LINKS_MP = {
@@ -377,6 +433,10 @@ function vagasUsadas(lid){
     if(adm.participantes) return adm.participantes.filter(p=>p.lote===lid).length;
   }catch(_){}
   return 0;
+}
+// Versão assíncrona que usa Firebase quando disponível
+async function vagasUsadasAsync(lid){
+  return await fbVagasUsadas(lid);
 }
 
 // ═══════════════════════════════════════
@@ -587,6 +647,17 @@ function enviarPedido(){
   }catch(_){}
 
   // Notifica organizador no WhatsApp
+  // Registra no Firebase (sync entre dispositivos)
+  const codigos = [];
+  for(let i=0;i<(pedido.qtd||1);i++){
+    const r2=Math.floor(Math.random()*8999)+1000;
+    codigos.push('RESENHA-'+String(Date.now()+i).slice(-4)+r2);
+  }
+  pedido.codigos = codigos;
+  fbRegistrarPedido(pedido, codigos).then(()=>{
+    console.log('Registrado no Firebase');
+  });
+
   notificarOrganizador();
   mostrarAguardando();
 }
