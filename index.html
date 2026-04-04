@@ -820,7 +820,7 @@ function fbSetupListeners(){
     .onSnapshot(snap => {
       const parts=[];
       snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
-      ST.participantes = parts;
+      ST.participantes = parts; // pode ser [] — válido
       save();
       renderAll();
       document.getElementById('fb-status').innerHTML=
@@ -1020,7 +1020,7 @@ function renderAll(){
 // CALC FINANCEIRO
 // ══════════════════════════════════════════════
 function calcFin(){
-  const ps=ST.participantes;
+  const ps=ST.participantes||[];
   let rL={'1°':0,'2°':0,'3°':0},pL={'1°':0,'2°':0,'3°':0};
   ps.forEach(p=>{rL[p.lote]+=(p.recebido||0);pL[p.lote]+=(PRECO[p.lote]||0);});
   const patRec=ST.patrocinadores.filter(p=>p.pago).reduce((a,p)=>a+(p.valor||0),0);
@@ -1070,7 +1070,7 @@ function renderDash(){
     <div class="lbar-w" style="max-width:260px;margin:0 auto;"><div class="lbar" style="width:${pct2}%;background:var(--green2)">${pct2}%</div></div>`;
   const al=[];
   // Pedidos online aguardando confirmação
-  const pedOL=ST.participantes.filter(p=>p.origem==='online'&&!pagou(p));
+  const pedOL=(ST.participantes||[]).filter(p=>p.origem==='online'&&!pagou(p));
   if(pedOL.length) al.push(`<div class="alert ai" style="cursor:pointer" onclick="pg('participantes',document.querySelector('nav button:nth-child(2)'))">
     🌐 <strong>${pedOL.length} pedido${pedOL.length>1?'s':''} online</strong> aguardando confirmação de pagamento — <u>clique para ver</u></div>`);
   const ppend=ps.filter(p=>!pagou(p));
@@ -1137,7 +1137,7 @@ function renderPart(){
   const b=(document.getElementById('bp-busca')||{value:''}).value.toLowerCase();
   const fl=(document.getElementById('bp-lote')||{value:''}).value;
   const fp=(document.getElementById('bp-pgto')||{value:''}).value;
-  const lista=ST.participantes.filter(p=>
+  const lista=(ST.participantes||[]).filter(p=>
     (!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b)||(p.fone||'').includes(b))&&
     (!fl||p.lote===fl)&&
     (!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))));
@@ -1151,7 +1151,7 @@ function renderPart(){
     <td>${p.recebido?R(p.recebido):'<span class="muted">—</span>'}</td>
     <td>${pagou(p)?'<span class="badge bg">✅ Pago</span>':'<span class="badge br">⏳ Pendente</span>'}</td>
     <td>${p.entrou?'<span class="badge bg">✔ Entrou</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text2)">Aguardando</span>'}</td>
-    <td><div class="flex gap8"><button class="btn bgh sm" onclick="abrirQR(${p.id})" title="Ver QR Code">📲</button><button class="btn bgh sm" onclick="editPart(${p.id})">✏️</button><button class="btn bdn sm" onclick="delPart(${p.id})">🗑</button></div></td>
+    <td><div class="flex gap8" style="flex-wrap:wrap;gap:4px;">${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" title="Confirmar e enviar ingresso" onclick="confirmarEEnviar(${p.id})" style="font-size:0.68rem;padding:4px 7px;">✅</button>`:''}<button class="btn bgh sm" onclick="abrirQR(${p.id})" title="QR Code">📲</button><button class="btn bgh sm" onclick="editPart(${p.id})">✏️</button><button class="btn bdn sm" onclick="delPart(${p.id})">🗑</button></div></td>
   </tr>`).join('')||'<tr><td colspan="8" class="tc muted" style="padding:18px">Nenhum resultado</td></tr>';
   const cnt=document.getElementById('part-cnt');if(cnt)cnt.textContent=`${lista.length} de ${ST.participantes.length} participantes`;
 }
@@ -1163,8 +1163,8 @@ function salvarPart(){
   if(!eid&&cheio(lote)){const pr=proxLote();if(!confirm(`Lote ${lote} esgotado. Usar ${pr}?`))return;lote=pr;}
   const pgto=document.getElementById('p-pgto').value;
   const rv=document.getElementById('p-valor').value,recebido=rv?parseFloat(rv):null;
-  if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,lote:loteFinal,pgto,recebido,valor:PRECO[loteFinal]};}
-  else{const nid=ST.ids.part++;ST.participantes.push({id:nid,codigo:'RESENHA-'+String(nid).padStart(4,'0'),nome,fone,lote:loteFinal,valor:PRECO[loteFinal],pgto,recebido,origem:'admin',entrou:false});}
+  if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,lote,pgto,recebido,valor:PRECO[lote]};}
+  else{const nid=ST.ids.part++;ST.participantes.push({id:nid,codigo:'RESENHA-'+String(nid).padStart(4,'0'),nome,fone,lote,valor:PRECO[lote],pgto,recebido,origem:'admin',entrou:false});}
   save();
   // Salva no Firebase (se configurado)
   const partSalvo = eid
@@ -1211,7 +1211,7 @@ function processarCodigo(raw){
   let v=raw.trim().toUpperCase();
   if(/^\d+$/.test(v))v='RESENHA-'+v.padStart(4,'0');
   else if(/^RESENHA-\d{1,3}$/.test(v))v='RESENHA-'+v.split('-')[1].padStart(4,'0');
-  const p=ST.participantes.find(x=>x.codigo===v);
+  const p=(ST.participantes||[]).find(x=>x.codigo===v);
   if(!p)return{ok:false,tipo:'err',msg:`❌ Código "${v}" não encontrado`};
   if(p.entrou)return{ok:false,tipo:'warn',msg:`⚠️ "${p.nome}" já entrou! Duplicata.`};
   p.entrou=true;
@@ -1244,15 +1244,25 @@ function renderPort(){
   document.getElementById('c-total').textContent=ps.length;
   document.getElementById('c-fora').textContent=ps.length-dentro;
   const ul=document.getElementById('log-ul');if(!ul)return;
-  if(!ST.log.length){ul.innerHTML='<li class="muted sm-txt" style="justify-content:center;padding:14px">Nenhuma entrada registrada</li>';return;}
+  if(!(ST.log||[]).length){ul.innerHTML='<li class="muted sm-txt" style="justify-content:center;padding:14px">Nenhuma entrada registrada</li>';return;}
   ul.innerHTML=ST.log.slice(0,60).map((e,i)=>`<li>
     <div>${i===0?'<span class="badge bg" style="margin-right:6px">AGORA</span>':''}<span class="bold">${e.nome}</span> <span class="badge bb" style="margin-left:4px">${e.codigo}</span></div>
     <span class="muted">${e.hora}</span></li>`).join('');
 }
-function desfazer(){if(!ST.log.length){alert('Nenhuma entrada para desfazer');return;}const u=ST.log[0],p=ST.participantes.find(x=>x.id===u.id||x.codigo===u.codigo);if(p)p.entrou=false;ST.log.shift();save();renderPort();renderDash();toast('↩ Última entrada desfeita');}
+function desfazer(){
+  if(!(ST.log||[]).length){alert('Nenhuma entrada para desfazer');return;}
+  const u=ST.log[0];
+  const p=ST.participantes.find(x=>x.id===u.id||x.codigo===u.codigo);
+  if(p){
+    p.entrou=false;
+    if(fbReady) fbSavePart(p); // sincroniza reversão no Firebase
+  }
+  ST.log.shift();
+  save();renderPort();renderDash();toast('↩ Última entrada desfeita');
+}
 function limparLog(){if(!confirm('Limpar log?'))return;ST.log=[];save();renderPort();}
 function exportarLog(){
-  if(!ST.log.length){toast('Nenhuma entrada registrada');return;}
+  if(!(ST.log||[]).length){toast('Nenhuma entrada registrada');return;}
   const h=['Hora','Nome','Código','Lote'];
   const rows=ST.log.map(e=>{
     const p=ST.participantes.find(x=>x.id===e.id||x.codigo===e.codigo);
@@ -1648,7 +1658,7 @@ function gerarQR(containerId, texto){
 function renderImp(){
   const fi=(document.getElementById('imp-fil')||{value:'todos'}).value;
   const li=(document.getElementById('imp-lot')||{value:''}).value;
-  const lista=ST.participantes.filter(p=>(!li||p.lote===li)&&(fi==='todos'||(fi==='nao'&&!p.entrou)||(fi==='sim'&&p.entrou)));
+  const lista=(ST.participantes||[]).filter(p=>(!li||p.lote===li)&&(fi==='todos'||(fi==='nao'&&!p.entrou)||(fi==='sim'&&p.entrou)));
   const ic=document.getElementById('imp-cnt');if(ic)ic.textContent=`${lista.length} credencial(is)`;
   const grid=document.getElementById('print-grid');if(!grid)return;
   grid.innerHTML=lista.map(p=>`<div class="pcred">
@@ -2079,7 +2089,7 @@ function importJSON(evt){
 function abrirRelatorio(){
   document.getElementById('rel-modal').style.display='flex';
   const fin  = calcFin();
-  const ps   = ST.participantes;
+  const ps   = ST.participantes||[];
   const total = ps.length;
   const dentro = ps.filter(p=>p.entrou).length;
   const faltou = total - dentro;
