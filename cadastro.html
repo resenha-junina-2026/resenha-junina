@@ -612,7 +612,7 @@ function abrirMP(){
 // ═══════════════════════════════════════
 async function enviarPedido(){
   const qty=pedido.qtd||1;
-  const lote=LOTES[pedido.lote]||{preco:0};
+  const lote=LOTES[pedido.lote]||{nome:'Ingresso',preco:0,vagas:999};
   const ts=Date.now();
 
   // Verifica duplicata por WhatsApp no Firebase
@@ -710,8 +710,8 @@ function notificarOrganizador(){
 function mostrarAguardando(){
   const el=document.getElementById('aguard-cod');
   const fl=document.getElementById('aguard-fone');
-  if(el) el.textContent=pedido.codigo;
-  if(fl) fl.textContent=pedido.fone;
+  if(el) el.textContent=pedido.codigo||'—';
+  if(fl) fl.textContent=pedido.fone||'—';
   // renderiza progress bar da tela aguardando
   const pb2=document.getElementById('prog-bar-aguard');
   if(pb2){
