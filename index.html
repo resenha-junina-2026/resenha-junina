@@ -1210,7 +1210,13 @@ function salvarPart(){
     cancelPart();renderPart();renderDash();atualizarSelectLote();toast('✅ Participante salvo!');
   } else {
     proximoNumero().then(nid=>{
-      const novo={id:nid,codigo:gerarCodigo(nid),nome,fone,lote,valor:PRECO[lote],pgto,recebido,origem:'admin',entrou:false};
+      const codigo=gerarCodigo(nid);
+      // Segurança: rejeita se código já existir
+      if(ST.participantes.some(p=>p.codigo===codigo)){
+        toast('⚠️ Código '+codigo+' já existe — tente salvar novamente');
+        return;
+      }
+      const novo={id:nid,codigo,nome,fone,lote,valor:PRECO[lote],pgto,recebido,origem:'admin',entrou:false};
       ST.participantes.push(novo);
       save();
       fbSavePart(novo);
