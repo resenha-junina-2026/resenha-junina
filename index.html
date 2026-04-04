@@ -778,7 +778,7 @@ const FIREBASE_CONFIG = {
 // ESTADO
 // ══════════════════════════════════════════════
 let ST=load();
-let db=null, fbReady=false, _fbListeners=[];
+let db=null, fbReady=false, _fbListeners=[], _fbWriting=false;
 
 function load(){try{const s=localStorage.getItem('rj26');return s?JSON.parse(s):clone(DI);}catch{return clone(DI);}}
 function save(){localStorage.setItem('rj26',JSON.stringify(ST));}
@@ -818,9 +818,11 @@ function fbSetupListeners(){
   // Participantes — sync em tempo real
   const u1 = db.collection('rj26_participantes')
     .onSnapshot(snap => {
+      // Ignora snapshot durante escrita local para evitar race condition
+      if(_fbWriting){ return; }
       const parts=[];
       snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
-      ST.participantes = parts; // pode ser [] — válido
+      ST.participantes = parts;
       save();
       renderAll();
       document.getElementById('fb-status').innerHTML=
@@ -857,6 +859,7 @@ function fbSetupListeners(){
 // ── Escrita: participante ──
 async function fbSavePart(p){
   if(!db) return;
+  _fbWriting = true;
   try{
     const data={...p}; delete data._fbId;
     if(p._fbId){
@@ -865,13 +868,21 @@ async function fbSavePart(p){
       const ref = await db.collection('rj26_participantes').add(data);
       p._fbId = ref.id;
     }
-  }catch(e){ console.warn('FB write error:', e); toast('⚠️ Erro ao salvar no Firebase'); }
+  }catch(e){
+    console.warn('FB write error:', e);
+    toast('⚠️ Erro ao salvar no Firebase');
+  } finally {
+    // Libera após 1s para o listener processar o snapshot gerado pela própria escrita
+    setTimeout(()=>{ _fbWriting = false; }, 1000);
+  }
 }
 
 async function fbDeletePart(fbId){
   if(!db||!fbId) return;
+  _fbWriting = true;
   try{ await db.collection('rj26_participantes').doc(fbId).delete(); }
   catch(e){ console.warn('FB delete error:', e); }
+  finally{ setTimeout(()=>{ _fbWriting = false; }, 1000); }
 }
 
 async function fbLogEntrada(entry){
