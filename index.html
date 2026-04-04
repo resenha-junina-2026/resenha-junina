@@ -856,6 +856,34 @@ function fbSetupListeners(){
   _fbListeners=[u1,u2,u3];
 }
 
+// ── Pega próximo número sequencial (Firebase garante unicidade) ──
+async function proximoNumero(){
+  if(!db){
+    // Offline: usa contador local
+    return ST.ids.part++;
+  }
+  try{
+    const ref = db.collection('rj26_config').doc('contador');
+    const result = await db.runTransaction(async tx => {
+      const doc = await tx.get(ref);
+      const atual = doc.exists ? (doc.data().next||16) : 16;
+      tx.set(ref, {next: atual+1}, {merge:true});
+      return atual;
+    });
+    // Sincroniza local
+    if(result >= ST.ids.part) ST.ids.part = result+1;
+    return result;
+  }catch(e){
+    // Fallback local se transação falhar
+    console.warn('Contador Firebase falhou, usando local:', e);
+    return ST.ids.part++;
+  }
+}
+
+function gerarCodigo(num){
+  return 'RESENHA-' + String(num).padStart(4,'0');
+}
+
 // ── Escrita: participante ──
 async function fbSavePart(p){
   if(!db) return;
@@ -1175,14 +1203,20 @@ function salvarPart(){
   const pgto=document.getElementById('p-pgto').value;
   const rv=document.getElementById('p-valor').value,recebido=rv?parseFloat(rv):null;
   if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,lote,pgto,recebido,valor:PRECO[lote]};}
-  else{const nid=ST.ids.part++;ST.participantes.push({id:nid,codigo:'RESENHA-'+String(nid).padStart(4,'0'),nome,fone,lote,valor:PRECO[lote],pgto,recebido,origem:'admin',entrou:false});}
-  save();
-  // Salva no Firebase (se configurado)
-  const partSalvo = eid
-    ? ST.participantes.find(p=>p.id==eid)
-    : ST.participantes[ST.participantes.length-1];
-  if(partSalvo) fbSavePart(partSalvo);
-  cancelPart();renderPart();renderDash();atualizarSelectLote();toast('✅ Participante salvo!');
+  if(eid){
+    save();
+    const partSalvo=ST.participantes.find(p=>p.id==eid);
+    if(partSalvo) fbSavePart(partSalvo);
+    cancelPart();renderPart();renderDash();atualizarSelectLote();toast('✅ Participante salvo!');
+  } else {
+    proximoNumero().then(nid=>{
+      const novo={id:nid,codigo:gerarCodigo(nid),nome,fone,lote,valor:PRECO[lote],pgto,recebido,origem:'admin',entrou:false};
+      ST.participantes.push(novo);
+      save();
+      fbSavePart(novo);
+      cancelPart();renderPart();renderDash();atualizarSelectLote();toast('✅ Participante salvo!');
+    });
+  }
 }
 function editPart(id){
   const p=ST.participantes.find(x=>x.id===id);if(!p)return;
