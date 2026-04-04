@@ -792,6 +792,30 @@ function reset(){
   toast('🔄 Dados resetados');
 }
 
+async function zerarParticipantes(){
+  if(!confirm('Zerar APENAS os participantes e reiniciar o contador de códigos?\n\nPatrocinadores, despesas e configurações serão mantidos.'))return;
+
+  // Apaga participantes do Firebase
+  if(db){
+    try{
+      const snap = await db.collection('rj26_participantes').get();
+      const batch = db.batch();
+      snap.forEach(doc=>batch.delete(doc.ref));
+      await batch.commit();
+      // Zera o contador no Firebase
+      await db.collection('rj26_config').doc('contador').set({next:1});
+    }catch(e){ console.warn('Erro ao zerar Firebase:', e); }
+  }
+
+  // Zera local
+  ST.participantes = [];
+  ST.log = [];
+  ST.ids.part = 1;
+  save();
+  renderAll();
+  toast('✅ Participantes zerados — contador reiniciado em RESENHA-0001');
+}
+
 // ── Firebase init ──
 function initFirebase(){
   try{
