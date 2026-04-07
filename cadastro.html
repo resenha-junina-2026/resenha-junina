@@ -105,11 +105,13 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 .pol h4{font-size:0.78rem;font-weight:800;color:var(--roxo);margin-bottom:8px;}
 .pol p{margin-bottom:6px;}
 /* PAGAMENTO */
-.pgto-card{border-radius:var(--r);overflow:hidden;margin-bottom:14px;border:1.5px solid rgba(91,45,138,0.15);}
-.pgto-header{background:linear-gradient(135deg,var(--roxo3),var(--roxo2));padding:14px 18px;}
-.pgto-header .pgto-title{color:#fff;font-weight:800;font-size:0.95rem;}
-.pgto-header .pgto-sub{color:rgba(255,255,255,0.75);font-size:0.74rem;margin-top:2px;}
-.pgto-body{background:var(--white);border-top:none;padding:18px;}
+.pgto-card{border-radius:var(--r);overflow:hidden;margin-bottom:14px;
+  border:1.5px solid rgba(91,45,138,0.15);box-shadow:0 4px 20px rgba(91,45,138,0.1);}
+.pgto-header{background:linear-gradient(135deg,#2D0D5C,var(--roxo2));padding:16px 20px;
+  display:flex;align-items:center;gap:12px;}
+.pgto-header .pgto-title{color:#fff;font-weight:800;font-size:1rem;}
+.pgto-header .pgto-sub{color:rgba(255,255,255,0.72);font-size:0.74rem;margin-top:2px;}
+.pgto-body{background:var(--white);border-top:none;padding:20px;}
 .pgto-tabs{display:flex;gap:8px;margin-bottom:14px;}
 .pgto-tab{flex:1;padding:11px 8px;border-radius:10px;border:1.5px solid var(--border);
   background:var(--white);cursor:pointer;text-align:center;transition:all 0.18s;
@@ -180,24 +182,54 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 
 /* INFORMAÇÕES DA FESTA */
 .festa-info{max-width:460px;margin:0 auto;padding:0 16px 8px;}
-.info-section{background:var(--white);border-radius:var(--r);padding:20px 22px;
-  margin-bottom:12px;box-shadow:var(--shadow);border:1px solid rgba(91,45,138,0.09);}
-.info-section-title{display:flex;align-items:center;gap:12px;font-size:0.92rem;
-  font-weight:800;color:var(--roxo);margin-bottom:14px;}
-.info-section-title .ico{width:36px;height:36px;border-radius:10px;
+.info-section{background:var(--white);border-radius:var(--r);padding:22px 24px;
+  margin-bottom:12px;box-shadow:0 2px 20px rgba(91,45,138,0.08);
+  border:1px solid rgba(91,45,138,0.09);transition:box-shadow 0.2s;}
+.info-section:hover{box-shadow:0 4px 28px rgba(91,45,138,0.13);}
+.info-section-title{display:flex;align-items:center;gap:14px;font-size:0.95rem;
+  font-weight:800;color:var(--roxo);margin-bottom:16px;padding-bottom:14px;
+  border-bottom:1px solid rgba(91,45,138,0.07);}
+.info-section-title .ico{width:40px;height:40px;border-radius:12px;
   background:linear-gradient(135deg,var(--roxo3),var(--roxo2));
-  display:flex;align-items:center;justify-content:center;font-size:1.05rem;flex-shrink:0;
-  box-shadow:0 2px 8px rgba(91,45,138,0.25);}
-.info-tags{display:flex;flex-wrap:wrap;gap:8px;}
-.info-tag{background:#F8F5FF;border:1px solid rgba(91,45,138,0.12);
-  border-radius:20px;padding:6px 13px;font-size:0.8rem;color:var(--text);font-weight:600;}
-.info-tag.destaque{background:linear-gradient(135deg,rgba(91,45,138,0.1),rgba(123,47,190,0.06));
-  border-color:rgba(91,45,138,0.2);color:var(--roxo2);font-weight:700;}
-.fechado-ico{font-size:3rem;margin-bottom:16px;}
-.fechado h2{font-size:1.2rem;font-weight:800;color:var(--roxo);margin-bottom:8px;}
-.fechado p{font-size:0.88rem;color:var(--muted);line-height:1.6;max-width:300px;}
-.alert{padding:12px 14px;border-radius:10px;font-size:0.82rem;margin-bottom:12px;line-height:1.5;}
-.a-info{background:rgba(91,45,138,0.05);border:1px solid var(--border);color:var(--roxo);}
+  display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(91,45,138,0.3);}
+.info-tags{display:flex;flex-wrap:wrap;gap:7px;}
+.info-tag{background:#F5F2FF;border:1px solid rgba(91,45,138,0.13);
+  border-radius:20px;padding:6px 14px;font-size:0.79rem;color:var(--text);font-weight:600;
+  transition:all 0.15s;}
+.info-tag:hover{background:#EDE8FF;border-color:rgba(91,45,138,0.25);}
+.info-tag.destaque{background:linear-gradient(135deg,rgba(91,45,138,0.12),rgba(123,47,190,0.07));
+  border-color:rgba(91,45,138,0.22);color:var(--roxo2);font-weight:700;}
+.info-sub-label{font-size:0.67rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;
+  color:var(--muted);margin-bottom:9px;margin-top:6px;display:flex;align-items:center;gap:6px;}
+.info-sub-label::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Atrações */
+.atracoes-card{background:linear-gradient(160deg,#FAF7FF,#F0EBFF);
+  border:1.5px solid rgba(91,45,138,0.16);}
+.atracao-item{padding:12px 16px;background:rgba(91,45,138,0.04);border-radius:12px;
+  border:1px solid rgba(91,45,138,0.09);display:flex;flex-direction:column;gap:3px;}
+.atracao-nome{font-size:1rem;font-weight:800;color:var(--text);letter-spacing:-0.2px;}
+.atracao-sub{font-size:0.74rem;color:var(--muted);font-weight:500;}
+.atracao-sep{height:1px;background:rgba(91,45,138,0.08);margin:2px 0;}
+/* Grid 2 colunas para bar+food */
+.info-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:420px){.info-grid-2{grid-template-columns:1fr;}}
+.info-section-half{margin-bottom:0;}
+/* Lista colunar dentro dos cards */
+.info-col-list{display:flex;flex-direction:column;gap:12px;}
+.info-col-group{display:flex;flex-direction:column;gap:4px;}
+.info-col-label{font-size:0.64rem;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;
+  color:var(--muted);padding-bottom:4px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+.info-col-item{font-size:0.8rem;font-weight:600;color:var(--text);
+  padding:3px 0;display:flex;align-items:center;gap:4px;}
+.info-col-item.destaque{color:var(--roxo2);font-weight:700;}
+/* Fechado */
+.fechado-ico{font-size:3.2rem;margin-bottom:18px;}
+.fechado h2{font-size:1.25rem;font-weight:900;color:var(--roxo);margin-bottom:10px;}
+.fechado p{font-size:0.88rem;color:var(--muted);line-height:1.65;max-width:300px;}
+/* Alerts */
+.alert{padding:13px 16px;border-radius:12px;font-size:0.82rem;margin-bottom:12px;line-height:1.5;font-weight:600;}
+.a-info{background:rgba(91,45,138,0.05);border:1px solid rgba(91,45,138,0.15);color:var(--roxo);}
 .a-warn{background:rgba(245,200,66,0.1);border:1px solid rgba(245,200,66,0.4);color:#7A5500;}
 .a-ok{background:rgba(45,106,45,0.07);border:1px solid rgba(45,106,45,0.3);color:#2D6A2D;}
 </style>
@@ -222,59 +254,83 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 <!-- INFORMAÇÕES DA FESTA -->
 <div class="festa-info" id="festa-info-box">
 
-  <!-- Open Bar -->
-  <div class="info-section">
-    <div class="info-section-title">
-      <div class="ico">🍺</div>
-      Open Bar incluso
+  <!-- Atrações — destaque no topo -->
+  <div class="info-section atracoes-card">
+    <div class="info-section-title" style="margin-bottom:14px;">
+      <div class="ico" style="background:linear-gradient(135deg,#F5C842,#FFD966);">🎤</div>
+      <span>Atrações ao Vivo</span>
     </div>
-    <div class="info-tags">
-      <span class="info-tag">💧 Água</span>
-      <span class="info-tag destaque">🍺 Chopp Mansão Maromba</span>
-      <span class="info-tag">⚡ Energético Bally</span>
-      <span class="info-tag destaque">🍓 Askov Morango</span>
-      <span class="info-tag destaque">🍋 Askov Limão</span>
-      <span class="info-tag">🍉 Mansão Gil Melancia</span>
-      <span class="info-tag">🥃 Mansão Tradicional</span>
-      <span class="info-tag">🌀 Corote Diversos</span>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="atracao-item">
+        <div class="atracao-nome">🎸 Augusto e Gustavo</div>
+        <div class="atracao-sub">Sertanejo universitário</div>
+      </div>
+      <div class="atracao-sep"></div>
+      <div class="atracao-item">
+        <div class="atracao-nome">🎵 Maikon Lincon</div>
+        <div class="atracao-sub">Show ao vivo · 3 horas</div>
+      </div>
     </div>
   </div>
 
-  <!-- Open Food -->
-  <div class="info-section">
-    <div class="info-section-title">
-      <div class="ico">🌽</div>
-      Open Food incluso
+  <!-- Open Bar + Food lado a lado em grid -->
+  <div class="info-grid-2">
+
+    <!-- Open Bar -->
+    <div class="info-section info-section-half">
+      <div class="info-section-title">
+        <div class="ico">🍺</div>
+        Open Bar
+      </div>
+      <div class="info-col-list">
+        <div class="info-col-group">
+          <div class="info-col-label">Não alcoólicos</div>
+          <div class="info-col-item">💧 Água</div>
+          <div class="info-col-item">⚡ Energético</div>
+          <div class="info-col-item">🥤 Refrigerante</div>
+        </div>
+        <div class="info-col-group">
+          <div class="info-col-label">Chopp</div>
+          <div class="info-col-item destaque">🍺 Chopp do Marquês</div>
+        </div>
+        <div class="info-col-group">
+          <div class="info-col-label">Destilados</div>
+          <div class="info-col-item destaque">🍓 Askov Morango</div>
+          <div class="info-col-item destaque">🍋 Askov Limão</div>
+          <div class="info-col-item">🥃 Mansão Tradicional</div>
+          <div class="info-col-item">🍉 Mansão Melancia</div>
+          <div class="info-col-item">🌀 Corote Sabores</div>
+        </div>
+      </div>
     </div>
-    <div class="info-tags">
-      <span class="info-tag destaque">🌭 Cachorro Quente</span>
-      <span class="info-tag">🥜 Paçoca</span>
-      <span class="info-tag">🥜 Amendoim</span>
-      <span class="info-tag">🍬 Pé de Moleque</span>
-      <span class="info-tag">🎂 Bolos</span>
-      <span class="info-tag">🥟 Salgadinhos</span>
-      <span class="info-tag">🍴 Comidas Típicas</span>
+
+    <!-- Open Food -->
+    <div class="info-section info-section-half">
+      <div class="info-section-title">
+        <div class="ico" style="background:linear-gradient(135deg,#1a5c2a,#2D8A4A);">🌽</div>
+        Open Food
+      </div>
+      <div class="info-col-list">
+        <div class="info-col-group">
+          <div class="info-col-label">Comidas típicas</div>
+          <div class="info-col-item">🥜 Paçoca</div>
+          <div class="info-col-item">🥜 Amendoim</div>
+          <div class="info-col-item">🍬 Pé de Moleque</div>
+          <div class="info-col-item destaque">🎂 Bolos</div>
+          <div class="info-col-item destaque">🌭 Cachorro Quente</div>
+          <div class="info-col-item">🥟 Salgadinhos</div>
+        </div>
+      </div>
     </div>
+
   </div>
 
   <!-- Aviso 18+ -->
-  <div style="background:rgba(217,66,53,0.07);border:1.5px solid rgba(217,66,53,0.25);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:12px;">
+  <div style="background:rgba(211,47,47,0.06);border:1.5px solid rgba(211,47,47,0.2);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:12px;">
     <div style="font-size:1.5rem;flex-shrink:0;">🔞</div>
     <div>
       <div style="font-weight:800;font-size:0.88rem;color:#c0392b;">Evento exclusivo para maiores de 18 anos</div>
       <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Documento de identidade obrigatório na entrada.</div>
-    </div>
-  </div>
-
-  <!-- Atrações -->
-  <div class="info-section">
-    <div class="info-section-title">
-      <div class="ico">🎤</div>
-      Atrações ao vivo
-    </div>
-    <div class="info-tags">
-      <span class="info-tag destaque">🎸 Augusto e Gustavo</span>
-      <span class="info-tag destaque">🎵 Maikon Lincon</span>
     </div>
   </div>
 
