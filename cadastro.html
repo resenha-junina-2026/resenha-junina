@@ -203,14 +203,28 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 .info-sub-label{font-size:0.67rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;
   color:var(--muted);margin-bottom:9px;margin-top:6px;display:flex;align-items:center;gap:6px;}
 .info-sub-label::after{content:'';flex:1;height:1px;background:var(--border);}
+/* Grid 2 colunas info */
+.info-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:360px){.info-grid2{grid-template-columns:1fr;}}
+/* Lista de itens */
+.info-list{display:flex;flex-direction:column;gap:6px;}
+.info-list-item{font-size:0.82rem;color:var(--text);padding:7px 12px;
+  background:rgba(91,45,138,0.04);border-radius:8px;border:1px solid rgba(91,45,138,0.08);
+  font-weight:600;transition:background 0.15s;}
+.info-list-item:hover{background:rgba(91,45,138,0.08);}
+.info-list-item.destaque{background:linear-gradient(135deg,rgba(91,45,138,0.1),rgba(123,47,190,0.06));
+  border-color:rgba(91,45,138,0.2);color:var(--roxo2);font-weight:700;}
+/* Aviso 18+ */
+.aviso18{background:rgba(211,47,47,0.05);border:1.5px solid rgba(211,47,47,0.18);
+  border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
 /* Atrações */
-.atracoes-card{background:linear-gradient(160deg,#FAF7FF,#F0EBFF);
-  border:1.5px solid rgba(91,45,138,0.16);}
-.atracao-item{padding:12px 16px;background:rgba(91,45,138,0.04);border-radius:12px;
-  border:1px solid rgba(91,45,138,0.09);display:flex;flex-direction:column;gap:3px;}
+.atracoes-card{background:linear-gradient(160deg,#FAF7FF,#EDE5FF);
+  border:1.5px solid rgba(91,45,138,0.18);}
+.atracao-item{padding:13px 16px;background:rgba(91,45,138,0.05);border-radius:12px;
+  border:1px solid rgba(91,45,138,0.1);display:flex;flex-direction:column;gap:4px;}
 .atracao-nome{font-size:1rem;font-weight:800;color:var(--text);letter-spacing:-0.2px;}
 .atracao-sub{font-size:0.74rem;color:var(--muted);font-weight:500;}
-.atracao-sep{height:1px;background:rgba(91,45,138,0.08);margin:2px 0;}
+.atracao-sep{height:1px;background:rgba(91,45,138,0.1);margin:3px 0;}
 /* Grid 2 colunas para bar+food */
 .info-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
 @media(max-width:420px){.info-grid-2{grid-template-columns:1fr;}}
