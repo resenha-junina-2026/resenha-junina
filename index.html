@@ -1003,7 +1003,7 @@ function fbSetupListeners(){
         }
       });
 
-      ST.participantes = parts;
+      ST.participantes = parts.sort((a,b)=>(a.id||0)-(b.id||0));
       save();
       renderAll();
       // Sempre atualiza o dashboard para manter contadores em tempo real
@@ -1413,10 +1413,12 @@ function renderPart(){
   const b=(document.getElementById('bp-busca')||{value:''}).value.toLowerCase();
   const fl=(document.getElementById('bp-lote')||{value:''}).value;
   const fp=(document.getElementById('bp-pgto')||{value:''}).value;
-  const lista=(ST.participantes||[]).filter(p=>
-    (!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b)||(p.fone||'').includes(b))&&
-    (!fl||p.lote===fl)&&
-    (!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))));
+  const lista=(ST.participantes||[])
+    .filter(p=>
+      (!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b)||(p.fone||'').includes(b))&&
+      (!fl||p.lote===fl)&&
+      (!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))))
+    .sort((a,b)=>(a.id||0)-(b.id||0));
   const tb=document.getElementById('t-part');if(!tb)return;
   tb.innerHTML=lista.map(p=>`<tr>
     <td><span class="badge bb">${p.codigo}</span></td>
