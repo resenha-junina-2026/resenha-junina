@@ -220,8 +220,8 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
 /* ── SCANNER ── */
 
 /* ── OPEN BAR / FOOD TABLE ── */
-.ob-row{display:grid;grid-template-columns:1fr 90px 100px 90px 80px;align-items:center;gap:6px;
-  padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.ob-row{display:grid;grid-template-columns:1fr 80px 95px 85px 90px;align-items:center;gap:6px;
+  padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);overflow:visible;}
 .ob-row.hd{background:rgba(232,160,32,0.1);border-bottom:1px solid var(--border);}
 .ob-row.hd span{color:var(--yellow2);font-size:0.67rem;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;}
 .ob-row:hover{background:rgba(255,240,200,0.03);}
@@ -233,8 +233,8 @@ input.autofill{border-color:var(--green2);background:rgba(58,140,58,0.1);}
 .fr .v.pos{color:var(--green2);}.fr .v.neg{color:var(--red2);}.fr .v.ye{color:var(--yellow2);}
 
 /* ── PAT TABLE ── */
-.pt-row{display:grid;grid-template-columns:1fr 95px 105px 80px;align-items:center;gap:6px;
-  padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.pt-row{display:grid;grid-template-columns:1fr 95px 105px 90px;align-items:center;gap:6px;
+  padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.05);overflow:visible;}
 .pt-row.hd{background:rgba(232,160,32,0.1);border-bottom:1px solid var(--border);}
 .pt-row.hd span{color:var(--yellow2);font-size:0.67rem;font-weight:800;text-transform:uppercase;letter-spacing:0.4px;}
 .pt-row:hover{background:rgba(255,240,200,0.03);}
@@ -2013,12 +2013,12 @@ async function getQRBlob(){
   const nome   = document.getElementById('qrm-nome').textContent.trim();
 
   // Resolução 2x para qualidade alta em celular
-  const SC=2, W=400*SC, H=580*SC;
+  const SC=2, W=400*SC, H=600*SC;
   const C = document.createElement('canvas');
   C.width=W; C.height=H;
   const ctx = C.getContext('2d');
   ctx.scale(SC,SC);
-  const Wl=400, Hl=580; // dimensões lógicas
+  const Wl=400, Hl=600; // dimensões lógicas
 
   // ── Sombra externa (simula elevação) ──
   ctx.shadowColor='rgba(0,0,0,0)';
@@ -2031,7 +2031,7 @@ async function getQRBlob(){
   ctx.shadowColor='rgba(91,45,138,0.18)';
   ctx.shadowBlur=24; ctx.shadowOffsetY=4;
   ctx.fillStyle='#FFFFFF';
-  roundRect(ctx,16,16,Wl-32,Hl-32,20); ctx.fill();
+  roundRect(ctx,16,16,Wl-32,Hl-32,20); ctx.fill(); // card usa Hl=600
   ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
 
   // ── Cabeçalho roxo com gradiente ──
@@ -2039,29 +2039,36 @@ async function getQRBlob(){
   hGrad.addColorStop(0,'#3D1A6E');
   hGrad.addColorStop(1,'#7B2FBE');
   ctx.fillStyle=hGrad;
-  roundRect(ctx,16,16,Wl-32,110,20,20,0,0); ctx.fill();
+  roundRect(ctx,16,16,Wl-32,118,20,20,0,0); ctx.fill();
 
   // ── Linha amarela sob o header ──
   ctx.fillStyle='#F5C842';
-  ctx.fillRect(16,126,Wl-32,3);
+  ctx.fillRect(16,134,Wl-32,3);
 
   // ── Texto header ──
   ctx.textAlign='center';
   ctx.fillStyle='#F5C842';
-  ctx.font='bold 26px Arial, sans-serif';
-  ctx.letterSpacing='2px';
-  ctx.fillText('RESENHA JUNINA', Wl/2, 68);
-  ctx.fillStyle='rgba(255,255,255,0.9)';
-  ctx.font='600 13px Arial, sans-serif';
-  ctx.letterSpacing='6px';
-  ctx.fillText('2 0 2 6', Wl/2, 94);
-  ctx.fillStyle='rgba(245,200,66,0.55)';
-  ctx.font='11px Arial, sans-serif';
+  ctx.font='bold 24px Arial, sans-serif';
+  ctx.letterSpacing='1px';
+  ctx.fillText('RESENHA JUNINA', Wl/2, 66);
+  ctx.fillStyle='rgba(255,255,255,0.92)';
+  ctx.font='600 12px Arial, sans-serif';
+  ctx.letterSpacing='5px';
+  ctx.fillText('2  0  2  6', Wl/2, 89);
   ctx.letterSpacing='0';
-  ctx.fillText('Chácara do Nardo  ·  13/06/2026  ·  20:30', Wl/2, 114);
+  // Linha de local/data — fonte menor garantida para caber
+  ctx.fillStyle='rgba(245,200,66,0.7)';
+  ctx.font='10px Arial, sans-serif';
+  const infoLine = 'Chácara do Nardo  ·  13/06/2026  ·  20:30';
+  // Garante que cabe dentro do card
+  ctx.save();
+  ctx.rect(20,100,Wl-40,20);
+  ctx.clip();
+  ctx.fillText(infoLine, Wl/2, 113);
+  ctx.restore();
 
   // ── QR Code ──
-  const qrS=220, qrX=(Wl-qrS)/2, qrY=146;
+  const qrS=218, qrX=(Wl-qrS)/2, qrY=152;
 
   // Moldura sutil do QR
   ctx.fillStyle='#FAFAFA';
