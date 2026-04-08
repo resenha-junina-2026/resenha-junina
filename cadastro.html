@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --roxo:#5B2D8A;--roxo2:#7B2FBE;--roxo3:#3D1A6E;--roxo-light:#EDE8F5;
@@ -16,7 +17,7 @@
   --white:#fff;--r:16px;
   --shadow:0 4px 24px rgba(91,45,138,0.10);
 }
-body{background:var(--roxo-light);font-family:Arial,sans-serif;min-height:100vh;color:var(--text);
+body{background:var(--roxo-light);font-family:'Inter Tight',system-ui,sans-serif;min-height:100vh;color:var(--text);
   background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(123,47,190,0.08) 0%,transparent 60%);}
 .hdr{position:relative;overflow:hidden;text-align:center;
   background:linear-gradient(160deg,#2D0D5C 0%,#5B2D8A 50%,#7B2FBE 100%);
@@ -37,8 +38,8 @@ body{background:var(--roxo-light);font-family:Arial,sans-serif;min-height:100vh;
 .hdr-info{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px;position:relative;}
 .hdr-chip{font-size:0.78rem;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.1);
   padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);}
-main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
-.screen{display:none;}.screen.on{display:block;animation:up 0.28s ease;}
+main{max-width:460px;margin:0 auto;padding:24px 14px 80px;}
+.screen{display:none;}.screen.on{display:block;animation:up 0.3s cubic-bezier(0.22,1,0.36,1);}
 @keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 .prog{display:flex;align-items:center;justify-content:center;margin:28px 0 22px;}
 .prog-step{display:flex;flex-direction:column;align-items:center;gap:5px;}
@@ -48,7 +49,7 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
   box-shadow:0 2px 8px rgba(91,45,138,0.08);}
 .prog-label{font-size:0.6rem;color:var(--muted);font-weight:700;text-transform:uppercase;
   letter-spacing:0.5px;white-space:nowrap;}
-.prog-line{width:52px;height:2px;background:var(--border);margin-top:-21px;transition:background 0.4s;}
+.prog-line{width:44px;height:1.5px;background:var(--border);margin-top:-21px;transition:background 0.4s;}
 .prog-step.done .prog-circle{background:linear-gradient(135deg,var(--roxo3),var(--roxo2));
   border-color:transparent;color:#fff;box-shadow:0 3px 10px rgba(91,45,138,0.3);}
 .prog-step.done .prog-label{color:var(--roxo2);}
@@ -90,7 +91,7 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 .fg label{display:block;font-size:0.7rem;font-weight:800;color:var(--muted);
   text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px;}
 .fg input{width:100%;border:1.5px solid rgba(91,45,138,0.16);border-radius:10px;padding:14px 16px;
-  font-size:0.95rem;font-family:Arial,sans-serif;color:var(--text);outline:none;
+  font-size:0.95rem;font-family:'Inter Tight',system-ui,sans-serif;color:var(--text);outline:none;
   transition:all 0.2s;background:var(--white);box-shadow:0 1px 3px rgba(0,0,0,0.04);}
 .fg input:focus{border-color:var(--roxo2);box-shadow:0 0 0 4px rgba(123,47,190,0.10);}
 .fg input.err{border-color:#d32f2f;box-shadow:0 0 0 4px rgba(211,47,47,0.07);}
@@ -106,7 +107,7 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 .pol p{margin-bottom:6px;}
 /* PAGAMENTO */
 .pgto-card{border-radius:var(--r);overflow:hidden;margin-bottom:14px;
-  border:1.5px solid rgba(91,45,138,0.15);box-shadow:0 4px 20px rgba(91,45,138,0.1);}
+  border:1px solid rgba(91,45,138,0.15);box-shadow:0 6px 24px rgba(91,45,138,0.12);}
 .pgto-header{background:linear-gradient(135deg,#2D0D5C,var(--roxo2));padding:16px 20px;
   display:flex;align-items:center;gap:12px;}
 .pgto-header .pgto-title{color:#fff;font-weight:800;font-size:1rem;}
@@ -115,7 +116,7 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 .pgto-tabs{display:flex;gap:8px;margin-bottom:14px;}
 .pgto-tab{flex:1;padding:11px 8px;border-radius:10px;border:1.5px solid var(--border);
   background:var(--white);cursor:pointer;text-align:center;transition:all 0.18s;
-  font-size:0.82rem;font-weight:700;color:var(--muted);font-family:Arial,sans-serif;}
+  font-size:0.82rem;font-weight:700;color:var(--muted);font-family:'Inter Tight',system-ui,sans-serif;}
 .pgto-tab:hover{border-color:var(--roxo2);color:var(--roxo2);}
 .pgto-tab.active{border-color:var(--roxo2);background:rgba(91,45,138,0.06);color:var(--roxo2);}
 .pgto-tab .tab-ico{font-size:1.1rem;display:block;margin-bottom:3px;}
@@ -128,7 +129,7 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
   padding:14px 16px;margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .pix-chave{font-family:monospace;font-size:0.88rem;font-weight:700;color:#00875a;word-break:break-all;}
 .pix-copy{background:#00875a;color:#fff;border:none;border-radius:8px;padding:8px 14px;
-  font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:Arial,sans-serif;flex-shrink:0;}
+  font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'Inter Tight',system-ui,sans-serif;flex-shrink:0;}
 .mp-info{background:rgba(0,119,194,0.05);border:1px solid rgba(0,119,194,0.15);
   border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:0.8rem;color:#005a8e;line-height:1.5;}
 .res-row{display:flex;justify-content:space-between;align-items:center;
@@ -142,12 +143,12 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 .res-total .lbl{font-weight:700;font-size:0.9rem;}
 .res-total .val{font-weight:900;font-size:1.15rem;color:var(--roxo2);}
 .btn{width:100%;padding:16px;border:none;border-radius:14px;font-size:0.95rem;font-weight:800;
-  cursor:pointer;transition:all 0.2s;font-family:Arial,sans-serif;
+  cursor:pointer;transition:all 0.2s;font-family:'Inter Tight',system-ui,sans-serif;
   display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:0.3px;}
 .btn:hover{filter:brightness(1.06);transform:translateY(-1px);}
 .btn:active{transform:scale(0.98) translateY(0);}
 .btn-primary{background:linear-gradient(135deg,var(--roxo3),var(--roxo2));color:#fff;
-  box-shadow:0 6px 20px rgba(91,45,138,0.35);}
+  box-shadow:0 6px 24px rgba(91,45,138,0.4);letter-spacing:0.3px;}
 .btn-enviar{background:linear-gradient(135deg,#b88000,var(--amarelo));color:#1A1030;
   box-shadow:0 6px 18px rgba(245,200,66,0.4);font-size:1rem;}
 .btn-mp{background:linear-gradient(135deg,#006fad,#009ee3);color:#fff;
@@ -208,10 +209,10 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
 @media(max-width:360px){.info-grid2{grid-template-columns:1fr;}}
 /* Lista de itens */
 .info-list{display:flex;flex-direction:column;gap:6px;}
-.info-list-item{font-size:0.82rem;color:var(--text);padding:7px 12px;
-  background:rgba(91,45,138,0.04);border-radius:8px;border:1px solid rgba(91,45,138,0.08);
-  font-weight:600;transition:background 0.15s;}
-.info-list-item:hover{background:rgba(91,45,138,0.08);}
+.info-list-item{font-size:0.82rem;color:var(--text);padding:8px 13px;
+  background:rgba(91,45,138,0.04);border-radius:9px;border:1px solid rgba(91,45,138,0.08);
+  font-weight:600;transition:all 0.18s;line-height:1.3;}
+.info-list-item:hover{background:rgba(91,45,138,0.09);transform:translateX(2px);}
 .info-list-item.destaque{background:linear-gradient(135deg,rgba(91,45,138,0.1),rgba(123,47,190,0.06));
   border-color:rgba(91,45,138,0.2);color:var(--roxo2);font-weight:700;}
 /* Aviso 18+ */
@@ -276,13 +277,13 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <div class="atracao-item">
-        <div class="atracao-nome">🎵 Augusto e Gustavo</div>
-        <div class="atracao-sub">Show ao vivo </div>
+        <div class="atracao-nome">🎸 Augusto e Gustavo</div>
+        <div class="atracao-sub">Sertanejo universitário</div>
       </div>
       <div class="atracao-sep"></div>
       <div class="atracao-item">
         <div class="atracao-nome">🎵 Maikon Lincon</div>
-        <div class="atracao-sub">Show ao vivo </div>
+        <div class="atracao-sub">Show ao vivo · 3 horas</div>
       </div>
     </div>
   </div>
@@ -298,12 +299,22 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
       </div>
       <div class="info-col-list">
         <div class="info-col-group">
+          <div class="info-col-label">Não alcoólicos</div>
           <div class="info-col-item">💧 Água</div>
           <div class="info-col-item">⚡ Energético</div>
           <div class="info-col-item">🥤 Refrigerante</div>
-          <div class="info-col-item">🍺 Chopp do Marquês</div>
-          <div class="info-col-item">🍸 Destilados</div>
-
+        </div>
+        <div class="info-col-group">
+          <div class="info-col-label">Chopp</div>
+          <div class="info-col-item destaque">🍺 Chopp do Marquês</div>
+        </div>
+        <div class="info-col-group">
+          <div class="info-col-label">Destilados</div>
+          <div class="info-col-item destaque">🍓 Askov Morango</div>
+          <div class="info-col-item destaque">🍋 Askov Limão</div>
+          <div class="info-col-item">🥃 Mansão Tradicional</div>
+          <div class="info-col-item">🍉 Mansão Melancia</div>
+          <div class="info-col-item">🌀 Corote Sabores</div>
         </div>
       </div>
     </div>
@@ -316,7 +327,13 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
       </div>
       <div class="info-col-list">
         <div class="info-col-group">
-          <div class="info-col-item"> 🌭 Comidas Tipícas</div>
+          <div class="info-col-label">Comidas típicas</div>
+          <div class="info-col-item">🥜 Paçoca</div>
+          <div class="info-col-item">🥜 Amendoim</div>
+          <div class="info-col-item">🍬 Pé de Moleque</div>
+          <div class="info-col-item destaque">🎂 Bolos</div>
+          <div class="info-col-item destaque">🌭 Cachorro Quente</div>
+          <div class="info-col-item">🥟 Salgadinhos</div>
         </div>
       </div>
     </div>
@@ -328,6 +345,7 @@ main{max-width:460px;margin:0 auto;padding:28px 16px 80px;}
     <div style="font-size:1.5rem;flex-shrink:0;">🔞</div>
     <div>
       <div style="font-weight:800;font-size:0.88rem;color:#c0392b;">Evento exclusivo para maiores de 18 anos</div>
+      <div style="font-size:0.76rem;color:var(--muted);margin-top:2px;">Documento de identidade obrigatório na entrada.</div>
     </div>
   </div>
 
@@ -791,7 +809,18 @@ function copiarPix(){
 }
 function abrirMP(){
   const link=LINKS_MP[pedido.lote];
-  if(!link||link.includes('SEU_LINK')){alert('Link MP não configurado.\nEntre em contato com o organizador.');return;}
+  if(!link||link.includes('SEU_LINK')){
+    const lote=LOTES[pedido.lote]||{};
+    const msg=encodeURIComponent(
+      '🎪 *Resenha Junina 2026 — Pagamento*\n\n'+
+      'Olá! Quero pagar meu ingresso pelo cartão.\n\n'+
+      '🎫 *Lote:* '+(lote.nome||pedido.lote)+'\n'+
+      '💰 *Valor:* R$ '+((pedido.qtd||1)*(lote.preco||0)).toFixed(2).replace('.',',')+'\n'+
+      '👤 *Nome:* '+pedido.nome
+    );
+    window.open('https://wa.me/5517997230392?text='+msg,'_blank');
+    return;
+  }
   window.open(link,'_blank');
 }
 
