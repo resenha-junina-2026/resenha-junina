@@ -476,6 +476,11 @@ body.modo-portaria .btn-fullport{display:block;}
           <option value="Débito">Débito</option>
           <option value="Dinheiro">Dinheiro</option>
           <option value="Pendente">Pendente</option>
+          <optgroup label="── Cortesia ──">
+            <option value="Cortesia - Divulgação">🎙️ Divulgação</option>
+            <option value="Cortesia - Staff">🛠️ Staff / Equipe</option>
+            <option value="Cortesia - Organizador">⭐ Organizador</option>
+          </optgroup>
         </select>
       </div>
       <div class="fgl"><label>Valor Recebido (R$) <span class="chip" style="margin-left:4px">Taxa Créd: <input type="number" id="taxa-cred" value="5.09" step="0.01" min="0" max="20" onchange="salvarConfig()">%</span></label>
@@ -500,7 +505,7 @@ body.modo-portaria .btn-fullport{display:block;}
         <option value="">Todos os lotes</option><option value="1°">1°</option><option value="2°">2°</option><option value="3°">3°</option>
       </select>
       <select id="bp-pgto" onchange="renderPart()">
-        <option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option><option value="online-pend">🌐 Online Pendente</option>
+        <option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option><option value="online-pend">🌐 Online Pendente</option><option value="cortesia">🎁 Cortesia</option>
       </select>
     </div>
     <div class="tw"><table>
@@ -1179,10 +1184,15 @@ async function fbResetParts(){
 // CONSTANTES
 // ══════════════════════════════════════════════
 const PRECO={'1°':90,'2°':110,'3°':130};
+const LINKS_MP={
+  '1°':'https://mpago.la/15AYPXV',
+  '2°':'https://link.mercadopago.com.br/SEU_LINK_LOTE2',
+  '3°':'https://link.mercadopago.com.br/SEU_LINK_LOTE3',
+};
 const VAGAS={'1°':50,'2°':100,'3°':200};
 const CL={'1°':'#2D6A2D','2°':'#E8A020','3°':'#7B2FBE'};
 const R=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-const pagou=p=>p.recebido&&p.recebido>0;
+const pagou=p=>(p.recebido&&p.recebido>0)||(p.pgto==='Cortesia'||p.pgto==='Equipe');
 const qtdLote=l=>ST.participantes.filter(p=>p.lote===l).length;
 const cheio=l=>qtdLote(l)>=VAGAS[l];
 const proxLote=()=>['1°','2°','3°'].find(l=>!cheio(l))||'3°';
@@ -1289,7 +1299,14 @@ function renderAll(){
 function calcFin(){
   const ps=ST.participantes||[];
   let rL={'1°':0,'2°':0,'3°':0},pL={'1°':0,'2°':0,'3°':0};
-  ps.forEach(p=>{rL[p.lote]+=(p.recebido||0);pL[p.lote]+=(PRECO[p.lote]||0);});
+  const nCortesias=ps.filter(p=>p.cortesia).length;
+  ps.forEach(p=>{
+    // Cortesia e Equipe não entram na receita
+    if(p.pgto!=='Cortesia'&&p.pgto!=='Equipe'){
+      rL[p.lote]+=(p.recebido||0);
+      pL[p.lote]+=(PRECO[p.lote]||0);
+    }
+  });
   const patRec=ST.patrocinadores.filter(p=>p.pago).reduce((a,p)=>a+(p.valor||0),0);
   const patPot=ST.patrocinadores.reduce((a,p)=>a+(p.valor||0),0);
   const patPend=ST.patrocinadores.filter(p=>!p.pago).reduce((a,p)=>a+(p.valor||0),0);
@@ -1349,7 +1366,7 @@ function renderDash(){
   const pedOL=(ST.participantes||[]).filter(p=>p.origem==='online'&&!pagou(p));
   if(pedOL.length) al.push(`<div class="alert ai" style="cursor:pointer" onclick="pg('participantes',document.querySelector('nav button:nth-child(2)'))">
     🌐 <strong>${pedOL.length} pedido${pedOL.length>1?'s':''} online</strong> aguardando confirmação de pagamento — <u>clique para ver</u></div>`);
-  const ppend=ps.filter(p=>!pagou(p));
+  const ppend=ps.filter(p=>!pagou(p)&&p.pgto!=='Cortesia'&&p.pgto!=='Equipe');
   if(ppend.length)al.push(`<div class="alert aw">⚠️ ${ppend.length} participante(s) com pagamento pendente</div>`);
   const ppat=ST.patrocinadores.filter(p=>!p.pago);
   if(ppat.length)al.push(`<div class="alert aw">🤝 ${ppat.length} patrocinador(es) a receber — ${R(fin.patPend)}</div>`);
@@ -1374,14 +1391,22 @@ function autoLote(){
   const eid=document.getElementById('eid');if(eid&&eid.value)return;
   const lote=proxLote(),sel=document.getElementById('p-lote');
   if(sel&&sel.value!==lote){sel.value=lote;showHint('h-lote');}
-  if(document.getElementById('p-pgto').value!=='Pendente')autoValor();
+  const pgtoV=document.getElementById('p-pgto').value;
+  if(pgtoV!=='Pendente'&&pgtoV!=='Cortesia'&&pgtoV!=='Equipe')autoValor();
   checkLoteCheio();
 }
-function onLote(){if(document.getElementById('p-pgto').value!=='Pendente')autoValor(true);checkLoteCheio();}
+function onLote(){const pv=document.getElementById('p-pgto').value;if(pv!=='Pendente'&&pv!=='Cortesia'&&pv!=='Equipe')autoValor(true);checkLoteCheio();}
 function onPgto(){
   const pgto=document.getElementById('p-pgto').value,vIn=document.getElementById('p-valor');
-  if(pgto==='Pendente'){vIn.value='';vIn.classList.remove('autofill');document.getElementById('h-valor').classList.remove('on');}
-  else autoValor(true);
+  if(pgto==='Pendente'){
+    vIn.value='';vIn.classList.remove('autofill');document.getElementById('h-valor').classList.remove('on');
+  } else if(pgto==='Cortesia'||pgto==='Equipe'){
+    vIn.value='0';vIn.disabled=true;
+    setTimeout(()=>vIn.classList.remove('autofill'),100);
+  } else {
+    vIn.disabled=false;
+    autoValor(true);
+  }
 }
 function autoValor(showH=false){
   const lote=document.getElementById('p-lote').value,vIn=document.getElementById('p-valor'),pgto=document.getElementById('p-pgto').value;
@@ -1417,17 +1442,25 @@ function renderPart(){
     .filter(p=>
       (!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b)||(p.fone||'').includes(b))&&
       (!fl||p.lote===fl)&&
-      (!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))))
+      (!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))||(fp==='cortesia'&&(p.pgto||'').startsWith('Cortesia'))))
     .sort((a,b)=>(a.id||0)-(b.id||0));
   const tb=document.getElementById('t-part');if(!tb)return;
   tb.innerHTML=lista.map(p=>`<tr>
     <td><span class="badge bb">${p.codigo}</span></td>
-    <td class="bold">${p.nome}${p.obs?` <span style="font-size:0.7rem;color:var(--text3);font-weight:400">${p.obs}</span>`:''} ${p.origem==='online'?'&nbsp;<span title="Cadastro online" style="font-size:0.7rem;background:rgba(36,120,173,0.15);color:var(--blue2);padding:1px 6px;border-radius:10px;font-weight:700;">🌐</span>':''}</td>
+    <td class="bold">
+      ${p.cortesia?`<span class="badge bo" style="font-size:0.58rem;margin-right:4px;">${p.tipo==='cortesia-staff'?'🛠️ Staff':'🎙️ Divulg.'}</span>`:''}
+      ${p.nome}${p.obs?` <span style="font-size:0.7rem;color:var(--text3);font-weight:400">${p.obs}</span>`:''}
+      ${p.origem==='online'?'&nbsp;<span title="Cadastro online" style="font-size:0.7rem;background:rgba(36,120,173,0.15);color:var(--blue2);padding:1px 6px;border-radius:10px;font-weight:700;">🌐</span>':''}</td>
     <td>${p.fone ? `<a href="https://wa.me/55${p.fone.replace(/\D/g,'')}" target="_blank" style="color:var(--green2);text-decoration:none;font-size:0.75rem;">📱 ${p.fone}</a>` : '<span class="muted sm-txt">—</span>'}</td>
     <td><span class="badge" style="background:${CL[p.lote]}22;color:${CL[p.lote]};border:1px solid ${CL[p.lote]}44">${p.lote}</span></td>
     <td class="muted sm-txt">${p.pgto||'—'}</td>
     <td>${p.recebido?R(p.recebido):'<span class="muted">—</span>'}</td>
-    <td>${pagou(p)?'<span class="badge bg">✅ Pago</span>':'<span class="badge br">⏳ Pendente</span>'}</td>
+    <td>${
+      p.pgto==='Cortesia'?'<span class="badge" style="background:rgba(16,185,129,0.15);color:#34D399;border:1px solid rgba(16,185,129,0.3);">🎁 Cortesia</span>':
+      p.pgto==='Equipe'?'<span class="badge" style="background:rgba(124,58,237,0.15);color:#9B5CF6;border:1px solid rgba(124,58,237,0.3);">🛠️ Equipe</span>':
+      pagou(p)?'<span class="badge bg">✅ Pago</span>':
+      '<span class="badge br">⏳ Pendente</span>'
+    }</td>
     <td>${p.entrou?'<span class="badge bg">✔ Entrou</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text2)">Aguardando</span>'}</td>
     <td><div class="flex gap8" style="flex-wrap:wrap;gap:4px;">
       ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" title="Confirmar e enviar ingresso" onclick="confirmarEEnviar(${p.id})" style="font-size:0.68rem;padding:4px 7px;">✅ Enviar</button>`:''}
@@ -1443,12 +1476,18 @@ function salvarPart(){
   const nome=document.getElementById('p-nome').value.trim();if(!nome){alert('Informe o nome');return;}
   const fone=document.getElementById('p-fone').value.trim();
   const obs=(document.getElementById('p-obs')||{value:''}).value.trim();
+  const tipo=(document.getElementById('p-tipo')||{value:''}).value;
+  const cortesia=tipo!==''&&tipo.startsWith('cortesia');
   const eid=document.getElementById('eid').value;
   let lote=document.getElementById('p-lote').value;
   if(!eid&&cheio(lote)){const pr=proxLote();if(!confirm(`Lote ${lote} esgotado. Usar ${pr}?`))return;lote=pr;}
   const pgto=document.getElementById('p-pgto').value;
-  const rv=document.getElementById('p-valor').value,recebido=rv?parseFloat(rv):null;
-  if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,obs,lote,pgto,recebido,valor:PRECO[lote]};}
+  const pgto_val=document.getElementById('p-pgto').value;
+  const rv=document.getElementById('p-valor').value;
+  // Cortesia e Equipe: valor 0, campo desabilitado
+  const recebido=(pgto_val==='Cortesia'||pgto_val==='Equipe')?0:(rv?parseFloat(rv):null);
+  const vInEl=document.getElementById('p-valor');if(vInEl)vInEl.disabled=false;
+  if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,obs,tipo,cortesia,lote,pgto:cortesia?'Cortesia':pgto,recebido:cortesia?0:recebido,valor:cortesia?0:PRECO[lote]};}
   if(eid){
     save();
     const partSalvo=ST.participantes.find(p=>p.id==eid);
@@ -1477,8 +1516,11 @@ function editPart(id){
   document.getElementById('eid').value=id;document.getElementById('p-nome').value=p.nome;
   document.getElementById('p-fone').value=p.fone||'';
   const obsEl=document.getElementById('p-obs');if(obsEl)obsEl.value=p.obs||'';
+  const tipoEl=document.getElementById('p-tipo');if(tipoEl)tipoEl.value=p.tipo||'';
   document.getElementById('p-lote').value=p.lote;document.getElementById('p-pgto').value=p.pgto||'Pix';
-  document.getElementById('p-valor').value=p.recebido||'';
+  const vInput=document.getElementById('p-valor');
+  vInput.value=p.recebido!=null?p.recebido:'';
+  vInput.disabled=(p.pgto||'').startsWith('Cortesia');
   document.getElementById('lote-warn').style.display='none';
   document.getElementById('form-ttl').textContent='Editando: '+p.nome;
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1486,6 +1528,8 @@ function editPart(id){
 function cancelPart(){
   document.getElementById('eid').value='';document.getElementById('p-nome').value='';document.getElementById('p-valor').value='';document.getElementById('p-fone').value='';
   const obsClEl=document.getElementById('p-obs');if(obsClEl)obsClEl.value='';
+  const vReset=document.getElementById('p-valor');if(vReset)vReset.disabled=false;
+  const tipoClEl=document.getElementById('p-tipo');if(tipoClEl)tipoClEl.value='';
   document.getElementById('lote-warn').style.display='none';
   document.getElementById('form-ttl').textContent='Novo Participante';
   autoLote();
@@ -1498,7 +1542,7 @@ function delPart(id){
   save();renderPart();renderDash();
 }
 function exportPendentes(){
-  const ps=(ST.participantes||[]).filter(p=>!pagou(p));
+  const ps=(ST.participantes||[]).filter(p=>!pagou(p)&&p.pgto!=='Cortesia'&&p.pgto!=='Equipe');
   if(!ps.length){toast('Nenhum participante com pagamento pendente');return;}
   const h=['Código','Nome','WhatsApp','Lote','Valor','Origem'];
   const rows=ps.map(p=>[p.codigo,`"${p.nome}"`,p.fone||'',p.lote,R(p.valor||PRECO[p.lote]||0),p.origem||'admin']);
@@ -1511,8 +1555,8 @@ function exportPendentes(){
 }
 
 function exportCSV(){
-  const h=['Código','Nome','WhatsApp','Lote','Valor','Pgto','Recebido','Entrou','Origem'];
-  const r=ST.participantes.map(p=>[p.codigo,`"${p.nome}"`,p.fone||'',p.lote,p.valor||'',p.pgto||'',p.recebido||'',p.entrou?'Sim':'Não',p.origem||'admin']);
+  const h=['Código','Nome','WhatsApp','Lote','Valor','Pgto','Recebido','Entrou','Origem','Tipo'];
+  const r=ST.participantes.map(p=>[p.codigo,`"${p.nome}"`,p.fone||'',p.lote,p.valor||'',p.pgto||'',p.recebido||'',p.entrou?'Sim':'Não',p.origem||'admin',p.cortesia?(p.tipo==='cortesia-staff'?'Staff':'Divulgador'):'']);
   const csv=[h,...r].map(x=>x.join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='participantes_rj2026.csv';a.click();toast('⬇️ CSV exportado!');
 }
@@ -1535,8 +1579,10 @@ function processarCodigo(raw){
   save(); // salva localmente primeiro — garantia se Firebase falhar
   // Grava no Firebase de forma síncrona (await) para garantir persistência
   fbSavePart(p).then(()=>fbLogEntrada(entradaLog));
-  if(!pagou(p))return{ok:true,tipo:'warn',msg:`⚠️ ${p.nome} | ${p.lote} Lote — PAGAMENTO PENDENTE`};
-  return{ok:true,tipo:'ok',msg:`✅ Entrada: ${p.nome} · ${p.lote} Lote`};
+  if(p.pgto==='Cortesia') return{ok:true,tipo:'ok',msg:`🎁 Cortesia: ${p.nome}`};
+  if(p.pgto==='Equipe')    return{ok:true,tipo:'ok',msg:`🛠️ Equipe: ${p.nome}`};
+  if(!pagou(p))            return{ok:true,tipo:'warn',msg:`⚠️ ${p.nome} | ${p.lote} — PAGAMENTO PENDENTE`};
+  return{ok:true,tipo:'ok',msg:`✅ ${p.nome} · ${p.lote} Lote`};
 }
 function showResult(elId,tipo,msg){
   const el=document.getElementById(elId);if(!el)return;
