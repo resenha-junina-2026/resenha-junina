@@ -955,10 +955,22 @@ function fbSetupListeners(){
   // Participantes — sync em tempo real
   const u1 = db.collection('rj26_participantes')
     .onSnapshot(snap => {
-      // Ignora snapshot durante escrita local para evitar race condition
       if(_fbWriting){ return; }
       const parts=[];
       snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
+
+      // Preserva entrou:true do localStorage caso Firebase ainda não tenha gravado
+      // Isso evita perder entradas se a página recarregar antes do fbSavePart completar
+      const localMap={};
+      (ST.participantes||[]).forEach(p=>{ if(p.codigo) localMap[p.codigo]=p; });
+      parts.forEach(p=>{
+        const local=localMap[p.codigo];
+        if(local && local.entrou && !p.entrou){
+          p.entrou=true; // mantém entrada local — Firebase ainda não sincronizou
+          fbSavePart(p); // tenta regravar no Firebase
+        }
+      });
+
       ST.participantes = parts;
       save();
       renderAll();
@@ -1408,9 +1420,9 @@ function processarCodigo(raw){
   const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const entradaLog={id:p.id,codigo:p.codigo,nome:p.nome,lote:p.lote,hora,ts:Date.now()};
   ST.log.unshift(entradaLog);
-  save();
-  fbSavePart(p);
-  fbLogEntrada(entradaLog);
+  save(); // salva localmente primeiro — garantia se Firebase falhar
+  // Grava no Firebase de forma síncrona (await) para garantir persistência
+  fbSavePart(p).then(()=>fbLogEntrada(entradaLog));
   if(!pagou(p))return{ok:true,tipo:'warn',msg:`⚠️ ${p.nome} — pagamento PENDENTE. Entrada registrada.`};
   return{ok:true,tipo:'ok',msg:`✅ Entrada: ${p.nome} · ${p.lote} Lote`};
 }
