@@ -2359,14 +2359,21 @@ async function getQRBlob(part, qrElSrc){
     document.body.appendChild(tmpDiv);
     await new Promise(res=>{
       if(typeof QRCode==='undefined'){res();return;}
-      new QRCode(tmpDiv,{text:codigo,width:220,height:220,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-      setTimeout(res,500);
+      new QRCode(tmpDiv,{
+        text:codigo,width:220,height:220,
+        colorDark:'#000000',colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M,
+        onRenderingEnd: res  // callback nativo do QRCode.js
+      });
+      setTimeout(res,1200); // fallback se callback não disparar
     });
+    // Aguarda mais um tick para garantir renderização
+    await new Promise(res=>setTimeout(res,100));
     qrEl = tmpDiv.querySelector('canvas')||tmpDiv.querySelector('img');
-    // Copia pixels se for canvas (cloneNode perde os pixels)
+    // Copia pixels do canvas (cloneNode não copia pixels)
     if(qrEl && qrEl.tagName==='CANVAS'){
       const copy = document.createElement('canvas');
-      copy.width=qrEl.width; copy.height=qrEl.height;
+      copy.width=qrEl.width||220; copy.height=qrEl.height||220;
       copy.getContext('2d').drawImage(qrEl,0,0);
       qrEl = copy;
     }
@@ -2405,7 +2412,7 @@ async function getQRBlob(part, qrElSrc){
   ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.font='600 12px Arial, sans-serif'; ctx.letterSpacing='5px';
   ctx.fillText('2  0  2  6',Wl/2,89);
   ctx.letterSpacing='0'; ctx.fillStyle='rgba(245,200,66,0.65)'; ctx.font='11px Arial, sans-serif';
-  ctx.fillText('Chácara do Nardo',Wl/2,113);
+  ctx.fillText('Chacara do Nardo  ·  13/06/2026  ·  20:30',Wl/2,113);
 
   // QR
   const qrS=218, qrX=(Wl-qrS)/2, qrY=152;
@@ -4804,14 +4811,21 @@ async function getQRBlob(part, qrElSrc){
     document.body.appendChild(tmpDiv);
     await new Promise(res=>{
       if(typeof QRCode==='undefined'){res();return;}
-      new QRCode(tmpDiv,{text:codigo,width:220,height:220,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-      setTimeout(res,500);
+      new QRCode(tmpDiv,{
+        text:codigo,width:220,height:220,
+        colorDark:'#000000',colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M,
+        onRenderingEnd: res  // callback nativo do QRCode.js
+      });
+      setTimeout(res,1200); // fallback se callback não disparar
     });
+    // Aguarda mais um tick para garantir renderização
+    await new Promise(res=>setTimeout(res,100));
     qrEl = tmpDiv.querySelector('canvas')||tmpDiv.querySelector('img');
-    // Copia pixels se for canvas (cloneNode perde os pixels)
+    // Copia pixels do canvas (cloneNode não copia pixels)
     if(qrEl && qrEl.tagName==='CANVAS'){
       const copy = document.createElement('canvas');
-      copy.width=qrEl.width; copy.height=qrEl.height;
+      copy.width=qrEl.width||220; copy.height=qrEl.height||220;
       copy.getContext('2d').drawImage(qrEl,0,0);
       qrEl = copy;
     }
@@ -4850,7 +4864,7 @@ async function getQRBlob(part, qrElSrc){
   ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.font='600 12px Arial, sans-serif'; ctx.letterSpacing='5px';
   ctx.fillText('2  0  2  6',Wl/2,89);
   ctx.letterSpacing='0'; ctx.fillStyle='rgba(245,200,66,0.65)'; ctx.font='11px Arial, sans-serif';
-  ctx.fillText('Chácara do Nardo',Wl/2,113);
+  ctx.fillText('Chacara do Nardo  ·  13/06/2026  ·  20:30',Wl/2,113);
 
   // QR
   const qrS=218, qrX=(Wl-qrS)/2, qrY=152;
@@ -5148,14 +5162,21 @@ async function getQRBlob(part, qrElSrc){
     document.body.appendChild(tmpDiv);
     await new Promise(res=>{
       if(typeof QRCode==='undefined'){res();return;}
-      new QRCode(tmpDiv,{text:codigo,width:220,height:220,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-      setTimeout(res,500);
+      new QRCode(tmpDiv,{
+        text:codigo,width:220,height:220,
+        colorDark:'#000000',colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M,
+        onRenderingEnd: res  // callback nativo do QRCode.js
+      });
+      setTimeout(res,1200); // fallback se callback não disparar
     });
+    // Aguarda mais um tick para garantir renderização
+    await new Promise(res=>setTimeout(res,100));
     qrEl = tmpDiv.querySelector('canvas')||tmpDiv.querySelector('img');
-    // Copia pixels se for canvas (cloneNode perde os pixels)
+    // Copia pixels do canvas (cloneNode não copia pixels)
     if(qrEl && qrEl.tagName==='CANVAS'){
       const copy = document.createElement('canvas');
-      copy.width=qrEl.width; copy.height=qrEl.height;
+      copy.width=qrEl.width||220; copy.height=qrEl.height||220;
       copy.getContext('2d').drawImage(qrEl,0,0);
       qrEl = copy;
     }
@@ -5194,7 +5215,7 @@ async function getQRBlob(part, qrElSrc){
   ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.font='600 12px Arial, sans-serif'; ctx.letterSpacing='5px';
   ctx.fillText('2  0  2  6',Wl/2,89);
   ctx.letterSpacing='0'; ctx.fillStyle='rgba(245,200,66,0.65)'; ctx.font='11px Arial, sans-serif';
-  ctx.fillText('Chácara do Nardo',Wl/2,113);
+  ctx.fillText('Chacara do Nardo  ·  13/06/2026  ·  20:30',Wl/2,113);
 
   // QR
   const qrS=218, qrX=(Wl-qrS)/2, qrY=152;
@@ -7593,14 +7614,21 @@ async function getQRBlob(part, qrElSrc){
     document.body.appendChild(tmpDiv);
     await new Promise(res=>{
       if(typeof QRCode==='undefined'){res();return;}
-      new QRCode(tmpDiv,{text:codigo,width:220,height:220,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-      setTimeout(res,500);
+      new QRCode(tmpDiv,{
+        text:codigo,width:220,height:220,
+        colorDark:'#000000',colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M,
+        onRenderingEnd: res  // callback nativo do QRCode.js
+      });
+      setTimeout(res,1200); // fallback se callback não disparar
     });
+    // Aguarda mais um tick para garantir renderização
+    await new Promise(res=>setTimeout(res,100));
     qrEl = tmpDiv.querySelector('canvas')||tmpDiv.querySelector('img');
-    // Copia pixels se for canvas (cloneNode perde os pixels)
+    // Copia pixels do canvas (cloneNode não copia pixels)
     if(qrEl && qrEl.tagName==='CANVAS'){
       const copy = document.createElement('canvas');
-      copy.width=qrEl.width; copy.height=qrEl.height;
+      copy.width=qrEl.width||220; copy.height=qrEl.height||220;
       copy.getContext('2d').drawImage(qrEl,0,0);
       qrEl = copy;
     }
@@ -7639,7 +7667,7 @@ async function getQRBlob(part, qrElSrc){
   ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.font='600 12px Arial, sans-serif'; ctx.letterSpacing='5px';
   ctx.fillText('2  0  2  6',Wl/2,89);
   ctx.letterSpacing='0'; ctx.fillStyle='rgba(245,200,66,0.65)'; ctx.font='11px Arial, sans-serif';
-  ctx.fillText('Chácara do Nardo',Wl/2,113);
+  ctx.fillText('Chacara do Nardo  ·  13/06/2026  ·  20:30',Wl/2,113);
 
   // QR
   const qrS=218, qrX=(Wl-qrS)/2, qrY=152;
