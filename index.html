@@ -2161,7 +2161,7 @@ async function enviarIngressoWpp(p){
 
   // Atualiza qrm-* para getQRBlob funcionar
   const setEl = (id,val)=>{ const el=document.getElementById(id); if(el) el.textContent=val; };
-  setEl('qrm-nome',   p.nome);
+  setEl('qrm-nome',   p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim());
   setEl('qrm-codigo', p.codigo);
   setEl('qrm-lote',   p.lote+' Lote');
   const box = document.getElementById('qrm-box');
@@ -2219,7 +2219,7 @@ function abrirQR(id){
 
   document.getElementById('qrm-lote').textContent   = p.lote + ' Lote';
   document.getElementById('qrm-codigo').textContent  = p.codigo;
-  document.getElementById('qrm-nome').textContent    = p.nome;
+  document.getElementById('qrm-nome').textContent    = p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
   document.getElementById('qrm-hint').style.display  = 'none';
 
   const box = document.getElementById('qrm-box');
