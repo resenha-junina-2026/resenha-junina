@@ -2147,7 +2147,7 @@ async function confirmarEEnviar(codigo){
 
 async function enviarIngressoWpp(p){
   if(!p) return;
-  _qrModalId = p.id;
+  _qrModalId = p.codigo;
 
   // Gera QR temporário para criar o blob
   const tempBox = document.createElement('div');
@@ -2189,7 +2189,7 @@ async function enviarIngressoWpp(p){
   try{ blob = await getQRBlob(p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim(), tempQrEl); }catch(_){}
   document.body.removeChild(tempBox);
 
-  const fone = (p.fone||'').replace(/\D/g,'');
+  const fone = (p.fone||'').replace(/[^\d]/g,'');
   const msg  = encodeURIComponent(
     '🎪 *Olá, '+p.nome.split(' ')[0]+'! Seu ingresso chegou!*\n\n'+
     'Bem-vindo(a) à *Resenha Junina 2026* 🎉\n\n'+
@@ -2233,7 +2233,7 @@ async function enviarIngressoWpp(p){
 function abrirQR(codigo){
   const p = ST.participantes.find(x=>x.codigo===codigo);
   if(!p) return;
-  _qrModalId = p.id; // mantém compatibilidade com getQRBlob
+  _qrModalId = p.codigo; // usa codigo — sempre único e nunca undefined
 
   document.getElementById('qrm-lote').textContent   = p.lote + ' Lote';
   document.getElementById('qrm-codigo').textContent  = p.codigo;
@@ -2451,10 +2451,9 @@ function roundRect(ctx,x,y,w,h,r1=8,r2,r3,r4){
 
 
 async function baixarQR(){
-  const p = ST.participantes.find(x=>x.id===_qrModalId);
-  if(!p) return;
-  const p2=ST.participantes.find(x=>x.id===_qrModalId||x.codigo===_qrModalId);
-  const blob = await getQRBlob(p2?p2.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim():undefined);
+  const p2=ST.participantes.find(x=>x.codigo===_qrModalId);
+  if(!p2){ mostrarHint('Participante não encontrado.'); return; }
+  const blob = await getQRBlob(p2.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim());
   if(!blob){ mostrarHint('Não foi possível gerar a imagem.'); return; }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -2466,14 +2465,14 @@ async function baixarQR(){
 }
 
 async function compartilharWhats(){
-  const p = ST.participantes.find(x=>x.id===_qrModalId);
-  if(!p) return;
+  const p=ST.participantes.find(x=>x.codigo===_qrModalId);
+  if(!p){ mostrarHint('Participante não encontrado.'); return; }
 
   // tenta Web Share API com imagem (funciona no celular)
   if(navigator.share && navigator.canShare){
     try{
-      const pw=ST.participantes.find(x=>x.id===_qrModalId||x.codigo===_qrModalId);
-      const blob = await getQRBlob(pw?pw.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim():undefined);
+      const pw=p;
+      const blob = await getQRBlob(pw.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim());
       if(blob){
         const file = new File([blob], p.codigo+'_QR.png', {type:'image/png'});
         if(navigator.canShare({files:[file]})){
