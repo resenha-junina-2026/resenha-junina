@@ -1572,7 +1572,8 @@ function salvarPart(){
         toast('⚠️ Código '+codigo+' já existe — tente salvar novamente');
         return;
       }
-      const novo={id:nid,codigo,nome,fone,lote,valor:PRECO[lote],pgto,recebido,origem:'admin',entrou:false};
+      const isCort=pgto.startsWith('Cortesia');
+      const novo={id:nid,codigo,nome,fone,obs,tipo,cortesia:isCort,lote,valor:isCort?0:PRECO[lote],pgto,recebido:isCort?0:recebido,origem:'admin',entrou:false};
       ST.participantes.push(novo);
       save();
       fbSavePart(novo);
@@ -1599,7 +1600,11 @@ function editPart(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function cancelPart(){
-  document.getElementById('eid').value='';document.getElementById('p-nome').value='';document.getElementById('p-valor').value='';document.getElementById('p-fone').value='';
+  document.getElementById('eid').value='';
+  document.getElementById('p-nome').value='';
+  document.getElementById('p-valor').value='';
+  document.getElementById('p-fone').value='';
+  const pgtoReset=document.getElementById('p-pgto');if(pgtoReset)pgtoReset.value='Pix';
   const obsClEl=document.getElementById('p-obs');if(obsClEl)obsClEl.value='';
   const vReset=document.getElementById('p-valor');if(vReset)vReset.disabled=false;
   const tipoClEl=document.getElementById('p-tipo');if(tipoClEl)tipoClEl.value='';
@@ -2168,7 +2173,7 @@ async function enviarIngressoWpp(p){
   if(box){ box.innerHTML=''; const qrEl=tempBox.querySelector('canvas')||tempBox.querySelector('img'); if(qrEl) box.appendChild(qrEl.cloneNode(true)); }
 
   let blob = null;
-  try{ blob = await getQRBlob(); }catch(_){}
+  try{ blob = await getQRBlob(p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim()); }catch(_){}
   document.body.removeChild(tempBox);
 
   const fone = (p.fone||'').replace(/\D/g,'');
@@ -2265,14 +2270,15 @@ function getQRCanvas(){
   return box.querySelector('canvas') || box.querySelector('img');
 }
 
-async function getQRBlob(){
+async function getQRBlob(nomeOverride){
   const box   = document.getElementById('qrm-box');
   const qrEl  = box.querySelector('canvas') || box.querySelector('img');
   if(!qrEl) return null;
 
   const codigo = document.getElementById('qrm-codigo').textContent.trim();
   const lote   = document.getElementById('qrm-lote').textContent.trim();
-  const nome   = document.getElementById('qrm-nome').textContent.trim();
+  // Usa o nome passado diretamente — nunca lê do DOM (evita contaminação)
+  const nome   = (nomeOverride || document.getElementById('qrm-nome').textContent || '').trim().replace(/\s*\(\d+\/\d+\)\s*$/, '');
 
   // Resolução 2x para qualidade alta em celular
   const SC=2, W=400*SC, H=600*SC;
@@ -2434,7 +2440,8 @@ function roundRect(ctx,x,y,w,h,r1=8,r2,r3,r4){
 async function baixarQR(){
   const p = ST.participantes.find(x=>x.id===_qrModalId);
   if(!p) return;
-  const blob = await getQRBlob();
+  const p2=ST.participantes.find(x=>x.id===_qrModalId);
+  const blob = await getQRBlob(p2?p2.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim():undefined);
   if(!blob){ mostrarHint('Não foi possível gerar a imagem.'); return; }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -2452,7 +2459,8 @@ async function compartilharWhats(){
   // tenta Web Share API com imagem (funciona no celular)
   if(navigator.share && navigator.canShare){
     try{
-      const blob = await getQRBlob();
+      const pw=ST.participantes.find(x=>x.id===_qrModalId);
+      const blob = await getQRBlob(pw?pw.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim():undefined);
       if(blob){
         const file = new File([blob], p.codigo+'_QR.png', {type:'image/png'});
         if(navigator.canShare({files:[file]})){
