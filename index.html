@@ -1548,7 +1548,16 @@ function salvarPart(){
   // Cortesia e Equipe: valor 0, campo desabilitado
   const recebido=(pgto_val==='Cortesia'||pgto_val==='Equipe')?0:(rv?parseFloat(rv):null);
   const vInEl=document.getElementById('p-valor');if(vInEl)vInEl.disabled=false;
-  if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1)ST.participantes[idx]={...ST.participantes[idx],nome,fone,obs,tipo,cortesia,lote,pgto:cortesia?'Cortesia':pgto,recebido:cortesia?0:recebido,valor:cortesia?0:PRECO[lote]};}
+  if(eid){const idx=ST.participantes.findIndex(p=>p.id==eid);if(idx!==-1){
+      // Edição estritamente individual — apenas o participante com este ID
+      ST.participantes[idx]={
+        ...ST.participantes[idx],
+        nome,fone,obs,tipo,cortesia,lote,
+        pgto:cortesia?'Cortesia':pgto,
+        recebido:cortesia?0:recebido,
+        valor:cortesia?0:PRECO[lote]
+      };
+    }}
   if(eid){
     save();
     const partSalvo=ST.participantes.find(p=>p.id==eid);
@@ -2215,13 +2224,17 @@ function abrirQR(id){
 
   const box = document.getElementById('qrm-box');
   box.innerHTML = '';
+  let _qrGerado = false; // flag anti-duplicata
 
   function fazerQR(){
+    if(_qrGerado) return; // já foi gerado — ignora retry
     if(typeof QRCode === 'undefined'){
-      box.innerHTML = '<div style="padding:10px;color:#B83227;font-size:0.75rem">QRCode.js carregando...<br>Aguarde ou conecte à internet.</div>';
-      setTimeout(()=>{ if(typeof QRCode!=='undefined') fazerQR(); },800);
+      box.innerHTML = '<div style="padding:10px;color:var(--text2);font-size:0.75rem">Carregando QR Code...</div>';
+      setTimeout(()=>{ if(typeof QRCode!=='undefined'){ box.innerHTML=''; fazerQR(); } },800);
       return;
     }
+    _qrGerado = true;
+    box.innerHTML = ''; // garante limpo antes de criar
     new QRCode(box, {
       text: p.codigo,
       width: 220,
@@ -2239,6 +2252,11 @@ function abrirQR(id){
 function fecharQR(){
   const m=document.getElementById('qr-modal');
   m.classList.remove('on');
+  // Limpa QR ao fechar para não mostrar participante anterior ao reabrir
+  setTimeout(()=>{
+    const box=document.getElementById('qrm-box');
+    if(box) box.innerHTML='';
+  },250);
 }
 
 function getQRCanvas(){
