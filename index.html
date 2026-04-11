@@ -2,7 +2,10 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0D0B14">
 <title>Resenha Junina 2026</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎪</text></svg>">
 <style>
@@ -170,15 +173,56 @@ input.autofill{border-color:var(--g);background:var(--g-s);}
 .modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);padding:22px 20px 20px;max-width:400px;width:100%;margin:20px auto;box-shadow:var(--shadow-lg);position:relative;animation:slideUp 0.2s cubic-bezier(0.4,0,0.2,1);}
 .modal-box-wide{max-width:500px;}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.06);border:none;color:var(--t2);width:26px;height:26px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background 0.15s;}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.06);border:none;color:var(--t2);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background 0.15s;}
 .modal-close:hover{background:rgba(255,255,255,0.1);}
 .modal-title{font-size:15px;font-weight:700;color:var(--gold);margin-bottom:16px;}
-.btn-fullport{position:fixed;bottom:20px;right:20px;z-index:1000;padding:8px 16px;background:var(--purple);color:#fff;border:none;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;display:none;transition:opacity 0.15s;}
+.btn-fullport{position:fixed;bottom:20px;right:20px;z-index:1000;padding:12px 20px;background:var(--purple);color:#fff;border:none;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;display:none;transition:opacity 0.15s;}
 body.modo-portaria header,body.modo-portaria nav,body.modo-portaria .page:not(#pg-portaria),body.modo-portaria .accent-line{display:none!important;}
 body.modo-portaria #pg-portaria{display:block!important;}
 body.modo-portaria .btn-fullport{display:block;}
-@media(max-width:600px){main{padding:12px;}.grid2{grid-template-columns:1fr;}}
-@media(max-width:480px){nav button{padding:10px 10px;font-size:12px;}.kpi-val{font-size:22px;}.tw table{min-width:600px;}}
+body.modo-portaria .cbox{gap:32px;}
+body.modo-portaria .cn{font-size:72px;line-height:1;}
+body.modo-portaria .cl{font-size:14px;letter-spacing:2px;}
+body.modo-portaria .presult{font-size:22px;padding:18px 24px;font-weight:700;border-radius:16px;}
+body.modo-portaria .pbox{padding:30px 20px;}
+body.modo-portaria .pinput-w input{font-size:24px!important;padding:14px 18px;}
+body.modo-portaria .pinput-w .btn{font-size:16px;padding:14px 24px;}
+.peak-bar{display:flex;align-items:flex-end;gap:2px;height:60px;margin:12px 0 4px;}
+.peak-col{flex:1;background:var(--purple);border-radius:2px 2px 0 0;min-height:2px;transition:height 0.3s;position:relative;}
+.peak-col:hover::after{content:attr(data-info);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg1);color:var(--t1);padding:3px 6px;border-radius:4px;font-size:10px;white-space:nowrap;border:1px solid var(--border2);}
+.peak-labels{display:flex;gap:2px;font-size:9px;color:var(--t3);}
+.peak-labels span{flex:1;text-align:center;}
+/* MOBILE-FIRST RESPONSIVE */
+input,select,textarea{font-size:16px!important;-webkit-appearance:none;-moz-appearance:none;appearance:none;}
+.btn{min-height:44px;min-width:44px;}
+.modal-overlay{padding:env(safe-area-inset-top,16px) env(safe-area-inset-right,16px) env(safe-area-inset-bottom,16px) env(safe-area-inset-left,16px);}
+body{padding-bottom:env(safe-area-inset-bottom,0);}
+@media(max-width:600px){
+  main{padding:12px 10px;}
+  .grid2{grid-template-columns:1fr;}
+  .grid4{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .kpi{padding:14px 12px;}
+  .panel{padding:14px 12px;}
+  nav{gap:0;padding:0 8px;justify-content:flex-start;}
+  nav button{padding:11px 10px;font-size:11.5px;flex-shrink:0;}
+  .fg{grid-template-columns:1fr!important;}
+  .addrow{grid-template-columns:1fr!important;}
+  .ob-row{grid-template-columns:1fr 50px 70px 60px 70px;font-size:12px;padding:7px 10px;}
+  .pt-row{grid-template-columns:1fr 80px 90px 70px;padding:7px 10px;}
+  .pinput-w{flex-direction:column;}
+  .pinput-w input{font-size:18px!important;}
+  .presult{font-size:15px;padding:14px 16px;font-weight:600;}
+  .pbox{padding:18px 14px;}
+  .cbox{gap:18px;}.cn{font-size:32px;}
+  .modal-box{margin:8px;padding:18px 16px 16px;max-width:100%;}
+  header{padding:12px 16px 10px;}
+}
+@media(max-width:375px){
+  .kpi-val{font-size:20px;}
+  nav button{padding:10px 7px;font-size:11px;}
+  .btn{font-size:12px;padding:6px 10px;}
+  .ob-row{grid-template-columns:1fr 40px 60px 55px 65px;gap:4px;padding:6px 8px;}
+}
 @media print{body{background:#fff;color:#000;}header,nav,.btn{display:none;}.pcred{background:#fff;border-color:#7B2FBE;}}
 </style>
 </head>
@@ -190,7 +234,7 @@ body.modo-portaria .btn-fullport{display:block;}
     <div class="header-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" width="18" height="18"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
     <div>
       <div class="header-title">Resenha Junina 2026</div>
-      <div class="header-sub">Chacara do Nardo &middot; 13/06/2026 &middot; 20:30</div>
+      <div class="header-sub">Chacara Diniz &middot; 13/06/2026 &middot; 21:00</div>
     </div>
   </div>
   <div class="header-right">
@@ -262,6 +306,7 @@ body.modo-portaria .btn-fullport{display:block;}
       <button class="btn bgh" onclick="cancelPart()">Cancelar</button>
       <div class="flex gap8" style="margin-left:auto;">
         <button class="btn bdn sm" onclick="exportPendentes()" title="Exportar pendentes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Pendentes</button>
+        <button class="btn bg2 sm" onclick="enviarLote()" title="Enviar ingressos pagos nao enviados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9 22,2"/></svg> Enviar Lote</button>
         <button class="btn bb2 sm" onclick="exportCSV()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Lista Completa</button>
       </div>
     </div>
@@ -338,6 +383,11 @@ body.modo-portaria .btn-fullport{display:block;}
       <div id="cam-status" class="muted sm-txt tc" style="margin-top:6px;">Aponte para o QR da pulseira...</div>
       <div id="cam-debug" style="margin-top:8px;font-size:0.7rem;color:rgba(200,168,112,0.6);text-align:center;display:none;"></div>
     </div>
+  </div>
+  <div class="panel no-print" id="peak-panel" style="display:none;">
+    <div class="stitle" style="margin:0 0 8px">Pico de Entradas por Hora</div>
+    <div class="peak-bar" id="peak-bar"></div>
+    <div class="peak-labels" id="peak-labels"></div>
   </div>
   <div class="panel">
     <div class="flex jb aic mb12">
@@ -515,7 +565,7 @@ body.modo-portaria .btn-fullport{display:block;}
     </div>
     <div id="qrm-codigo" style="font-size:1.05rem;color:var(--gold);letter-spacing:1px;margin-bottom:4px;font-weight:700;"></div>
     <div id="qrm-nome" style="font-size:0.85rem;font-weight:700;color:var(--t1);margin-bottom:4px;"></div>
-    <div style="font-size:0.7rem;color:var(--t2);margin-bottom:16px;">Chacara do Nardo - 13/06/2026 - 20:30</div>
+    <div style="font-size:0.7rem;color:var(--t2);margin-bottom:16px;">Chacara Diniz - 13/06/2026 - 21:00</div>
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
       <button class="btn bg2" onclick="baixarQR()">Baixar imagem</button>
       <button class="btn" onclick="compartilharWhats()" style="background:linear-gradient(135deg,#128C7E,#25D366);color:#fff;font-weight:800;">Enviar no WhatsApp</button>
@@ -596,7 +646,7 @@ const DI={
     {id:3,cat:'Infraestrutura',desc:'Som e Iluminacao',val:2000},
     {id:4,cat:'Infraestrutura',desc:'Estrutura Praticavel',val:1500},
     {id:5,cat:'Shows',desc:'Augusto e Gustavo (2h)',val:3800},
-    {id:6,cat:'Shows',desc:'Maikon Linkon (3h)',val:2500},
+    {id:6,cat:'Shows',desc:'Maicon Lincon (3h)',val:2500},
     {id:7,cat:'Decoracao',desc:'Sedas',val:57},
     {id:8,cat:'Decoracao',desc:'Tecido',val:0},
     {id:9,cat:'Decoracao',desc:'Barbante',val:0},
@@ -665,13 +715,14 @@ function toast(msg,t=2400){const el=document.getElementById('toast');if(!el)retu
 
 let somOn=false,audioCtx=null;
 function getAC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
-function _bip(ac,freq,start,dur,vol){const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type='sine';o.frequency.value=freq;g.gain.setValueAtTime(vol,ac.currentTime+start);g.gain.linearRampToValueAtTime(0,ac.currentTime+start+dur);o.start(ac.currentTime+start);o.stop(ac.currentTime+start+dur+0.02);}
-function beepOK(){if(!somOn)return;try{_bip(getAC(),1850,0,0.12,0.6);}catch(e){}}
-function beepErr(){if(!somOn)return;try{const ac=getAC();_bip(ac,400,0,0.14,0.6);_bip(ac,400,0.2,0.14,0.6);}catch(e){}}
-function beepWarn(){if(!somOn)return;try{_bip(getAC(),900,0,0.18,0.5);}catch(e){}}
+function _bip(ac,freq,start,dur,vol,type){const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.type=type||'sine';o.frequency.value=freq;g.gain.setValueAtTime(vol,ac.currentTime+start);g.gain.linearRampToValueAtTime(0,ac.currentTime+start+dur);o.start(ac.currentTime+start);o.stop(ac.currentTime+start+dur+0.02);}
+function beepOK(){if(!somOn)return;try{const ac=getAC();_bip(ac,880,0,0.1,0.7);_bip(ac,1320,0.1,0.15,0.8);_bip(ac,1760,0.22,0.2,0.6);}catch(e){}}
+function beepErr(){if(!somOn)return;try{const ac=getAC();_bip(ac,440,0,0.2,0.9,'square');_bip(ac,330,0.25,0.2,0.9,'square');_bip(ac,220,0.5,0.35,0.8,'square');}catch(e){}}
+function beepWarn(){if(!somOn)return;try{const ac=getAC();_bip(ac,660,0,0.15,0.7);_bip(ac,880,0.18,0.12,0.6);_bip(ac,660,0.33,0.15,0.7);}catch(e){}}
 function beepNewOrder(){if(!somOn)return;try{const ac=getAC();_bip(ac,880,0,0.12,0.4);_bip(ac,1100,0.16,0.12,0.4);_bip(ac,1320,0.32,0.18,0.35);}catch(e){}}
-function toggleSom(){somOn=!somOn;document.querySelectorAll('.som-tog').forEach(b=>{b.textContent=somOn?'Som ligado':'Som desligado';b.className='som-tog'+(somOn?' on':'');});if(somOn){try{getAC();beepOK();}catch(e){somOn=false;}}toast(somOn?'Som ligado':'Som desligado');}
-function updateSomBtns(){const b=document.getElementById('btn-som');if(b){b.textContent=somOn?'Som ligado':'Som desligado';b.className='som-tog'+(somOn?' on':'');}}
+function toggleSom(){somOn=!somOn;document.querySelectorAll('.som-tog').forEach(b=>{b.textContent=somOn?'Som LIGADO':'Som desligado';b.className='som-tog'+(somOn?' on':'');});if(somOn){try{getAC();beepOK();}catch(e){somOn=false;}}toast(somOn?'Som ligado - BIP ativo na portaria':'Som desligado');}
+function updateSomBtns(){const b=document.getElementById('btn-som');if(b){b.textContent=somOn?'Som LIGADO':'Som desligado';b.className='som-tog'+(somOn?' on':'');}}
+function autoEnableSom(){if(!somOn){somOn=true;try{getAC();}catch(_){somOn=false;}updateSomBtns();}}
 
 // ══════════════════════════════════════════════
 // FIREBASE
@@ -898,10 +949,38 @@ function exportPendentes(){const ps=(ST.participantes||[]).filter(p=>!pagou(p)&&
 function exportCSV(){const h=['Codigo','Nome','WhatsApp','Lote','Valor','Pgto','Recebido','Entrou','Origem'];const r=ST.participantes.map(p=>[p.codigo,'"'+p.nome+'"',p.fone||'',p.lote,p.valor||'',p.pgto||'',p.recebido||'',p.entrou?'Sim':'Nao',p.origem||'admin']);const csv=[h,...r].map(x=>x.join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='participantes_rj2026.csv';a.click();toast('CSV exportado!');}
 
 // ══════════════════════════════════════════════
+// ENVIO EM LOTE
+// ══════════════════════════════════════════════
+async function enviarLote(){
+  const pagosNaoEnviados=(ST.participantes||[]).filter(p=>pagou(p)&&!p.ingressoEnviado&&p.fone);
+  if(!pagosNaoEnviados.length){toast('Nenhum ingresso pendente de envio');return;}
+  const confirma=confirm('Enviar ingresso para '+pagosNaoEnviados.length+' participante(s) pago(s) que ainda nao receberam?\n\nPara cada um, o WhatsApp sera aberto com a mensagem + imagem do ingresso.\n\nDica: Faca isso no computador para agilizar.');
+  if(!confirma)return;
+  toast('Iniciando envio em lote...');
+  let enviados=0,erros=0;
+  for(const p of pagosNaoEnviados){
+    try{
+      toast('Enviando '+(enviados+1)+'/'+pagosNaoEnviados.length+': '+p.nome.split(' ')[0]+'...');
+      await enviarIngressoWpp(p);
+      p.ingressoEnviado=true;save();fbSavePart(p);
+      enviados++;
+      // Aguarda 2.5s entre cada envio para nao sobrecarregar
+      await new Promise(r=>setTimeout(r,2500));
+    }catch(e){
+      console.warn('Erro ao enviar para '+p.nome+':',e);
+      erros++;
+    }
+  }
+  renderPart();
+  toast('Lote concluido: '+enviados+' enviado(s)'+(erros?' / '+erros+' erro(s)':''));
+}
+
+// ══════════════════════════════════════════════
 // PORTARIA
 // ══════════════════════════════════════════════
 let resTimer=null;
 function processarCodigo(raw){
+  if(!raw||!raw.trim())return{ok:false,tipo:'err',msg:'Digite um codigo ou numero'};
   let v=raw.trim().toUpperCase();
   if(/^\d+$/.test(v))v='RESENHA-'+v.padStart(4,'0');
   else if(/^RESENHA-\d{1,3}$/.test(v))v='RESENHA-'+v.split('-')[1].padStart(4,'0');
@@ -913,19 +992,32 @@ function processarCodigo(raw){
   const entradaLog={id:p.id||p.codigo,codigo:p.codigo,nome:p.nome,lote:p.lote,hora,ts:Date.now()};
   ST.log.unshift(entradaLog);save();
   fbSavePart(p).then(()=>fbLogEntrada(entradaLog));
+  try{navigator.vibrate&&navigator.vibrate(100);}catch(_){}
   if(p.pgto&&p.pgto.startsWith('Cortesia'))return{ok:true,tipo:'ok',msg:'Cortesia: '+p.nome};
   if(!pagou(p))return{ok:true,tipo:'warn',msg:p.nome+' | '+p.lote+' - PAGAMENTO PENDENTE'};
   return{ok:true,tipo:'ok',msg:p.nome+' - '+p.lote+' Lote'};
 }
-function showResult(elId,tipo,msg){const el=document.getElementById(elId);if(!el)return;el.className='presult '+tipo;el.textContent=msg;if(tipo==='ok')beepOK();else if(tipo==='err')beepErr();else beepWarn();if(resTimer)clearTimeout(resTimer);resTimer=setTimeout(()=>{el.classList.add('fading');setTimeout(()=>{el.className='presult';},400);},4000);}
-function doEntrada(){const inp=document.getElementById('port-in'),v=inp.value;inp.value='';const r=processarCodigo(v);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();setTimeout(()=>{const el=document.getElementById('port-in');if(el)el.focus();},80);}
+function showResult(elId,tipo,msg){const el=document.getElementById(elId);if(!el)return;el.className='presult '+tipo;el.textContent=msg;if(tipo==='ok')beepOK();else if(tipo==='err')beepErr();else beepWarn();if(resTimer)clearTimeout(resTimer);resTimer=setTimeout(()=>{el.classList.add('fading');setTimeout(()=>{el.className='presult';},400);},6000);}
+function doEntrada(){autoEnableSom();const inp=document.getElementById('port-in'),v=inp.value;inp.value='';const r=processarCodigo(v);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();setTimeout(()=>{const el=document.getElementById('port-in');if(el)el.focus();},80);}
 function renderPort(){
   const fileWarn=document.getElementById('file-proto-warn');if(fileWarn)fileWarn.style.display=location.protocol==='file:'?'block':'none';
   const ps=ST.participantes||[],dentro=ps.filter(p=>p.entrou).length;
   document.getElementById('c-dentro').textContent=dentro;document.getElementById('c-total').textContent=ps.length;document.getElementById('c-fora').textContent=ps.length-dentro;
+  renderPeak();
   const ul=document.getElementById('log-ul');if(!ul)return;
   if(!(ST.log||[]).length){ul.innerHTML='<li class="muted sm-txt" style="justify-content:center;padding:14px">Nenhuma entrada registrada</li>';return;}
   ul.innerHTML=ST.log.slice(0,60).map((e,i)=>`<li><div>${i===0?'<span class="badge bg" style="margin-right:6px">AGORA</span>':''}<span class="bold">${e.nome}</span> <span class="badge bb" style="margin-left:4px">${e.codigo}</span></div><span class="muted">${e.hora}</span></li>`).join('');
+}
+function renderPeak(){
+  const pp=document.getElementById('peak-panel'),pb=document.getElementById('peak-bar'),pl=document.getElementById('peak-labels');
+  if(!pp||!pb||!(ST.log||[]).length){if(pp)pp.style.display='none';return;}
+  pp.style.display='block';
+  const hours={};(ST.log||[]).forEach(e=>{if(!e.hora)return;const h=e.hora.split(':')[0];hours[h]=(hours[h]||0)+1;});
+  const sorted=Object.entries(hours).sort((a,b)=>a[0]-b[0]);
+  if(!sorted.length){pp.style.display='none';return;}
+  const max=Math.max(...sorted.map(x=>x[1]));
+  pb.innerHTML=sorted.map(([h,c])=>{const pct=Math.max(5,c/max*100);return `<div class="peak-col" style="height:${pct}%;background:${c===max?'var(--gold)':'var(--purple)'}" data-info="${h}h: ${c} entrada${c>1?'s':''}"></div>`;}).join('');
+  pl.innerHTML=sorted.map(([h])=>`<span>${h}h</span>`).join('');
 }
 function desfazer(){if(!(ST.log||[]).length){alert('Nenhuma entrada para desfazer');return;}const u=ST.log[0];const p=ST.participantes.find(x=>x.codigo===u.codigo);if(p){p.entrou=false;if(fbReady)fbSavePart(p);}ST.log.shift();save();renderPort();renderDash();toast('Ultima entrada desfeita');}
 function limparLog(){if(!confirm('Limpar log?'))return;ST.log=[];save();renderPort();}
@@ -935,12 +1027,12 @@ function exportarLog(){if(!(ST.log||[]).length){toast('Nenhuma entrada');return;
 // CAMERA PORTARIA
 // ══════════════════════════════════════════════
 let portStream=null,portAnim=null,portLastCode='',portLastTime=0;
-async function togglePortCam(){const btn=document.getElementById('btn-port-cam'),sec=document.getElementById('cam-section');if(portStream){stopPortCam();return;}if(btn){btn.textContent='Abrindo...';btn.className='btn bgh sm';}if(sec)sec.style.display='block';setCamStatus('Aguardando camera...');if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setCamStatus('Camera nao suportada.');if(btn){btn.textContent='Ligar Camera';btn.className='btn bb2 sm';}return;}try{let stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});}catch(_){stream=await navigator.mediaDevices.getUserMedia({video:true});}portStream=stream;const vid=document.getElementById('port-video');vid.srcObject=stream;vid.muted=true;vid.playsInline=true;try{await vid.play();}catch(_){}if(btn){btn.textContent='Parar Camera';btn.className='btn bdn sm';}document.getElementById('btn-port-flip').style.display='inline-flex';const dbg=document.getElementById('cam-debug');if(dbg){dbg.style.display='block';dbg.textContent=typeof BarcodeDetector!=='undefined'?'Scanner nativo ativo':typeof jsQR!=='undefined'?'jsQR ativo':'Sem leitor';}setCamStatus('Aponte o QR Code para a camera...');portScanLoop();}catch(e){if(btn){btn.textContent='Ligar Camera';btn.className='btn bb2 sm';}if(sec)sec.style.display='none';const msgs={NotAllowedError:'Permissao negada.',NotFoundError:'Nenhuma camera encontrada.',NotReadableError:'Camera em uso por outro app.',NotSupportedError:'Camera requer HTTPS.',SecurityError:'Bloqueado por seguranca.'};setCamStatus(msgs[e.name]||('Erro: '+(e.message||e.name)));}}
+async function togglePortCam(){autoEnableSom();const btn=document.getElementById('btn-port-cam'),sec=document.getElementById('cam-section');if(portStream){stopPortCam();return;}if(btn){btn.textContent='Abrindo...';btn.className='btn bgh sm';}if(sec)sec.style.display='block';setCamStatus('Aguardando camera...');if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){setCamStatus('Camera nao suportada.');if(btn){btn.textContent='Ligar Camera';btn.className='btn bb2 sm';}return;}try{let stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}});}catch(_){stream=await navigator.mediaDevices.getUserMedia({video:true});}portStream=stream;const vid=document.getElementById('port-video');vid.srcObject=stream;vid.muted=true;vid.playsInline=true;try{await vid.play();}catch(_){}if(btn){btn.textContent='Parar Camera';btn.className='btn bdn sm';}document.getElementById('btn-port-flip').style.display='inline-flex';const dbg=document.getElementById('cam-debug');if(dbg){dbg.style.display='block';dbg.textContent=typeof BarcodeDetector!=='undefined'?'Scanner nativo ativo':typeof jsQR!=='undefined'?'jsQR ativo':'Sem leitor';}setCamStatus('Aponte o QR Code para a camera...');portScanLoop();}catch(e){if(btn){btn.textContent='Ligar Camera';btn.className='btn bb2 sm';}if(sec)sec.style.display='none';const msgs={NotAllowedError:'Permissao negada.',NotFoundError:'Nenhuma camera encontrada.',NotReadableError:'Camera em uso por outro app.',NotSupportedError:'Camera requer HTTPS.',SecurityError:'Bloqueado por seguranca.'};setCamStatus(msgs[e.name]||('Erro: '+(e.message||e.name)));}}
 function stopPortCam(){if(portStream){portStream.getTracks().forEach(t=>t.stop());portStream=null;}if(portAnim){cancelAnimationFrame(portAnim);clearTimeout(portAnim);portAnim=null;}const vid=document.getElementById('port-video');if(vid)vid.srcObject=null;const btn=document.getElementById('btn-port-cam');if(btn){btn.textContent='Ligar Camera';btn.className='btn bb2 sm';}const flip=document.getElementById('btn-port-flip');if(flip)flip.style.display='none';const sec=document.getElementById('cam-section');if(sec)sec.style.display='none';const dbg=document.getElementById('cam-debug');if(dbg)dbg.style.display='none';setCamStatus('Camera desligada.');portLastCode='';portLastTime=0;}
 async function flipPortCam(){if(!portStream)return;try{const devs=await navigator.mediaDevices.enumerateDevices();const cams=devs.filter(d=>d.kind==='videoinput');if(cams.length<2){setCamStatus('Apenas uma camera disponivel.');return;}const curId=portStream.getVideoTracks()[0]?.getSettings()?.deviceId;const curIdx=cams.findIndex(d=>d.deviceId===curId);const next=cams[(curIdx+1)%cams.length];portStream.getTracks().forEach(t=>t.stop());portStream=null;if(portAnim){cancelAnimationFrame(portAnim);clearTimeout(portAnim);portAnim=null;}const stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId}}});portStream=stream;const vid=document.getElementById('port-video');vid.srcObject=stream;try{vid.play();}catch(_){}setCamStatus('Aponte o QR Code para a camera...');portScanLoop();}catch(e){setCamStatus('Nao foi possivel trocar a camera.');}}
 function setCamStatus(msg){const el=document.getElementById('cam-status');if(el)el.textContent=msg;}
-function portScanLoop(){if(portAnim){cancelAnimationFrame(portAnim);clearTimeout(portAnim);portAnim=null;}const vid=document.getElementById('port-video');if(!vid)return;if(typeof BarcodeDetector!=='undefined'){let det;try{det=new BarcodeDetector({formats:['qr_code']});}catch(_){}if(det){const loop=async()=>{if(!portStream)return;portAnim=setTimeout(loop,250);if(vid.readyState<2||vid.videoWidth===0)return;try{const codes=await det.detect(vid);if(codes.length)onCodigoLido(codes[0].rawValue);}catch(_){}};loop();return;}}if(typeof jsQR==='undefined'){setCamStatus('Sem leitor de QR. Use o campo de texto.');return;}const cvs=document.getElementById('port-canvas');if(!cvs)return;const ctx=cvs.getContext('2d',{willReadFrequently:true});let fc=0,lw=0,lh=0;const tick=()=>{if(!portStream){portAnim=null;return;}portAnim=requestAnimationFrame(tick);if(++fc%4!==0)return;if(vid.readyState<2||vid.videoWidth===0)return;if(vid.videoWidth!==lw||vid.videoHeight!==lh){lw=cvs.width=vid.videoWidth;lh=cvs.height=vid.videoHeight;}try{ctx.drawImage(vid,0,0,cvs.width,cvs.height);const img=ctx.getImageData(0,0,cvs.width,cvs.height);const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});if(code&&code.data)onCodigoLido(code.data);}catch(_){}};tick();}
-function onCodigoLido(raw){const now=Date.now();if(raw===portLastCode&&now-portLastTime<3000)return;portLastCode=raw;portLastTime=now;const r=processarCodigo(raw);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();const st=document.getElementById('cam-status');if(st){st.style.color=r.tipo==='ok'?'var(--g)':r.tipo==='err'?'var(--r)':'var(--a)';st.textContent=r.tipo==='ok'?'Entrada confirmada!':r.tipo==='err'?'Codigo nao encontrado':'Verificar pagamento';setTimeout(()=>{if(st){st.style.color='';st.textContent='Aponte o QR Code para a camera...';}},2500);}}
+function portScanLoop(){if(portAnim){cancelAnimationFrame(portAnim);clearTimeout(portAnim);portAnim=null;}const vid=document.getElementById('port-video');if(!vid)return;if(typeof BarcodeDetector!=='undefined'){let det;try{det=new BarcodeDetector({formats:['qr_code']});}catch(_){}if(det){const loop=async()=>{if(!portStream)return;portAnim=setTimeout(loop,250);if(vid.readyState<2||vid.videoWidth===0)return;try{const codes=await det.detect(vid);if(codes.length)onCodigoLido(codes[0].rawValue);}catch(_){}};loop();return;}}if(typeof jsQR==='undefined'){setCamStatus('Sem leitor de QR. Use o campo de texto.');return;}const cvs=document.getElementById('port-canvas');if(!cvs)return;const ctx=cvs.getContext('2d',{willReadFrequently:true});let fc=0,lw=0,lh=0;const tick=()=>{if(!portStream){portAnim=null;return;}portAnim=requestAnimationFrame(tick);if(++fc%2!==0)return;if(vid.readyState<2||vid.videoWidth===0)return;if(vid.videoWidth!==lw||vid.videoHeight!==lh){lw=cvs.width=vid.videoWidth;lh=cvs.height=vid.videoHeight;}try{ctx.drawImage(vid,0,0,cvs.width,cvs.height);const img=ctx.getImageData(0,0,cvs.width,cvs.height);const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});if(code&&code.data)onCodigoLido(code.data);}catch(_){}};tick();}
+function onCodigoLido(raw){autoEnableSom();const now=Date.now();if(raw===portLastCode&&now-portLastTime<1500)return;portLastCode=raw;portLastTime=now;const r=processarCodigo(raw);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();const st=document.getElementById('cam-status');if(st){st.style.color=r.tipo==='ok'?'var(--g)':r.tipo==='err'?'var(--r)':'var(--a)';st.textContent=r.tipo==='ok'?'Entrada confirmada!':r.tipo==='err'?'Codigo nao encontrado':'Verificar pagamento';setTimeout(()=>{if(st){st.style.color='';st.textContent='Aponte o QR Code para a camera...';}},2500);}}
 
 // ══════════════════════════════════════════════
 // OPEN BAR & OPEN FOOD
@@ -1030,13 +1122,13 @@ async function getQRBlob(part,qrElSrc){
   ctx.fillStyle='#F4F0FA';ctx.fillRect(0,0,Wl,Hl);
   ctx.shadowColor='rgba(91,45,138,0.18)';ctx.shadowBlur=24;ctx.shadowOffsetY=4;ctx.fillStyle='#FFFFFF';roundRect(ctx,16,16,Wl-32,Hl-32,20);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
   const hGrad=ctx.createLinearGradient(16,16,Wl-16,16);hGrad.addColorStop(0,'#3D1A6E');hGrad.addColorStop(1,'#7B2FBE');ctx.fillStyle=hGrad;roundRect(ctx,16,16,Wl-32,118,20,20,0,0);ctx.fill();ctx.fillStyle='#F5C842';ctx.fillRect(16,134,Wl-32,3);
-  ctx.textAlign='center';ctx.fillStyle='#F5C842';ctx.font='bold 24px Arial,sans-serif';ctx.fillText('RESENHA JUNINA',Wl/2,66);ctx.fillStyle='rgba(255,255,255,0.92)';ctx.font='600 12px Arial,sans-serif';ctx.fillText('2  0  2  6',Wl/2,89);ctx.fillStyle='rgba(245,200,66,0.65)';ctx.font='11px Arial,sans-serif';ctx.fillText('Chacara do Nardo  -  13/06/2026  -  20:30',Wl/2,113);
+  ctx.textAlign='center';ctx.fillStyle='#F5C842';ctx.font='bold 24px Arial,sans-serif';ctx.fillText('RESENHA JUNINA',Wl/2,66);ctx.fillStyle='rgba(255,255,255,0.92)';ctx.font='600 12px Arial,sans-serif';ctx.fillText('2  0  2  6',Wl/2,89);ctx.fillStyle='rgba(245,200,66,0.65)';ctx.font='11px Arial,sans-serif';ctx.fillText('Chacara Diniz  -  13/06/2026  -  21:00',Wl/2,113);
   const qrS=218,qrX=(Wl-qrS)/2,qrY=152;ctx.fillStyle='#FAFAFA';roundRect(ctx,qrX-10,qrY-10,qrS+20,qrS+20,14);ctx.fill();ctx.strokeStyle='rgba(91,45,138,0.12)';ctx.lineWidth=1.5;roundRect(ctx,qrX-10,qrY-10,qrS+20,qrS+20,14);ctx.stroke();
   if(qrEl.tagName==='CANVAS'){ctx.drawImage(qrEl,qrX,qrY,qrS,qrS);}else{await new Promise(res=>{const img=new Image();img.src=qrEl.src;img.onload=()=>{ctx.drawImage(img,qrX,qrY,qrS,qrS);res();};img.onerror=res;setTimeout(res,2000);});}
   const sepY=qrY+qrS+30;ctx.save();ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(91,45,138,0.2)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(36,sepY);ctx.lineTo(Wl-36,sepY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#F4F0FA';ctx.beginPath();ctx.arc(16,sepY,10,Math.PI*1.5,Math.PI*0.5);ctx.fill();ctx.beginPath();ctx.arc(Wl-16,sepY,10,Math.PI*0.5,Math.PI*1.5);ctx.fill();ctx.restore();
   const nameY=sepY+30;ctx.fillStyle='rgba(91,45,138,0.45)';ctx.font='700 9px Arial,sans-serif';ctx.fillText('PARTICIPANTE',Wl/2,nameY-2);ctx.fillStyle='#1A1030';ctx.font='bold 19px Arial,sans-serif';let n=nome;while(ctx.measureText(n).width>Wl-72&&n.length>4)n=n.slice(0,-1);if(n!==nome)n+='...';ctx.fillText(n,Wl/2,nameY+19);
   ctx.fillStyle='#7B2FBE';ctx.font='600 13px Arial,sans-serif';ctx.fillText(codigo,Wl/2,nameY+40);
-  const cols=[{lbl:'LOTE',val:lote},{lbl:'DATA',val:'13/06/2026'},{lbl:'HORA',val:'20:30'}];const infoY=nameY+64,cW=Wl/3;ctx.fillStyle='rgba(91,45,138,0.06)';roundRect(ctx,36,infoY-18,Wl-72,52,10);ctx.fill();cols.forEach((col,i)=>{const cx=cW*i+cW/2;if(i>0){ctx.strokeStyle='rgba(91,45,138,0.15)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cW*i,infoY-10);ctx.lineTo(cW*i,infoY+26);ctx.stroke();}ctx.fillStyle='rgba(91,45,138,0.5)';ctx.font='700 8px Arial,sans-serif';ctx.fillText(col.lbl,cx,infoY);ctx.fillStyle='#1A1030';ctx.font='bold 13px Arial,sans-serif';ctx.fillText(col.val,cx,infoY+18);});
+  const cols=[{lbl:'LOTE',val:lote},{lbl:'DATA',val:'13/06/2026'},{lbl:'HORA',val:'21:00'}];const infoY=nameY+64,cW=Wl/3;ctx.fillStyle='rgba(91,45,138,0.06)';roundRect(ctx,36,infoY-18,Wl-72,52,10);ctx.fill();cols.forEach((col,i)=>{const cx=cW*i+cW/2;if(i>0){ctx.strokeStyle='rgba(91,45,138,0.15)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(cW*i,infoY-10);ctx.lineTo(cW*i,infoY+26);ctx.stroke();}ctx.fillStyle='rgba(91,45,138,0.5)';ctx.font='700 8px Arial,sans-serif';ctx.fillText(col.lbl,cx,infoY);ctx.fillStyle='#1A1030';ctx.font='bold 13px Arial,sans-serif';ctx.fillText(col.val,cx,infoY+18);});
   const footY=infoY+68;const fGrad=ctx.createLinearGradient(16,footY,Wl-16,footY);fGrad.addColorStop(0,'#3D1A6E');fGrad.addColorStop(1,'#7B2FBE');ctx.fillStyle=fGrad;roundRect(ctx,16,footY,Wl-32,38,0,0,10,10);ctx.fill();ctx.fillStyle='rgba(255,255,255,0.8)';ctx.font='10px Arial,sans-serif';ctx.fillText('Apresente este ingresso na entrada da festa',Wl/2,footY+23);
   return new Promise(res=>C.toBlob(res,'image/png'));
 }
@@ -1077,7 +1169,7 @@ async function compartilharWhats(){
   try{
     const blob=await getQRBlob(p);
     const fone=(p.fone||'').replace(/[^\d]/g,'');
-    const msg=encodeURIComponent('*Resenha Junina 2026*\n\nOla, '+p.nome.split(' ')[0]+'! Segue sua pulseira digital\n\n*Codigo:* '+p.codigo+'\n*Lote:* '+p.lote+'\n\nChacara do Nardo\n13/06/2026 - 20:30\n\n_Apresente este QR Code na entrada._');
+    const msg=encodeURIComponent('*Resenha Junina 2026*\n\nOla, '+p.nome.split(' ')[0]+'! Segue sua pulseira digital\n\n*Codigo:* '+p.codigo+'\n*Lote:* '+p.lote+'\n\nChacara Diniz\n13/06/2026 - 21:00\n\n_Apresente este QR Code na entrada._');
     if(blob&&navigator.share&&navigator.canShare){
       try{const file=new File([blob],p.codigo+'.png',{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({title:'Ingresso '+p.nome,files:[file]});return;}}catch(e){if(e.name==='AbortError')return;}
     }
@@ -1109,7 +1201,7 @@ async function enviarIngressoWpp(p){
     const blob=await getQRBlob(p);
     if(!blob){toast('Erro ao gerar ingresso');return;}
     const fone=(p.fone||'').replace(/[^\d]/g,'');
-    const msg=encodeURIComponent('*Ola, '+p.nome.split(' ')[0]+'! Seu ingresso chegou!*\n\nBem-vindo(a) a *Resenha Junina 2026*\n\n*Codigo:* '+p.codigo+'\n*Lote:* '+p.lote+'\nChacara do Nardo\n13/06/2026 - 20:30\n\n_Apresente o QR Code na entrada._');
+    const msg=encodeURIComponent('*Ola, '+p.nome.split(' ')[0]+'! Seu ingresso chegou!*\n\nBem-vindo(a) a *Resenha Junina 2026*\n\n*Codigo:* '+p.codigo+'\n*Lote:* '+p.lote+'\nChacara Diniz\n13/06/2026 - 21:00\n\n_Apresente o QR Code na entrada._');
     if(navigator.share&&navigator.canShare){
       try{const file=new File([blob],p.codigo+'.png',{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({title:'Ingresso '+p.nome,files:[file]});return;}}catch(e){if(e.name==='AbortError')return;}
     }
@@ -1122,7 +1214,7 @@ async function enviarIngressoWpp(p){
 // ══════════════════════════════════════════════
 // IMPRESSAO
 // ══════════════════════════════════════════════
-function renderImp(){const fi=(document.getElementById('imp-fil')||{value:'todos'}).value;const li=(document.getElementById('imp-lot')||{value:''}).value;const lista=(ST.participantes||[]).filter(p=>(!li||p.lote===li)&&(fi==='todos'||(fi==='nao'&&!p.entrou)||(fi==='sim'&&p.entrou)));const ic=document.getElementById('imp-cnt');if(ic)ic.textContent=lista.length+' credencial(is)';const grid=document.getElementById('print-grid');if(!grid)return;grid.innerHTML=lista.map(p=>`<div class="pcred"><div class="ce">RESENHA JUNINA 2026</div><div class="cl2">${p.lote} Lote</div><div id="qrc-${p.id}" style="width:150px;height:150px;margin:5px auto;display:flex;align-items:center;justify-content:center;"></div><div class="cc">${p.codigo}</div><div class="cn2">${p.nome}</div><div class="ci2">Chacara do Nardo - 13/06/2026 - 20:30</div></div>`).join('');requestAnimationFrame(()=>lista.forEach(p=>gerarQR('qrc-'+p.id,p.codigo)));}
+function renderImp(){const fi=(document.getElementById('imp-fil')||{value:'todos'}).value;const li=(document.getElementById('imp-lot')||{value:''}).value;const lista=(ST.participantes||[]).filter(p=>(!li||p.lote===li)&&(fi==='todos'||(fi==='nao'&&!p.entrou)||(fi==='sim'&&p.entrou)));const ic=document.getElementById('imp-cnt');if(ic)ic.textContent=lista.length+' credencial(is)';const grid=document.getElementById('print-grid');if(!grid)return;grid.innerHTML=lista.map(p=>`<div class="pcred"><div class="ce">RESENHA JUNINA 2026</div><div class="cl2">${p.lote} Lote</div><div id="qrc-${p.id}" style="width:150px;height:150px;margin:5px auto;display:flex;align-items:center;justify-content:center;"></div><div class="cc">${p.codigo}</div><div class="cn2">${p.nome}</div><div class="ci2">Chacara Diniz - 13/06/2026 - 21:00</div></div>`).join('');requestAnimationFrame(()=>lista.forEach(p=>gerarQR('qrc-'+p.id,p.codigo)));}
 
 // ══════════════════════════════════════════════
 // VENDAS ONLINE
@@ -1133,7 +1225,7 @@ function ativarLote(loteId){if(ST.vendas.loteAtivo===loteId){ST.vendas.loteAtivo
 function getLinkBase(){const loc=window.location.href.split('?')[0].split('#')[0];const base=loc.substring(0,loc.lastIndexOf('/')+1);return base+'cadastro.html';}
 function getLinkAtivo(){if(!ST.vendas.loteAtivo||!ST.vendas.token)return null;return getLinkBase()+'?lote='+encodeURIComponent(ST.vendas.loteAtivo)+'&tk='+ST.vendas.token;}
 function copiarLink(){const link=getLinkAtivo();if(!link)return;navigator.clipboard.writeText(link).then(()=>toast('Link copiado!')).catch(()=>{prompt('Copie o link:',link);});}
-function compartilharLinkWpp(){const link=getLinkAtivo();if(!link)return;const lote=LOTES_CONFIG.find(l=>l.id===ST.vendas.loteAtivo);const msg=encodeURIComponent('*Resenha Junina 2026*\n\nGaranta seu ingresso!\n\n*'+lote.nome+'* - R$'+lote.preco.toFixed(2).replace('.',',')+'\n\nChacara do Nardo\n13/06/2026 - 20:30\n\nClique para se inscrever:\n'+link);window.open('https://wa.me/?text='+msg,'_blank');}
+function compartilharLinkWpp(){const link=getLinkAtivo();if(!link)return;const lote=LOTES_CONFIG.find(l=>l.id===ST.vendas.loteAtivo);const msg=encodeURIComponent('*Resenha Junina 2026*\n\nGaranta seu ingresso!\n\n*'+lote.nome+'* - R$'+lote.preco.toFixed(2).replace('.',',')+'\n\nChacara Diniz\n13/06/2026 - 21:00\n\nClique para se inscrever:\n'+link);window.open('https://wa.me/?text='+msg,'_blank');}
 function renderVendas(){
   const el=document.getElementById('vendas-lotes');if(!el)return;
   const mpWarn=document.getElementById('mp-warn');if(mpWarn){const semLink=LOTES_CONFIG.filter(l=>!LINKS_MP[l.id]||LINKS_MP[l.id].includes('SEU_LINK'));mpWarn.style.display=semLink.length?'block':'none';if(semLink.length)mpWarn.innerHTML=`<div class="alert aw">Links Mercado Pago nao configurados para: ${semLink.map(l=>l.nome).join(', ')}.</div>`;}
