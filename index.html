@@ -192,12 +192,25 @@ body.modo-portaria .pinput-w .btn{font-size:16px;padding:14px 24px;}
 .peak-col:hover::after{content:attr(data-info);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg1);color:var(--t1);padding:3px 6px;border-radius:4px;font-size:10px;white-space:nowrap;border:1px solid var(--border2);}
 .peak-labels{display:flex;gap:2px;font-size:9px;color:var(--t3);}
 .peak-labels span{flex:1;text-align:center;}
+/* PARTICIPANT CARDS (mobile) */
+.mob-only{display:none;}
+.pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-bottom:8px;}
+.pcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+.pcard-nome{font-weight:700;font-size:14px;color:var(--t0);line-height:1.3;}
+.pcard-codigo{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--b);margin-top:2px;}
+.pcard-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;font-size:12px;margin-bottom:8px;}
+.pcard-label{color:var(--t3);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.pcard-val{color:var(--t1);font-weight:500;margin-bottom:4px;}
+.pcard-actions{display:flex;gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border);}
+.pcard-tags{display:flex;gap:4px;flex-wrap:wrap;}
 /* MOBILE-FIRST RESPONSIVE */
 input,select,textarea{font-size:16px!important;-webkit-appearance:none;-moz-appearance:none;appearance:none;}
 .btn{min-height:44px;min-width:44px;}
 .modal-overlay{padding:env(safe-area-inset-top,16px) env(safe-area-inset-right,16px) env(safe-area-inset-bottom,16px) env(safe-area-inset-left,16px);}
 body{padding-bottom:env(safe-area-inset-bottom,0);}
 @media(max-width:600px){
+  .desk-only{display:none!important;}
+  .mob-only{display:block!important;}
   main{padding:12px 10px;}
   .grid2{grid-template-columns:1fr;}
   .grid4{grid-template-columns:repeat(2,1fr);gap:8px;}
@@ -317,10 +330,11 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
       <select id="bp-lote" onchange="renderPart()"><option value="">Todos os lotes</option><option value="1°">1°</option><option value="2°">2°</option><option value="3°">3°</option></select>
       <select id="bp-pgto" onchange="renderPart()"><option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option><option value="online-pend">Online Pendente</option><option value="cortesia">Cortesia</option></select>
     </div>
-    <div class="tw"><table>
+    <div class="tw desk-only"><table>
       <thead><tr><th>Codigo</th><th>Nome</th><th>WhatsApp</th><th>Lote</th><th>Pgto</th><th>Recebido</th><th>Status</th><th>Entrada</th><th>Acoes</th></tr></thead>
       <tbody id="t-part"></tbody>
     </table></div>
+    <div class="mob-only" id="t-part-cards"></div>
     <div id="part-cnt" class="sm-txt muted tr" style="margin-top:8px;"></div>
   </div>
 </div>
@@ -912,6 +926,21 @@ function renderPart(){
       <button class="btn bgh sm" onclick="editPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       <button class="btn bdn sm" onclick="delPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
     </div></td></tr>`).join('')||'<tr><td colspan="9" class="tc muted" style="padding:18px">Nenhum resultado</td></tr>';
+  // Mobile cards
+  const cards=document.getElementById('t-part-cards');
+  if(cards)cards.innerHTML=lista.map(p=>{
+    const statusBadge=p.pgto&&p.pgto.startsWith('Cortesia')?'<span class="badge bg">Cortesia</span>':pagou(p)?'<span class="badge bg">Pago</span>':'<span class="badge br">Pendente</span>';
+    const entradaBadge=p.entrou?'<span class="badge bg">Entrou</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--t2)">Aguardando</span>';
+    return `<div class="pcard">
+      <div class="pcard-top"><div><div class="pcard-nome">${p.nome}</div><div class="pcard-codigo">${p.codigo}</div></div><span class="badge" style="background:${CL[p.lote]}22;color:${CL[p.lote]};border:1px solid ${CL[p.lote]}44">${p.lote}</span></div>
+      <div class="pcard-tags">${statusBadge}${entradaBadge}${p.origem==='online'?'<span class="badge bb">Online</span>':''}${p.ingressoEnviado?'<span class="badge bg" style="font-size:0.6rem">Enviado</span>':''}</div>
+      <div class="pcard-grid"><div><div class="pcard-label">WhatsApp</div><div class="pcard-val">${p.fone||'-'}</div></div><div><div class="pcard-label">Recebido</div><div class="pcard-val">${p.recebido?R(p.recebido):'-'}</div></div><div><div class="pcard-label">Pagamento</div><div class="pcard-val">${p.pgto||'-'}</div></div><div><div class="pcard-label">Valor</div><div class="pcard-val">${R(p.valor||PRECO[p.lote]||0)}</div></div></div>
+      <div class="pcard-actions">
+        ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" onclick="confirmarEEnviar('${p.codigo}')">Confirmar</button>`:''}
+        <button class="btn bgh sm" onclick="abrirQR('${p.codigo}')">QR</button>
+        <button class="btn bgh sm" onclick="editPart('${p.codigo}')">Editar</button>
+        <button class="btn bdn sm" onclick="delPart('${p.codigo}')">Excluir</button>
+      </div></div>`;}).join('')||'<div class="tc muted" style="padding:24px">Nenhum resultado</div>';
   const cnt=document.getElementById('part-cnt');if(cnt)cnt.textContent=lista.length+' de '+ST.participantes.length+' participantes';
 }
 
