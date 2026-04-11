@@ -1524,11 +1524,11 @@ function renderPart(){
     }</td>
     <td>${p.entrou?'<span class="badge bg">✔ Entrou</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text2)">Aguardando</span>'}</td>
     <td><div class="flex gap8" style="flex-wrap:wrap;gap:4px;">
-      ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" title="Confirmar e enviar ingresso" onclick="confirmarEEnviar(${p.id})" style="font-size:0.68rem;padding:4px 7px;">✅ Enviar</button>`:''}
+      ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" title="Confirmar e enviar ingresso" onclick="confirmarEEnviar('${p.codigo}')" style="font-size:0.68rem;padding:4px 7px;">✅ Enviar</button>`:''}
       ${p.ingressoEnviado?'<span class="badge bg" style="font-size:0.6rem;">📲 Enviado</span>':''}
-      <button class="btn bgh sm" onclick="abrirQR(${p.id})" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zm3 3h3v3h-3zm0-3h3"/></svg></button>
-      <button class="btn bgh sm" onclick="editPart(${p.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-      <button class="btn bdn sm" onclick="delPart(${p.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      <button class="btn bgh sm" onclick="abrirQR('${p.codigo}')" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zm3 3h3v3h-3zm0-3h3"/></svg></button>
+      <button class="btn bgh sm" onclick="editPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="btn bdn sm" onclick="delPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
     </div></td>
   </tr>`).join('')||'<tr><td colspan="8" class="tc muted" style="padding:18px">Nenhum resultado</td></tr>';
   const cnt=document.getElementById('part-cnt');if(cnt)cnt.textContent=`${lista.length} de ${ST.participantes.length} participantes`;
@@ -1582,9 +1582,9 @@ function salvarPart(){
     });
   }
 }
-function editPart(id){
-  const p=ST.participantes.find(x=>x.id===id);if(!p)return;
-  document.getElementById('eid').value=id;
+function editPart(codigo){
+  const p=ST.participantes.find(x=>x.codigo===codigo);if(!p)return;
+  document.getElementById('eid').value=p.id;
   // Remove sufixo de quantidade "(X/Y)" para edição limpa
   const nomeEdit = p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim();
   document.getElementById('p-nome').value=nomeEdit;
@@ -1612,11 +1612,11 @@ function cancelPart(){
   document.getElementById('form-ttl').textContent='Novo Participante';
   autoLote();
 }
-function delPart(id){
-  const p=ST.participantes.find(x=>x.id===id);
+function delPart(codigo){
+  const p=ST.participantes.find(x=>x.codigo===codigo);
   if(!p||!confirm(`Remover "${p.nome}"?`))return;
   if(p._fbId) fbDeletePart(p._fbId);
-  ST.participantes=ST.participantes.filter(x=>x.id!==id);
+  ST.participantes=ST.participantes.filter(x=>x.codigo!==codigo);
   save();renderPart();renderDash();
 }
 function exportPendentes(){
@@ -1652,7 +1652,7 @@ function processarCodigo(raw){
   if(p.entrou)return{ok:false,tipo:'warn',msg:`⚠️ "${p.nome}" já entrou! Duplicata.`};
   p.entrou=true;
   const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const entradaLog={id:p.id,codigo:p.codigo,nome:p.nome,lote:p.lote,hora,ts:Date.now()};
+  const entradaLog={id:p.id||p.codigo,codigo:p.codigo,nome:p.nome,lote:p.lote,hora,ts:Date.now()};
   ST.log.unshift(entradaLog);
   save(); // salva localmente primeiro — garantia se Firebase falhar
   // Grava no Firebase de forma síncrona (await) para garantir persistência
@@ -1693,7 +1693,7 @@ function renderPort(){
 function desfazer(){
   if(!(ST.log||[]).length){alert('Nenhuma entrada para desfazer');return;}
   const u=ST.log[0];
-  const p=ST.participantes.find(x=>x.id===u.id||x.codigo===u.codigo);
+  const p=ST.participantes.find(x=>x.codigo===u.codigo);
   if(p){
     p.entrou=false;
     if(fbReady) fbSavePart(p); // sincroniza reversão no Firebase
@@ -2120,8 +2120,8 @@ let _qrModalId = null;
 // ══════════════════════════════════════════════
 // CONFIRMAR PAGAMENTO + ENVIAR INGRESSO (1 clique)
 // ══════════════════════════════════════════════
-async function confirmarEEnviar(id){
-  const p = ST.participantes.find(x=>x.id===id);
+async function confirmarEEnviar(codigo){
+  const p = ST.participantes.find(x=>x.codigo===codigo);
   if(!p) return;
 
   if(!confirm(`Confirmar pagamento de ${p.nome} e enviar ingresso pelo WhatsApp?`)) return;
@@ -2217,10 +2217,10 @@ async function enviarIngressoWpp(p){
 }
 
 
-function abrirQR(id){
-  const p = ST.participantes.find(x=>x.id===id);
+function abrirQR(codigo){
+  const p = ST.participantes.find(x=>x.codigo===codigo);
   if(!p) return;
-  _qrModalId = id;
+  _qrModalId = p.id; // mantém compatibilidade com getQRBlob
 
   document.getElementById('qrm-lote').textContent   = p.lote + ' Lote';
   document.getElementById('qrm-codigo').textContent  = p.codigo;
@@ -2440,7 +2440,7 @@ function roundRect(ctx,x,y,w,h,r1=8,r2,r3,r4){
 async function baixarQR(){
   const p = ST.participantes.find(x=>x.id===_qrModalId);
   if(!p) return;
-  const p2=ST.participantes.find(x=>x.id===_qrModalId);
+  const p2=ST.participantes.find(x=>x.id===_qrModalId||x.codigo===_qrModalId);
   const blob = await getQRBlob(p2?p2.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim():undefined);
   if(!blob){ mostrarHint('Não foi possível gerar a imagem.'); return; }
   const url = URL.createObjectURL(blob);
@@ -2459,7 +2459,7 @@ async function compartilharWhats(){
   // tenta Web Share API com imagem (funciona no celular)
   if(navigator.share && navigator.canShare){
     try{
-      const pw=ST.participantes.find(x=>x.id===_qrModalId);
+      const pw=ST.participantes.find(x=>x.id===_qrModalId||x.codigo===_qrModalId);
       const blob = await getQRBlob(pw?pw.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim():undefined);
       if(blob){
         const file = new File([blob], p.codigo+'_QR.png', {type:'image/png'});
