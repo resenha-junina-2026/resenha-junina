@@ -2169,11 +2169,24 @@ async function enviarIngressoWpp(p){
   setEl('qrm-nome',   p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim());
   setEl('qrm-codigo', p.codigo);
   setEl('qrm-lote',   p.lote+' Lote');
+  // Pega o QR gerado no tempBox diretamente (cloneNode em canvas perde os pixels)
+  const tempQrEl = tempBox.querySelector('canvas') || tempBox.querySelector('img');
+
+  // Atualiza qrm-box com cópia via drawImage para manter compatibilidade visual
   const box = document.getElementById('qrm-box');
-  if(box){ box.innerHTML=''; const qrEl=tempBox.querySelector('canvas')||tempBox.querySelector('img'); if(qrEl) box.appendChild(qrEl.cloneNode(true)); }
+  if(box && tempQrEl && tempQrEl.tagName==='CANVAS'){
+    box.innerHTML='';
+    const copyCanvas = document.createElement('canvas');
+    copyCanvas.width=tempQrEl.width; copyCanvas.height=tempQrEl.height;
+    copyCanvas.getContext('2d').drawImage(tempQrEl,0,0);
+    box.appendChild(copyCanvas);
+  } else if(box){
+    box.innerHTML='';
+    if(tempQrEl) box.appendChild(tempQrEl.cloneNode(true));
+  }
 
   let blob = null;
-  try{ blob = await getQRBlob(p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim()); }catch(_){}
+  try{ blob = await getQRBlob(p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim(), tempQrEl); }catch(_){}
   document.body.removeChild(tempBox);
 
   const fone = (p.fone||'').replace(/\D/g,'');
@@ -2270,9 +2283,9 @@ function getQRCanvas(){
   return box.querySelector('canvas') || box.querySelector('img');
 }
 
-async function getQRBlob(nomeOverride){
+async function getQRBlob(nomeOverride, qrElOverride){
   const box   = document.getElementById('qrm-box');
-  const qrEl  = box.querySelector('canvas') || box.querySelector('img');
+  const qrEl  = qrElOverride || box.querySelector('canvas') || box.querySelector('img');
   if(!qrEl) return null;
 
   const codigo = document.getElementById('qrm-codigo').textContent.trim();
