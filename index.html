@@ -2189,6 +2189,7 @@ async function enviarIngressoWpp(p){
   try{ blob = await getQRBlob(p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim(), tempQrEl); }catch(_){}
   document.body.removeChild(tempBox);
 
+  if(document.body.contains(tempDiv2)) document.body.removeChild(tempDiv2);
   const fone = (p.fone||'').replace(/[^\d]/g,'');
   const msg  = encodeURIComponent(
     '🎪 *Olá, '+p.nome.split(' ')[0]+'! Seu ingresso chegou!*\n\n'+
@@ -2453,12 +2454,23 @@ function roundRect(ctx,x,y,w,h,r1=8,r2,r3,r4){
 async function baixarQR(){
   const p2=ST.participantes.find(x=>x.codigo===_qrModalId);
   if(!p2){ mostrarHint('Participante não encontrado.'); return; }
-  const blob = await getQRBlob(p2.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim());
+  // Gera QR fresco para este participante específico — não usa o canvas do modal
+  const tempDiv=document.createElement('div');
+  tempDiv.style.cssText='position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv);
+  await new Promise(res=>{
+    if(typeof QRCode==='undefined'){res();return;}
+    new QRCode(tempDiv,{text:p2.codigo,width:220,height:220,colorDark:'#000000',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(res,400);
+  });
+  const qrFresh=tempDiv.querySelector('canvas')||tempDiv.querySelector('img');
+  const blob = await getQRBlob(p2.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim(), qrFresh);
+  document.body.removeChild(tempDiv);
   if(!blob){ mostrarHint('Não foi possível gerar a imagem.'); return; }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = p.codigo + '_QR.png';
+  a.download = p2.codigo + '_ingresso.png';
   a.click();
   URL.revokeObjectURL(url);
   toast('⬇️ QR Code baixado!');
@@ -2468,11 +2480,21 @@ async function compartilharWhats(){
   const p=ST.participantes.find(x=>x.codigo===_qrModalId);
   if(!p){ mostrarHint('Participante não encontrado.'); return; }
 
+  // Gera QR fresco para este participante — não depende do canvas do modal
+  const tempDiv2=document.createElement('div');
+  tempDiv2.style.cssText='position:absolute;left:-9999px;top:-9999px;';
+  document.body.appendChild(tempDiv2);
+  await new Promise(res=>{
+    if(typeof QRCode==='undefined'){res();return;}
+    new QRCode(tempDiv2,{text:p.codigo,width:220,height:220,colorDark:'#000000',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});
+    setTimeout(res,400);
+  });
+  const qrFresh2=tempDiv2.querySelector('canvas')||tempDiv2.querySelector('img');
+
   // tenta Web Share API com imagem (funciona no celular)
   if(navigator.share && navigator.canShare){
     try{
-      const pw=p;
-      const blob = await getQRBlob(pw.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim());
+      const blob = await getQRBlob(p.nome.replace(/\s*\(\d+\/\d+\)\s*$/, '').trim(), qrFresh2);
       if(blob){
         const file = new File([blob], p.codigo+'_QR.png', {type:'image/png'});
         if(navigator.canShare({files:[file]})){
