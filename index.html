@@ -760,8 +760,7 @@ function fbSetupListeners(){
   const u1=db.collection('rj26_participantes').onSnapshot(snap=>{
     if(_fbWriting) return;
     const parts=[];snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
-    const localMap={};(ST.participantes||[]).forEach(p=>{if(p.codigo)localMap[p.codigo]=p;});
-    parts.forEach(p=>{const local=localMap[p.codigo];if(local&&local.entrou&&!p.entrou)p.entrou=true;});
+    // Firebase eh a fonte de verdade - nao sobrescrever com localStorage
     ST.participantes=parts.sort((a,b)=>(a.id||0)-(b.id||0));save();renderAll();
     document.getElementById('fb-status').innerHTML='Online - '+parts.length+' participantes';
     const ob=document.getElementById('offline-banner');if(ob)ob.remove();
