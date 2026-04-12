@@ -100,10 +100,12 @@ input.autofill{border-color:var(--g);background:var(--g-s);}
 .pbox{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);padding:22px;text-align:center;margin-bottom:14px;}
 .pinput-w{display:flex;gap:8px;max-width:480px;margin:12px auto;}
 .pinput-w input{font-family:'JetBrains Mono',monospace;font-size:15px;text-transform:uppercase;font-weight:500;text-align:center;letter-spacing:3px;}
-.presult{margin:12px auto;max-width:480px;padding:12px 16px;border-radius:var(--r2);font-weight:500;font-size:13px;display:none;transition:opacity 0.2s;}
-.presult.ok{background:var(--g-s);border:1px solid rgba(34,197,94,0.25);color:var(--g);display:flex;gap:8px;}
+.presult{margin:12px auto;max-width:480px;padding:12px 16px;border-radius:var(--r2);font-weight:500;font-size:13px;display:none;transition:opacity 0.2s;white-space:pre-line;}
+.presult.ok{background:var(--g-s);border:2px solid rgba(34,197,94,0.4);color:var(--g);display:flex;gap:8px;}
 .presult.err{background:var(--r-s);border:1px solid rgba(239,68,68,0.25);color:var(--r);display:flex;gap:8px;}
 .presult.warn{background:var(--a-s);border:1px solid rgba(245,158,11,0.25);color:var(--a);display:flex;gap:8px;}
+.presult.pend{background:rgba(239,68,68,0.2);border:2px solid rgba(239,68,68,0.5);color:#FF6B6B;display:flex;gap:8px;font-weight:700;font-size:14px;}
+.presult.dup{background:rgba(245,158,11,0.15);border:2px solid rgba(245,158,11,0.4);color:var(--a);display:flex;gap:8px;font-weight:600;}
 .presult.fading{opacity:0;}
 .cbox{display:flex;gap:24px;justify-content:center;margin:12px 0;}
 .ci{text-align:center;}
@@ -1015,18 +1017,28 @@ function processarCodigo(raw){
   else if(/^RESENHA-\d{1,3}$/.test(v))v='RESENHA-'+v.split('-')[1].padStart(4,'0');
   const p=(ST.participantes||[]).find(x=>x.codigo===v);
   if(!p)return{ok:false,tipo:'err',msg:'Codigo "'+v+'" nao encontrado'};
-  if(p.entrou)return{ok:false,tipo:'warn',msg:'"'+p.nome+'" ja entrou! Duplicata.'};
-  p.entrou=true;
+  if(p.entrou)return{ok:false,tipo:'dup',msg:'"'+p.nome+'" ja entrou!'};
+  // Cortesia → entrada direto
+  if(p.pgto&&p.pgto.startsWith('Cortesia')){
+    p.entrou=true;registrarEntrada(p);
+    return{ok:true,tipo:'ok',msg:'Cortesia: '+p.nome};
+  }
+  // Pagamento confirmado → entrada direto
+  if(pagou(p)){
+    p.entrou=true;registrarEntrada(p);
+    return{ok:true,tipo:'ok',msg:p.nome+' - '+p.lote+' Lote'};
+  }
+  // NAO pagou → NAO marca entrada, avisa portaria
+  return{ok:false,tipo:'pend',msg:p.nome+' - PAGAMENTO PENDENTE\nCobrar R$'+(p.valor||PRECO[p.lote]||0)+' ou recusar entrada'};
+}
+function registrarEntrada(p){
   const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const entradaLog={id:p.id||p.codigo,codigo:p.codigo,nome:p.nome,lote:p.lote,hora,ts:Date.now()};
   ST.log.unshift(entradaLog);save();
   fbSavePart(p).then(()=>fbLogEntrada(entradaLog));
   try{navigator.vibrate&&navigator.vibrate(100);}catch(_){}
-  if(p.pgto&&p.pgto.startsWith('Cortesia'))return{ok:true,tipo:'ok',msg:'Cortesia: '+p.nome};
-  if(!pagou(p))return{ok:true,tipo:'warn',msg:p.nome+' | '+p.lote+' - PAGAMENTO PENDENTE'};
-  return{ok:true,tipo:'ok',msg:p.nome+' - '+p.lote+' Lote'};
 }
-function showResult(elId,tipo,msg){const el=document.getElementById(elId);if(!el)return;el.className='presult '+tipo;el.textContent=msg;if(tipo==='ok')beepOK();else if(tipo==='err')beepErr();else beepWarn();if(resTimer)clearTimeout(resTimer);resTimer=setTimeout(()=>{el.classList.add('fading');setTimeout(()=>{el.className='presult';},400);},6000);}
+function showResult(elId,tipo,msg){const el=document.getElementById(elId);if(!el)return;el.className='presult '+tipo;el.textContent=msg;if(tipo==='ok')beepOK();else if(tipo==='err'||tipo==='pend')beepErr();else beepWarn();if(resTimer)clearTimeout(resTimer);resTimer=setTimeout(()=>{el.classList.add('fading');setTimeout(()=>{el.className='presult';},400);},tipo==='pend'?10000:6000);}
 function doEntrada(){autoEnableSom();const inp=document.getElementById('port-in'),v=inp.value;inp.value='';const r=processarCodigo(v);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();setTimeout(()=>{const el=document.getElementById('port-in');if(el)el.focus();},80);}
 function renderPort(){
   const fileWarn=document.getElementById('file-proto-warn');if(fileWarn)fileWarn.style.display=location.protocol==='file:'?'block':'none';
@@ -1049,7 +1061,7 @@ function renderPeak(){
   pl.innerHTML=sorted.map(([h])=>`<span>${h}h</span>`).join('');
 }
 function desfazer(){if(!(ST.log||[]).length){alert('Nenhuma entrada para desfazer');return;}const u=ST.log[0];const p=ST.participantes.find(x=>x.codigo===u.codigo);if(p){p.entrou=false;if(fbReady)fbSavePart(p);}ST.log.shift();save();renderPort();renderDash();toast('Ultima entrada desfeita');}
-function limparLog(){if(!confirm('Limpar log?'))return;ST.log=[];save();renderPort();}
+function limparLog(){if(!confirm('Limpar log E resetar todas as entradas?\nOs participantes voltarao para "Aguardando".'))return;ST.participantes.forEach(p=>{if(p.entrou){p.entrou=false;fbSavePart(p);}});ST.log=[];save();renderPort();renderDash();renderPart();toast('Log e entradas resetados');}
 function exportarLog(){if(!(ST.log||[]).length){toast('Nenhuma entrada');return;}const h=['Hora','Nome','Codigo','Lote'];const rows=ST.log.map(e=>{const p=ST.participantes.find(x=>x.codigo===e.codigo);return[e.hora||'-',e.nome,e.codigo,p?p.lote:'-'];});const csv=[h,...rows].map(r=>r.join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='log_entradas_rj2026.csv';a.click();URL.revokeObjectURL(a.href);toast('Log exportado!');}
 
 // ══════════════════════════════════════════════
@@ -1061,7 +1073,7 @@ function stopPortCam(){if(portStream){portStream.getTracks().forEach(t=>t.stop()
 async function flipPortCam(){if(!portStream)return;try{const devs=await navigator.mediaDevices.enumerateDevices();const cams=devs.filter(d=>d.kind==='videoinput');if(cams.length<2){setCamStatus('Apenas uma camera disponivel.');return;}const curId=portStream.getVideoTracks()[0]?.getSettings()?.deviceId;const curIdx=cams.findIndex(d=>d.deviceId===curId);const next=cams[(curIdx+1)%cams.length];portStream.getTracks().forEach(t=>t.stop());portStream=null;if(portAnim){cancelAnimationFrame(portAnim);clearTimeout(portAnim);portAnim=null;}const stream=await navigator.mediaDevices.getUserMedia({video:{deviceId:{exact:next.deviceId}}});portStream=stream;const vid=document.getElementById('port-video');vid.srcObject=stream;try{vid.play();}catch(_){}setCamStatus('Aponte o QR Code para a camera...');portScanLoop();}catch(e){setCamStatus('Nao foi possivel trocar a camera.');}}
 function setCamStatus(msg){const el=document.getElementById('cam-status');if(el)el.textContent=msg;}
 function portScanLoop(){if(portAnim){cancelAnimationFrame(portAnim);clearTimeout(portAnim);portAnim=null;}const vid=document.getElementById('port-video');if(!vid)return;if(typeof BarcodeDetector!=='undefined'){let det;try{det=new BarcodeDetector({formats:['qr_code']});}catch(_){}if(det){const loop=async()=>{if(!portStream)return;portAnim=setTimeout(loop,250);if(vid.readyState<2||vid.videoWidth===0)return;try{const codes=await det.detect(vid);if(codes.length)onCodigoLido(codes[0].rawValue);}catch(_){}};loop();return;}}if(typeof jsQR==='undefined'){setCamStatus('Sem leitor de QR. Use o campo de texto.');return;}const cvs=document.getElementById('port-canvas');if(!cvs)return;const ctx=cvs.getContext('2d',{willReadFrequently:true});let fc=0,lw=0,lh=0;const tick=()=>{if(!portStream){portAnim=null;return;}portAnim=requestAnimationFrame(tick);if(++fc%2!==0)return;if(vid.readyState<2||vid.videoWidth===0)return;if(vid.videoWidth!==lw||vid.videoHeight!==lh){lw=cvs.width=vid.videoWidth;lh=cvs.height=vid.videoHeight;}try{ctx.drawImage(vid,0,0,cvs.width,cvs.height);const img=ctx.getImageData(0,0,cvs.width,cvs.height);const code=jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'});if(code&&code.data)onCodigoLido(code.data);}catch(_){}};tick();}
-function onCodigoLido(raw){autoEnableSom();const now=Date.now();if(raw===portLastCode&&now-portLastTime<1500)return;portLastCode=raw;portLastTime=now;const r=processarCodigo(raw);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();const st=document.getElementById('cam-status');if(st){st.style.color=r.tipo==='ok'?'var(--g)':r.tipo==='err'?'var(--r)':'var(--a)';st.textContent=r.tipo==='ok'?'Entrada confirmada!':r.tipo==='err'?'Codigo nao encontrado':'Verificar pagamento';setTimeout(()=>{if(st){st.style.color='';st.textContent='Aponte o QR Code para a camera...';}},2500);}}
+function onCodigoLido(raw){autoEnableSom();const now=Date.now();if(raw===portLastCode&&now-portLastTime<1500)return;portLastCode=raw;portLastTime=now;const r=processarCodigo(raw);showResult('port-res',r.tipo,r.msg);renderPort();renderDash();const st=document.getElementById('cam-status');if(st){const msgs={ok:{c:'var(--g)',t:'Entrada confirmada!'},err:{c:'var(--r)',t:'Codigo nao encontrado'},dup:{c:'var(--a)',t:'Ja entrou - DUPLICATA!'},pend:{c:'var(--r)',t:'NAO PAGO - Cobrar ou recusar'}};const m=msgs[r.tipo]||msgs.err;st.style.color=m.c;st.textContent=m.t;setTimeout(()=>{if(st){st.style.color='';st.textContent='Aponte o QR Code para a camera...';}},4000);}}
 
 // ══════════════════════════════════════════════
 // OPEN BAR & OPEN FOOD
