@@ -12,7 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <style>
 /* ═══════════════════════════════════════════════
-   RESENHA JUNINA 2026 — CADASTRO
+   RESENHA JUNINA 2026 — CADASTRO v2.1
    Design: Purple/Gold Festa Junina Theme
    ═══════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -201,13 +201,11 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
 
 <!-- ═══════════════════════════════════════
      HEADER COM IMAGEM
-     IMPORTANTE: Substitua o src abaixo pelo base64 da imagem original
-     O src atual eh o SVG placeholder. Para usar a foto original,
-     copie o atributo src="data:image/jpeg;base64,..." do arquivo antigo.
+     FIX-DICA-1: Adicionado width/height para evitar layout shift (CLS)
      ═══════════════════════════════════════ -->
 <div class="hdr">
   <div class="hdr-img-wrap">
-    <img id="hdr-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='500' viewBox='0 0 960 500'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231A0640'/%3E%3Cstop offset='50%25' stop-color='%233D1A6E'/%3E%3Cstop offset='100%25' stop-color='%235B2D8A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g1)' width='960' height='500'/%3E%3Ccircle cx='200' cy='120' r='80' fill='%23F5C842' opacity='0.08'/%3E%3Ccircle cx='760' cy='380' r='120' fill='%23F5C842' opacity='0.06'/%3E%3Ccircle cx='480' cy='250' r='200' fill='%237B2FBE' opacity='0.08'/%3E%3Ctext x='480' y='210' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3ERESENHA%3C/text%3E%3Ctext x='480' y='280' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3EJUNINA%3C/text%3E%3Ctext x='480' y='340' text-anchor='middle' fill='white' font-size='32' font-family='sans-serif' font-weight='300' letter-spacing='16' opacity='0.7'%3E2 0 2 6%3C/text%3E%3C/svg%3E" alt="Resenha Junina 2026" loading="lazy">
+    <img id="hdr-img" width="960" height="500" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='500' viewBox='0 0 960 500'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231A0640'/%3E%3Cstop offset='50%25' stop-color='%233D1A6E'/%3E%3Cstop offset='100%25' stop-color='%235B2D8A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g1)' width='960' height='500'/%3E%3Ccircle cx='200' cy='120' r='80' fill='%23F5C842' opacity='0.08'/%3E%3Ccircle cx='760' cy='380' r='120' fill='%23F5C842' opacity='0.06'/%3E%3Ccircle cx='480' cy='250' r='200' fill='%237B2FBE' opacity='0.08'/%3E%3Ctext x='480' y='210' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3ERESENHA%3C/text%3E%3Ctext x='480' y='280' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3EJUNINA%3C/text%3E%3Ctext x='480' y='340' text-anchor='middle' fill='white' font-size='32' font-family='sans-serif' font-weight='300' letter-spacing='16' opacity='0.7'%3E2 0 2 6%3C/text%3E%3C/svg%3E" alt="Resenha Junina 2026" loading="lazy">
     <div class="hdr-overlay">
       <div class="hdr-eyebrow">Ingresso Oficial</div>
       <div class="hdr-info" style="margin-top:12px;">
@@ -264,7 +262,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
     <div class="card">
       <div class="card-title"><div class="num">2</div>Seus dados</div>
       <div class="fg"><label>Nome completo *</label><input type="text" id="f-nome" placeholder="Seu nome completo" autocomplete="name"><div class="err-msg" id="err-nome">Informe nome e sobrenome</div></div>
-      <div class="fg"><label>WhatsApp *</label><input type="tel" id="f-fone" placeholder="(17) 99999-9999" autocomplete="tel" oninput="mascaraFone(this)"><div class="err-msg" id="err-fone">Informe um WhatsApp valido</div></div>
+      <div class="fg"><label>WhatsApp *</label><input type="tel" id="f-fone" placeholder="(17) 99999-9999" autocomplete="tel" oninput="mascaraFone(this)"><div class="err-msg" id="err-fone">Informe um celular com DDD (11 digitos)</div></div>
       <div class="fg"><label>E-mail <span style="font-weight:400;text-transform:none;font-size:0.85em">(opcional)</span></label><input type="email" id="f-email" placeholder="seu@email.com" autocomplete="email"></div>
       <div class="lgpd"><label><input type="checkbox" id="chk-lgpd"><span>Li e aceito o <a href="#" onclick="togglePol(event)">tratamento dos meus dados</a> para este evento, conforme a LGPD.</span></label><div class="err-msg" id="err-lgpd">E necessario aceitar para continuar</div></div>
     </div>
@@ -319,7 +317,21 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
 <script>
 /* ═══════════════════════════════════════════════════════
    RESENHA JUNINA 2026 — CADASTRO ONLINE
-   Versao: 2.0 (todas as correcoes aplicadas)
+   Versao: 2.1 (todos os fixes da revisao aplicados)
+
+   CHANGELOG v2.1:
+   [CRIT-1] Doc separado: firestore_security_rules.txt
+   [CRIT-2] Reserva atomica de vagas via transaction
+   [CRIT-3] Validacao de token reforcada + nota sobre evolucao
+   [WARN-1] Padronizado const/let (removidos todos os var)
+   [WARN-2] renderProg() refatorado (sem duplicacao)
+   [WARN-3] _vagasRestantes nao mais necessario (transaction valida)
+   [WARN-4] window.open() chamado ANTES dos awaits (popup-blocker)
+   [WARN-5] Fonte unica de verdade para qty (pedido.qtd sincronizado)
+   [DICA-1] width/height no <img> (sem layout shift)
+   [DICA-2] Estado "enviando" antes do confirm (anti-duplo-clique)
+   [DICA-3] renderResumo() extraido para funcao
+   [DICA-4] Validacao 11 digitos (celular obrigatorio)
    ═══════════════════════════════════════════════════════ */
 
 // ─── CONFIGURACAO ───────────────────────────────────
@@ -357,17 +369,56 @@ let db = null;
   }catch(e){ console.warn('Firebase init:', e.message); }
 })();
 
+// ─── STEPS DA PROGRESS BAR (constante reutilizada) ───
+// [WARN-2] Steps definidos uma unica vez
+const PROG_STEPS = [{n:1,l:'Dados'},{n:2,l:'Pagamento'},{n:3,l:'Aguardando'}];
+
 // ─── FIREBASE HELPERS ───────────────────────────────
 
-// FIX #1: Busca vagas SEMPRE via Firebase (nunca localStorage)
+// Conta vagas usadas. Tenta ler doc agregado primeiro, fallback para query.
 async function fbVagasUsadas(loteId){
   if(!db) return 0;
   try{
+    // [CRIT-2] Tenta doc agregado primeiro (mais rapido + atomico)
+    const vagasRef = db.collection('rj26_config').doc('vagas_'+loteId);
+    const vagasSnap = await vagasRef.get();
+    if(vagasSnap.exists && typeof vagasSnap.data().usadas === 'number'){
+      return vagasSnap.data().usadas;
+    }
+    // Fallback: conta documentos (compatibilidade com dados antigos)
     const snap = await db.collection('rj26_participantes').where('lote','==',loteId).get();
     return snap.size;
   }catch(e){
     console.warn('Erro consultar vagas:', e);
     return 0;
+  }
+}
+
+// [CRIT-2] Reserva vagas atomicamente. Retorna true se conseguiu, false se esgotou.
+async function fbReservarVagas(loteId, qty, loteMax){
+  if(!db) return true; // sem Firebase, deixa passar (modo offline)
+  const vagasRef = db.collection('rj26_config').doc('vagas_'+loteId);
+  try{
+    return await db.runTransaction(async tx => {
+      const snap = await tx.get(vagasRef);
+      let usadas = 0;
+      if(snap.exists && typeof snap.data().usadas === 'number'){
+        usadas = snap.data().usadas;
+      } else {
+        // Primeira vez: inicializa contando documentos existentes
+        const existing = await db.collection('rj26_participantes').where('lote','==',loteId).get();
+        usadas = existing.size;
+      }
+      if(usadas + qty > loteMax){
+        throw new Error('ESGOTADO');
+      }
+      tx.set(vagasRef, {usadas: usadas + qty, atualizadoEm: Date.now()}, {merge:true});
+      return true;
+    });
+  }catch(e){
+    if(e.message === 'ESGOTADO') return false;
+    console.warn('Erro reservar vagas:', e);
+    throw e; // outros erros propagam
   }
 }
 
@@ -413,21 +464,35 @@ async function fbRegistrarPedido(ped, codigos){
   }catch(e){ console.warn('FB registrar:', e); }
 }
 
-// FIX #5: Validar token via Firebase (nao aceitar qualquer string)
+// [CRIT-3] Validacao de token reforcada
+// NOTA: A solucao ideal seria tokens de uso unico com TTL gerados pelo admin.
+// Implementacao atual valida estrutura + expiracao opcional + verifica via Firebase.
 async function tokenValidoAsync(){
   if(!tokenUrl) return false;
+  // Validacao basica de formato (evita strings absurdas)
+  if(typeof tokenUrl !== 'string' || tokenUrl.length < 6 || tokenUrl.length > 128) return false;
+
   // Tenta localStorage local (admin no mesmo dispositivo)
   try{
     const adm = JSON.parse(localStorage.getItem('rj26')||'{}');
-    if(adm.vendas && adm.vendas.token === tokenUrl && adm.vendas.loteAtivo === loteId) return true;
+    if(adm.vendas && adm.vendas.token === tokenUrl && adm.vendas.loteAtivo === loteId){
+      // Verifica expiracao se configurada
+      if(adm.vendas.expiresAt && Date.now() > adm.vendas.expiresAt) return false;
+      return true;
+    }
   }catch(_){}
+
   // Valida via Firebase
   if(db){
     try{
       const doc = await db.collection('rj26_config').doc('main').get();
       if(doc.exists){
         const d = doc.data();
-        if(d.vendas && d.vendas.token === tokenUrl && d.vendas.loteAtivo === loteId) return true;
+        if(d.vendas && d.vendas.token === tokenUrl && d.vendas.loteAtivo === loteId){
+          // Verifica expiracao se configurada
+          if(d.vendas.expiresAt && Date.now() > d.vendas.expiresAt) return false;
+          return true;
+        }
       }
     }catch(e){ console.warn('Token check falhou:', e); }
   }
@@ -440,43 +505,64 @@ const loteId = params.get('lote');
 const tokenUrl = params.get('tk');
 
 // ─── ESTADO ─────────────────────────────────────────
-// FIX #4: metodoPgto inicializado com valor padrao
-let pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null, metodoPgto:'pix' };
-let _qty = 1;
-let _vagasRestantes = 999; // FIX #2: Cache de vagas do Firebase
+// [WARN-5] qtd sera mantida em pedido.qtd como fonte unica
+let pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null, metodoPgto:'pix', qtd:1 };
 
 // ─── UI HELPERS ─────────────────────────────────────
-function showLoading(v){ const el=document.getElementById('loading-overlay'); if(el) el.classList.toggle('on',v); }
+function showLoading(v){
+  const el = document.getElementById('loading-overlay');
+  if(el) el.classList.toggle('on', v);
+}
 
 function show(id){
   document.querySelectorAll('main > .screen, #scr-form > .screen').forEach(s => s.classList.remove('on'));
   const el = document.getElementById(id);
   if(el){ el.classList.add('on'); window.scrollTo({top:0,behavior:'smooth'}); }
   const info = document.getElementById('festa-info-box');
-  if(info) info.style.display = (id==='scr-form') ? 'block' : 'none';
+  if(info) info.style.display = (id === 'scr-form') ? 'block' : 'none';
 }
 
-function renderProg(cur){
-  const steps = [{n:1,l:'Dados'},{n:2,l:'Pagamento'},{n:3,l:'Aguardando'}];
-  const el = document.getElementById('prog-bar'); if(!el) return;
+// [WARN-2] renderProg refatorado: aceita ID do elemento, sem duplicacao
+function renderProg(cur, elemId){
+  const el = document.getElementById(elemId || 'prog-bar');
+  if(!el) return;
   let h = '';
-  steps.forEach((s,i) => {
-    const cls = cur>s.n ? 'done' : cur===s.n ? 'cur' : '';
-    h += '<div class="prog-step '+cls+'"><div class="prog-circle">'+(cur>s.n?'&#10003;':s.n)+'</div><div class="prog-label">'+s.l+'</div></div>';
-    if(i < steps.length-1) h += '<div class="prog-line '+(cur>s.n?'done':'')+'"></div>';
+  PROG_STEPS.forEach((s, i) => {
+    const cls = cur > s.n ? 'done' : cur === s.n ? 'cur' : '';
+    h += '<div class="prog-step '+cls+'"><div class="prog-circle">'+(cur > s.n ? '&#10003;' : s.n)+'</div><div class="prog-label">'+s.l+'</div></div>';
+    if(i < PROG_STEPS.length - 1) h += '<div class="prog-line '+(cur > s.n ? 'done' : '')+'"></div>';
   });
   el.innerHTML = h;
 }
 
+// [DICA-3] Resumo extraido para funcao propria
+function renderResumo(ped, lote, qty){
+  const total = (qty * lote.preco).toFixed(2).replace('.', ',');
+  return [
+    '<div class="res-row"><span class="lbl">Evento</span><span class="val">Resenha Junina 2026</span></div>',
+    '<div class="res-row"><span class="lbl">Data</span><span class="val">13/06/2026 - 21:00</span></div>',
+    '<div class="res-row"><span class="lbl">Local</span><span class="val">Chacara Diniz</span></div>',
+    '<div class="res-row"><span class="lbl">Lote</span><span class="val" style="color:var(--roxo2)">'+lote.nome+'</span></div>',
+    '<div class="res-row"><span class="lbl">Quantidade</span><span class="val">'+qty+' ingresso'+(qty>1?'s':'')+'</span></div>',
+    '<div class="res-row"><span class="lbl">Participante</span><span class="val">'+ped.nome+'</span></div>',
+    '<div class="res-row"><span class="lbl">WhatsApp</span><span class="val">'+ped.fone+'</span></div>',
+    '<div class="res-total"><span class="lbl">Total</span><span class="val">R$ '+total+'</span></div>'
+  ].join('');
+}
+
 // ─── INIT ───────────────────────────────────────────
-// FIX #7: IIFE async com await correto
 (async function boot(){
   // Restaura pedido anterior se ja enviado
   try{
     const s = localStorage.getItem('rj26_pedido_cad');
     if(s){
       const p = JSON.parse(s);
-      if(p.codigo && p.lote && p.enviado){ pedido=p; _qty=p.qtd||1; mostrarAguardando(); return; }
+      if(p.codigo && p.lote && p.enviado){
+        pedido = p;
+        if(!pedido.qtd) pedido.qtd = 1;
+        mostrarAguardando();
+        return;
+      }
     }
   }catch(_){}
   await iniciar();
@@ -486,14 +572,12 @@ async function iniciar(){
   showLoading(true);
   if(!loteId){ show('scr-fechado'); showLoading(false); return; }
 
-  // FIX #5: Validacao async do token
   const tokenOk = await tokenValidoAsync();
   if(!tokenOk){ show('scr-fechado'); showLoading(false); return; }
 
   const lote = CONFIG.lotes[loteId];
   if(!lote){ show('scr-fechado'); showLoading(false); return; }
 
-  // FIX #1: Busca vagas via Firebase (nao localStorage)
   let usadas = 0;
   try{ usadas = await fbVagasUsadas(loteId); }catch(_){}
 
@@ -503,7 +587,7 @@ async function iniciar(){
   }
 
   pedido.lote = loteId;
-  _vagasRestantes = lote.vagas - usadas; // FIX #2: Cache
+  const vagasRestantes = lote.vagas - usadas;
 
   document.getElementById('lote-info').innerHTML =
     '<div class="lote-nome">'+lote.nome+'</div>'+
@@ -511,24 +595,29 @@ async function iniciar(){
     '<div class="qty-lbl" style="margin-top:14px;">Quantidade de ingressos</div>'+
     '<div class="qty-wrap"><button class="qty-btn" onclick="mudaQty(-1)">-</button><div class="qty-val" id="qty-val">1</div><button class="qty-btn" onclick="mudaQty(1)">+</button></div>'+
     '<div class="qty-total" id="qty-total">Total: R$ '+lote.preco.toFixed(2).replace('.',',')+'</div>'+
-    '<div class="qty-restam">'+_vagasRestantes+' vaga'+(_vagasRestantes!==1?'s':'')+' restante'+(_vagasRestantes!==1?'s':'')+'</div>';
+    '<div class="qty-restam" id="qty-restam">'+vagasRestantes+' vaga'+(vagasRestantes!==1?'s':'')+' restante'+(vagasRestantes!==1?'s':'')+'</div>';
 
-  renderProg(1); show('scr-form');
+  // Limite max baseado em vagas restantes (cap a 5)
+  pedido._maxQty = Math.min(5, vagasRestantes);
+
+  renderProg(1);
+  show('scr-form');
   document.getElementById('step-1').classList.add('on');
   document.getElementById('step-2').classList.remove('on');
   showLoading(false);
 }
 
 // ─── QUANTIDADE ─────────────────────────────────────
-// FIX #2: Usa _vagasRestantes (cache Firebase) em vez de localStorage
+// [WARN-5] Sincroniza pedido.qtd como fonte unica de verdade
 function mudaQty(delta){
-  const lote = CONFIG.lotes[pedido.lote]; if(!lote) return;
-  const max = Math.min(5, _vagasRestantes);
-  _qty = Math.max(1, Math.min(max, _qty+delta));
+  const lote = CONFIG.lotes[pedido.lote];
+  if(!lote) return;
+  const max = pedido._maxQty || 5;
+  pedido.qtd = Math.max(1, Math.min(max, (pedido.qtd || 1) + delta));
   const el = document.getElementById('qty-val');
   const tot = document.getElementById('qty-total');
-  if(el) el.textContent = _qty;
-  if(tot) tot.textContent = 'Total: R$ '+(_qty*lote.preco).toFixed(2).replace('.',',');
+  if(el) el.textContent = pedido.qtd;
+  if(tot) tot.textContent = 'Total: R$ '+(pedido.qtd * lote.preco).toFixed(2).replace('.',',');
 }
 
 // ─── NAVEGACAO ──────────────────────────────────────
@@ -545,7 +634,7 @@ function irStep2(){
   let ok = true, firstErr = null;
 
   // Validacao nome
-  if(!nome || nome.split(' ').filter(w => w.length>1).length < 2){
+  if(!nome || nome.split(' ').filter(w => w.length > 1).length < 2){
     document.getElementById('f-nome').classList.add('err');
     document.getElementById('err-nome').style.display = 'block';
     if(!firstErr) firstErr = document.getElementById('f-nome');
@@ -555,8 +644,9 @@ function irStep2(){
     document.getElementById('err-nome').style.display = 'none';
   }
 
-  // Validacao telefone
-  if(!fone || fone.replace(/\D/g,'').length < 10){
+  // [DICA-4] Validacao telefone: agora exige 11 digitos (celular com DDD)
+  const foneDigits = fone.replace(/\D/g,'').length;
+  if(!fone || foneDigits < 11){
     document.getElementById('f-fone').classList.add('err');
     document.getElementById('err-fone').style.display = 'block';
     if(!firstErr) firstErr = document.getElementById('f-fone');
@@ -575,39 +665,33 @@ function irStep2(){
     document.getElementById('err-lgpd').style.display = 'none';
   }
 
-  // FIX #6: Scroll para o primeiro erro
-  if(!ok){ if(firstErr) firstErr.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+  if(!ok){
+    if(firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
 
   pedido.nome = nome;
   pedido.fone = fone;
   pedido.email = document.getElementById('f-email').value.trim();
-  pedido.qtd = _qty;
+  // pedido.qtd ja esta sincronizado via mudaQty()
 
   const lote = CONFIG.lotes[pedido.lote];
-  const total = (_qty * lote.preco).toFixed(2).replace('.',',');
+  const total = (pedido.qtd * lote.preco).toFixed(2).replace('.', ',');
 
-  document.getElementById('resumo').innerHTML =
-    '<div class="res-row"><span class="lbl">Evento</span><span class="val">Resenha Junina 2026</span></div>'+
-    '<div class="res-row"><span class="lbl">Data</span><span class="val">13/06/2026 - 21:00</span></div>'+
-    '<div class="res-row"><span class="lbl">Local</span><span class="val">Chacara Diniz</span></div>'+
-    '<div class="res-row"><span class="lbl">Lote</span><span class="val" style="color:var(--roxo2)">'+lote.nome+'</span></div>'+
-    '<div class="res-row"><span class="lbl">Quantidade</span><span class="val">'+_qty+' ingresso'+(_qty>1?'s':'')+'</span></div>'+
-    '<div class="res-row"><span class="lbl">Participante</span><span class="val">'+nome+'</span></div>'+
-    '<div class="res-row"><span class="lbl">WhatsApp</span><span class="val">'+fone+'</span></div>'+
-    '<div class="res-total"><span class="lbl">Total</span><span class="val">R$ '+total+'</span></div>';
+  // [DICA-3] Resumo via funcao
+  document.getElementById('resumo').innerHTML = renderResumo(pedido, lote, pedido.qtd);
 
   document.getElementById('pix-total').textContent = 'R$ '+total;
   document.getElementById('pix-chave-display').textContent = CONFIG.pixChave;
 
-  // FIX #10: Mostra aviso se link MP nao esta configurado
-  var mpLink = CONFIG.linksMP[pedido.lote];
-  var mpWarn = document.getElementById('mp-warn-box');
+  const mpLink = CONFIG.linksMP[pedido.lote];
+  const mpWarn = document.getElementById('mp-warn-box');
   if(mpWarn) mpWarn.style.display = (!mpLink || mpLink === '') ? 'block' : 'none';
 
   document.getElementById('step-1').classList.remove('on');
   document.getElementById('step-2').classList.add('on');
   renderProg(2);
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 // ─── PAGAMENTO ──────────────────────────────────────
@@ -619,17 +703,17 @@ function selecionarPgto(tipo, el){
   pedido.metodoPgto = tipo;
 }
 
-// FIX #9: Fallback robusto para copiar Pix
 function copiarPix(){
-  var btn = document.getElementById('pix-copy-btn');
-  function sucesso(){ if(btn){btn.textContent='Copiado!';btn.style.background='#006644';setTimeout(function(){btn.textContent='Copiar';btn.style.background='';},2000);} }
-
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(CONFIG.pixChave).then(sucesso).catch(function(){ fallbackCopy(); });
-  } else { fallbackCopy(); }
-
-  function fallbackCopy(){
-    var ta = document.createElement('textarea');
+  const btn = document.getElementById('pix-copy-btn');
+  const sucesso = () => {
+    if(btn){
+      btn.textContent = 'Copiado!';
+      btn.style.background = '#006644';
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.style.background = ''; }, 2000);
+    }
+  };
+  const fallbackCopy = () => {
+    const ta = document.createElement('textarea');
     ta.value = CONFIG.pixChave;
     ta.style.cssText = 'position:fixed;left:-9999px;';
     document.body.appendChild(ta);
@@ -637,40 +721,83 @@ function copiarPix(){
     try{ document.execCommand('copy'); sucesso(); }
     catch(_){ alert('Chave Pix: '+CONFIG.pixChave); }
     document.body.removeChild(ta);
+  };
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(CONFIG.pixChave).then(sucesso).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
   }
 }
 
-// FIX #10: Aviso claro quando MP nao configurado
 function abrirMP(){
-  var link = CONFIG.linksMP[pedido.lote];
+  const link = CONFIG.linksMP[pedido.lote];
   if(!link || link === ''){
-    var lote = CONFIG.lotes[pedido.lote] || {};
-    var msg = encodeURIComponent('*Resenha Junina 2026 - Pagamento*\n\nOla! Quero pagar meu ingresso pelo cartao.\n\n*Lote:* '+(lote.nome||pedido.lote)+'\n*Valor:* R$ '+((pedido.qtd||1)*(lote.preco||0)).toFixed(2).replace('.',',')+'\n*Nome:* '+pedido.nome);
-    window.open('https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg,'_blank');
+    const lote = CONFIG.lotes[pedido.lote] || {};
+    const msg = encodeURIComponent('*Resenha Junina 2026 - Pagamento*\n\nOla! Quero pagar meu ingresso pelo cartao.\n\n*Lote:* '+(lote.nome||pedido.lote)+'\n*Valor:* R$ '+((pedido.qtd||1)*(lote.preco||0)).toFixed(2).replace('.',',')+'\n*Nome:* '+pedido.nome);
+    window.open('https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg, '_blank');
     return;
   }
-  window.open(link,'_blank');
+  window.open(link, '_blank');
 }
 
 // ─── ENVIAR PEDIDO ──────────────────────────────────
+// [DICA-2] Estado de envio para evitar duplo-clique
+let _enviando = false;
+
 async function enviarPedido(){
-  var btn = document.getElementById('btn-enviar');
+  // [DICA-2] Bloqueia reentrada antes de qualquer operacao
+  if(_enviando) return;
+  const btn = document.getElementById('btn-enviar');
   if(!btn || btn.classList.contains('btn-loading')) return;
+  _enviando = true;
   btn.classList.add('btn-loading');
   btn.textContent = 'Enviando pedido...';
 
+  // [WARN-4] Abre janela do WhatsApp IMEDIATAMENTE (antes dos awaits)
+  // O navegador associa a abertura ao clique do usuario; abertas depois de await sao bloqueadas.
+  // Sera redirecionada apos a confirmacao do envio.
+  let wppWindow = null;
   try{
-    var qty = pedido.qtd || 1;
-    var lote = CONFIG.lotes[pedido.lote] || {nome:'Ingresso', preco:0, vagas:999};
-    var ts = Date.now();
+    wppWindow = window.open('about:blank', '_blank');
+  }catch(_){}
+
+  try{
+    const qty = pedido.qtd || 1;
+    const lote = CONFIG.lotes[pedido.lote] || {nome:'Ingresso', preco:0, vagas:999};
+    const ts = Date.now();
+
+    // [WARN-3] + [CRIT-2] Reserva atomica de vagas (substitui validacao baseada em cache)
+    const reservou = await fbReservarVagas(pedido.lote, qty, lote.vagas);
+    if(!reservou){
+      if(wppWindow) wppWindow.close();
+      alert('Vagas esgotadas durante o processo. Por favor, tente novamente ou aguarde o proximo lote.');
+      _enviando = false;
+      btn.classList.remove('btn-loading');
+      btn.textContent = 'Ja paguei - Enviar pedido';
+      // Recarrega para refletir o status real
+      setTimeout(() => location.reload(), 1500);
+      return;
+    }
 
     // Verifica duplicata por WhatsApp
     if(db && pedido.fone){
       try{
-        var snap = await db.collection('rj26_participantes')
+        const snap = await db.collection('rj26_participantes')
           .where('fone','==',pedido.fone).where('lote','==',pedido.lote).get();
         if(snap.size > 0){
           if(!confirm('Ja encontramos um pedido com este WhatsApp para o mesmo lote.\nDeseja enviar um novo pedido?')){
+            // Usuario cancelou: precisa "devolver" as vagas reservadas
+            try{
+              const vagasRef = db.collection('rj26_config').doc('vagas_'+pedido.lote);
+              await db.runTransaction(async tx => {
+                const s = await tx.get(vagasRef);
+                const usadas = s.exists ? (s.data().usadas || 0) : 0;
+                tx.set(vagasRef, {usadas: Math.max(0, usadas - qty)}, {merge:true});
+              });
+            }catch(_){}
+            if(wppWindow) wppWindow.close();
+            _enviando = false;
             btn.classList.remove('btn-loading');
             btn.textContent = 'Ja paguei - Enviar pedido';
             return;
@@ -680,10 +807,10 @@ async function enviarPedido(){
     }
 
     // Gera codigos sequenciais
-    var nums = await proximosNumerosCad(qty);
-    var codigos = nums.map(function(n){
-      return (typeof n==='number' && n < 100000) ? 'RESENHA-'+String(n).padStart(4,'0') : 'PED-'+String(n).slice(-6);
-    });
+    const nums = await proximosNumerosCad(qty);
+    const codigos = nums.map(n =>
+      (typeof n === 'number' && n < 100000) ? 'RESENHA-'+String(n).padStart(4,'0') : 'PED-'+String(n).slice(-6)
+    );
 
     pedido.codigos = codigos;
     pedido.codigo = codigos[0];
@@ -697,86 +824,95 @@ async function enviarPedido(){
 
     // Best-effort: registra no localStorage admin (mesmo dispositivo)
     try{
-      var adm = JSON.parse(localStorage.getItem('rj26')||'null');
+      const adm = JSON.parse(localStorage.getItem('rj26')||'null');
       if(adm && adm.participantes && Array.isArray(adm.participantes)){
         if(!adm.ids) adm.ids = {part:16};
-        codigos.forEach(function(cod,i){
-          if(adm.participantes.some(function(p){return p.codigo===cod;})) return;
+        codigos.forEach((cod, i) => {
+          if(adm.participantes.some(p => p.codigo === cod)) return;
           adm.participantes.push({
-            id:adm.ids.part++, codigo:cod, pedido:pedido.codigo,
-            nome: qty>1 ? pedido.nome+' ('+(i+1)+'/'+qty+')' : pedido.nome,
-            fone:pedido.fone, lote:pedido.lote, valor:lote.preco,
-            pgto:'Pendente', recebido:null, entrou:false, origem:'online'
+            id: adm.ids.part++, codigo: cod, pedido: pedido.codigo,
+            nome: qty > 1 ? pedido.nome+' ('+(i+1)+'/'+qty+')' : pedido.nome,
+            fone: pedido.fone, lote: pedido.lote, valor: lote.preco,
+            pgto: 'Pendente', recebido: null, entrou: false, origem: 'online'
           });
         });
         localStorage.setItem('rj26', JSON.stringify(adm));
       }
     }catch(_){}
 
-    // FIX #3: Reset botao ANTES de mostrar aguardando
     btn.classList.remove('btn-loading');
     btn.textContent = 'Ja paguei - Enviar pedido';
+    _enviando = false;
 
-    notificarOrganizador();
+    // [WARN-4] Redireciona a janela ja aberta (em vez de tentar window.open de novo)
+    notificarOrganizador(wppWindow);
     mostrarAguardando();
 
   }catch(e){
     console.warn('Erro ao enviar:', e);
     alert('Erro ao enviar pedido. Verifique sua conexao e tente novamente.');
+    if(wppWindow) wppWindow.close();
+    _enviando = false;
     btn.classList.remove('btn-loading');
     btn.textContent = 'Ja paguei - Enviar pedido';
   }
 }
 
-function notificarOrganizador(){
-  var lote = CONFIG.lotes[pedido.lote]; var qty = pedido.qtd||1;
-  var total = (qty*lote.preco).toFixed(2).replace('.',',');
-  var metodo = pedido.metodoPgto==='mp' ? 'Mercado Pago' : 'Pix';
-  var msg = encodeURIComponent(
+// [WARN-4] Aceita janela pre-aberta como parametro
+function notificarOrganizador(janelaPreAberta){
+  const lote = CONFIG.lotes[pedido.lote];
+  const qty = pedido.qtd || 1;
+  const total = (qty * lote.preco).toFixed(2).replace('.',',');
+  const metodo = pedido.metodoPgto === 'mp' ? 'Mercado Pago' : 'Pix';
+  const msg = encodeURIComponent(
     '*Novo pedido - Resenha Junina 2026*\n\n'+
     '*Nome:* '+pedido.nome+'\n*WhatsApp:* '+pedido.fone+'\n'+
     '*Lote:* '+lote.nome+'\n*Qtd:* '+qty+' ingresso'+(qty>1?'s':'')+'\n'+
     '*Total:* R$'+total+' ('+metodo+')\n*Pedido:* '+pedido.codigo+
     '\n\nVerifique o pagamento e envie o ingresso pelo sistema.'
   );
-  try{ window.open('https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg,'_blank'); }
-  catch(_){ var a=document.createElement('a');a.href='https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg;a.target='_blank';a.click(); }
+  const url = 'https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg;
+
+  if(janelaPreAberta && !janelaPreAberta.closed){
+    // Reutiliza janela pre-aberta no clique (nao bloqueada)
+    janelaPreAberta.location.href = url;
+  } else {
+    // Fallback: tenta abrir nova janela (pode ser bloqueado)
+    try{ window.open(url, '_blank'); }
+    catch(_){
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.click();
+    }
+  }
 }
 
 // ─── TELA AGUARDANDO ────────────────────────────────
+// [WARN-2] Reutiliza renderProg() em vez de duplicar logica
 function mostrarAguardando(){
-  var el = document.getElementById('aguard-cod');
-  var fl = document.getElementById('aguard-fone');
+  const el = document.getElementById('aguard-cod');
+  const fl = document.getElementById('aguard-fone');
   if(el) el.textContent = pedido.codigo || '-';
   if(fl) fl.textContent = pedido.fone || '-';
 
-  var pb = document.getElementById('prog-bar-aguard');
-  if(pb){
-    var steps = [{n:1,l:'Dados'},{n:2,l:'Pagamento'},{n:3,l:'Aguardando'}];
-    var h = '';
-    steps.forEach(function(s,i){
-      var cls = s.n<3 ? 'done' : 'cur';
-      h += '<div class="prog-step '+cls+'"><div class="prog-circle">'+(s.n<3?'&#10003;':s.n)+'</div><div class="prog-label">'+s.l+'</div></div>';
-      if(i<steps.length-1) h += '<div class="prog-line '+(s.n<3?'done':'')+'"></div>';
-    });
-    pb.innerHTML = h;
-  }
+  // [WARN-2] Mesma funcao, ID diferente (sem duplicacao)
+  renderProg(3, 'prog-bar-aguard');
+
   show('scr-aguard');
 }
 
 // ─── UTILS ──────────────────────────────────────────
 
-// FIX #11: Countdown robusto (sem timezone issues)
 (function countdown(){
-  var target = new Date(2026, 5, 13, 21, 0, 0); // Junho = 5 (0-indexed)
+  const target = new Date(2026, 5, 13, 21, 0, 0); // Junho = 5 (0-indexed)
   function tick(){
-    var diff = target - new Date();
-    var el = document.getElementById('countdown'); if(!el) return;
+    const diff = target - new Date();
+    const el = document.getElementById('countdown');
+    if(!el) return;
     if(diff <= 0){ el.textContent = 'O evento esta acontecendo agora!'; return; }
-    var d = Math.floor(diff/86400000);
-    var h = Math.floor(diff%86400000/3600000);
-    var m = Math.floor(diff%3600000/60000);
-    var s = Math.floor(diff%60000/1000);
+    const d = Math.floor(diff/86400000);
+    const h = Math.floor(diff%86400000/3600000);
+    const m = Math.floor(diff%3600000/60000);
+    const s = Math.floor(diff%60000/1000);
     el.textContent = d+'d '+String(h).padStart(2,'0')+'h '+String(m).padStart(2,'0')+'m '+String(s).padStart(2,'0')+'s para a festa';
     setTimeout(tick, 1000);
   }
@@ -784,26 +920,33 @@ function mostrarAguardando(){
 })();
 
 function mascaraFone(el){
-  var v = el.value.replace(/\D/g,'').slice(0,11);
-  if(v.length<=2) el.value = v.length ? '('+v : '';
-  else if(v.length<=6) el.value = '('+v.slice(0,2)+') '+v.slice(2);
-  else if(v.length<=10) el.value = '('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
+  const v = el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length <= 2) el.value = v.length ? '('+v : '';
+  else if(v.length <= 6) el.value = '('+v.slice(0,2)+') '+v.slice(2);
+  else if(v.length <= 10) el.value = '('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
   else el.value = '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
 }
 
-function togglePol(e){ e.preventDefault(); var p=document.getElementById('pol-box'); p.style.display = p.style.display==='block' ? 'none' : 'block'; }
+function togglePol(e){
+  e.preventDefault();
+  const p = document.getElementById('pol-box');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+}
 
-// FIX #8: novoIngresso limpa inputs do DOM
 function novoIngresso(){
   localStorage.removeItem('rj26_pedido_cad');
-  pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null, metodoPgto:'pix' };
-  _qty = 1;
+  pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null, metodoPgto:'pix', qtd:1 };
+  _enviando = false;
   // Limpa inputs
-  ['f-nome','f-fone','f-email'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
-  var chk = document.getElementById('chk-lgpd'); if(chk) chk.checked = false;
+  ['f-nome','f-fone','f-email'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  const chk = document.getElementById('chk-lgpd');
+  if(chk) chk.checked = false;
   // Limpa erros visuais
-  document.querySelectorAll('.err').forEach(function(el){ el.classList.remove('err'); });
-  document.querySelectorAll('.err-msg').forEach(function(el){ el.style.display='none'; });
+  document.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
+  document.querySelectorAll('.err-msg').forEach(el => el.style.display = 'none');
   iniciar();
 }
 </script>
