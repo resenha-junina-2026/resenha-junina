@@ -239,6 +239,27 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
   .ob-row{grid-template-columns:1fr 40px 60px 55px 65px;gap:4px;padding:6px 8px;}
 }
 @media print{body{background:#fff;color:#000;}header,nav,.btn{display:none;}.pcred{background:#fff;border-color:#7B2FBE;}}
+
+/* ── Auth Overlay ── */
+.auth-overlay{position:fixed;inset:0;z-index:10000;background:linear-gradient(160deg,#0D0B14 0%,#1F1C33 100%);display:none;align-items:center;justify-content:center;padding:20px;}
+.auth-overlay.on{display:flex;}
+.auth-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r4);padding:40px 32px;max-width:400px;width:100%;text-align:center;box-shadow:var(--shadow-lg);}
+.auth-logo{width:56px;height:56px;border-radius:14px;background:var(--gold);display:inline-flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.auth-title{font-size:18px;font-weight:700;color:var(--t0);margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5;}
+.auth-btn-google{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;background:#fff;color:#222;border:none;border-radius:var(--r2);font-family:'Figtree',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;width:100%;justify-content:center;}
+.auth-btn-google:hover{background:#f5f5f5;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.3);}
+.auth-btn-google:disabled{opacity:0.5;cursor:wait;}
+.auth-error{margin-top:16px;padding:12px 14px;border-radius:var(--r2);background:var(--r-s);border:1px solid rgba(239,68,68,0.25);color:var(--r);font-size:13px;text-align:left;line-height:1.5;display:none;}
+.auth-error.on{display:block;}
+.auth-loading{display:none;color:var(--t2);font-size:13px;margin-top:14px;}
+.auth-loading.on{display:block;}
+.auth-footer{margin-top:24px;padding-top:20px;border-top:1px solid var(--border);font-size:11px;color:var(--t3);line-height:1.5;}
+.user-pill{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 4px;border-radius:20px;background:var(--bg2);border:1px solid var(--border2);font-size:12px;color:var(--t1);}
+.user-pill img{width:22px;height:22px;border-radius:50%;}
+.user-pill .logout-btn{background:transparent;border:none;color:var(--t3);cursor:pointer;padding:2px 6px;font-size:11px;font-weight:600;border-left:1px solid var(--border2);margin-left:4px;}
+.user-pill .logout-btn:hover{color:var(--r);}
+  
 </style>
 </head>
 <body>
