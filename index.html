@@ -806,14 +806,163 @@ function autoEnableSom(){if(!somOn){somOn=true;try{getAC();}catch(_){somOn=false
 function initFirebase(){
   try{
     if(!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey==='SUA_API_KEY'){
-      document.getElementById('fb-status').innerHTML='Offline (sem Firebase)';return;
+      document.getElementById('fb-status').innerHTML='Offline (sem Firebase)';
+      // Sem Firebase, nao requer auth - libera admin em modo localStorage
+      return;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
     db=firebase.firestore();fbReady=true;
     document.getElementById('fb-status').innerHTML='Conectando...';
-    fbSetupListeners();
-  }catch(e){console.warn('Firebase erro:',e.message);document.getElementById('fb-status').innerHTML='Erro Firebase';}
+    setupAuth();
+  }catch(e){
+    console.warn('Firebase erro:',e.message);
+    document.getElementById('fb-status').innerHTML='Erro Firebase';
+  }
 }
+ 
+// ══════════════════════════════════════════════
+// FIREBASE AUTH
+// ══════════════════════════════════════════════
+let _authReady=false, _currentUser=null;
+ 
+function setupAuth(){
+  // Mostra a tela de login imediatamente (ate confirmar quem e)
+  document.getElementById('auth-overlay').classList.add('on');
+ 
+  firebase.auth().onAuthStateChanged(user => {
+    _authReady = true;
+    _currentUser = user;
+ 
+    if(!user){
+      // Nao logado: mostra tela de login
+      mostrarTelaLogin();
+      return;
+    }
+ 
+    if(!ADMIN_EMAILS.includes(user.email)){
+      // Logado mas nao autorizado
+      mostrarErroAuth('Conta '+user.email+' nao tem permissao. Faca logout e entre com uma conta autorizada.');
+      // Mostra botao de "Sair" para trocar de conta
+      const btn = document.getElementById('auth-btn-google');
+      if(btn){ btn.textContent = 'Sair desta conta'; btn.onclick = () => firebase.auth().signOut(); }
+      return;
+    }
+ 
+    // Autorizado: esconde overlay e inicia sync
+    esconderTelaLogin();
+    mostrarUsuario(user);
+    fbSetupListeners();
+  });
+}
+ 
+function loginGoogle(){
+  const btn = document.getElementById('auth-btn-google');
+  const errEl = document.getElementById('auth-error');
+  const loadEl = document.getElementById('auth-loading');
+  if(errEl) errEl.classList.remove('on');
+  if(loadEl) loadEl.classList.add('on');
+  if(btn) btn.disabled = true;
+ 
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .catch(err => {
+      const msgs = {
+        'auth/popup-closed-by-user': 'Voce fechou a janela de login.',
+        'auth/popup-blocked': 'Popup bloqueado pelo navegador. Permita popups e tente de novo.',
+        'auth/cancelled-popup-request': 'Login cancelado.',
+        'auth/network-request-failed': 'Sem conexao com a internet.',
+      };
+      mostrarErroAuth(msgs[err.code] || ('Erro: ' + err.message));
+    })
+    .finally(() => {
+      if(loadEl) loadEl.classList.remove('on');
+      if(btn) btn.disabled = false;
+    });
+}
+ 
+function logout(){
+  if(!confirm('Sair do painel admin?')) return;
+  firebase.auth().signOut()
+    .then(() => location.reload())
+    .catch(err => toast('Erro ao sair: '+err.message));
+}
+ 
+function mostrarTelaLogin(){
+  document.getElementById('auth-overlay').classList.add('on');
+  document.getElementById('user-pill').style.display = 'none';
+  document.getElementById('auth-error').classList.remove('on');
+  // Restaura botao caso tenha sido alterado
+  const btn = document.getElementById('auth-btn-google');
+  if(btn){
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Entrar com Google';
+    btn.onclick = loginGoogle;
+  }
+}
+ 
+function esconderTelaLogin(){
+  document.getElementById('auth-overlay').classList.remove('on');
+}
+ 
+function mostrarUsuario(user){
+  const pill = document.getElementById('user-pill');
+  const photo = document.getElementById('user-photo');
+  const name = document.getElementById('user-name');
+  if(pill) pill.style.display = 'inline-flex';
+  if(photo) photo.src = user.photoURL || '';
+  if(name) name.textContent = (user.displayName || user.email).split(' ')[0];
+}
+ 
+function mostrarErroAuth(msg){
+  const el = document.getElementById('auth-error');
+  if(el){ el.textContent = msg; el.classList.add('on'); }
+  const loadEl = document.getElementById('auth-loading');
+  if(loadEl) loadEl.classList.remove('on');
+}
+ 
+ 
+═══════════════════════════════════════════════════════════════════
+  PATCH 6 — ATUALIZAR FIRESTORE RULES (origem 'admin' permitida)
+═══════════════════════════════════════════════════════════════════
+ 
+  LOCALIZAR na funcao novoParticipanteValido() das rules:
+ 
+      && d.origem == 'online'
+ 
+  SUBSTITUIR POR:
+ 
+      && d.origem in ['online', 'admin']
+ 
+  E LOCALIZAR a regra de criacao de participantes:
+ 
+      match /rj26_participantes/{doc} {
+        allow read: if isAdmin();
+        allow create: if novoParticipanteValido();
+        allow update, delete: if isAdmin();
+      }
+ 
+  SUBSTITUIR POR (admin pode criar com qualquer origem; publico so com online):
+ 
+      match /rj26_participantes/{doc} {
+        allow read: if isAdmin();
+        allow create: if novoParticipanteValido()
+          && (request.resource.data.origem == 'online' || isAdmin());
+        allow update, delete: if isAdmin();
+      }
+ 
+  E ADICIONAR a regra para a colecao de log (estava faltando):
+ 
+      match /rj26_log/{doc} {
+        allow read, write: if isAdmin();
+      }
+ 
+  TROCAR o email no isAdmin() pelo seu email Google real:
+ 
+      function isAdmin() {
+        return request.auth != null
+          && request.auth.token.email in ['SEU_EMAIL_REAL@gmail.com'];
+      }
+ 
+ 
 
 function fbSetupListeners(){
   if(!db) return;
