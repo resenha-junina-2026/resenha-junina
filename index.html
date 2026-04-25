@@ -194,7 +194,6 @@ body.modo-portaria .pinput-w .btn{font-size:16px;padding:14px 24px;}
 .peak-col:hover::after{content:attr(data-info);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--bg1);color:var(--t1);padding:3px 6px;border-radius:4px;font-size:10px;white-space:nowrap;border:1px solid var(--border2);}
 .peak-labels{display:flex;gap:2px;font-size:9px;color:var(--t3);}
 .peak-labels span{flex:1;text-align:center;}
-/* PARTICIPANT CARDS (mobile) */
 .mob-only{display:none;}
 .pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;margin-bottom:8px;}
 .pcard-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
@@ -205,7 +204,6 @@ body.modo-portaria .pinput-w .btn{font-size:16px;padding:14px 24px;}
 .pcard-val{color:var(--t1);font-weight:500;margin-bottom:4px;}
 .pcard-actions{display:flex;gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border);}
 .pcard-tags{display:flex;gap:4px;flex-wrap:wrap;}
-/* MOBILE-FIRST RESPONSIVE */
 input,select,textarea{font-size:16px!important;-webkit-appearance:none;-moz-appearance:none;appearance:none;}
 .btn{min-height:44px;min-width:44px;}
 .modal-overlay{padding:env(safe-area-inset-top,16px) env(safe-area-inset-right,16px) env(safe-area-inset-bottom,16px) env(safe-area-inset-left,16px);}
@@ -259,7 +257,6 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
 .user-pill img{width:22px;height:22px;border-radius:50%;}
 .user-pill .logout-btn{background:transparent;border:none;color:var(--t3);cursor:pointer;padding:2px 6px;font-size:11px;font-weight:600;border-left:1px solid var(--border2);margin-left:4px;}
 .user-pill .logout-btn:hover{color:var(--r);}
-  
 </style>
 </head>
 <body>
@@ -283,7 +280,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
     </div>
   </div>
 </div>
-  
+
 <div class="toast" id="toast"></div>
 <div class="accent-line"></div>
 <header>
@@ -295,13 +292,13 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
     </div>
   </div>
   <div class="header-right">
-        <div class="header-badge" id="fb-status-hdr" style="display:none"><span class="dot"></span>Online</div>
-        <div class="user-pill" id="user-pill" style="display:none">
-          <img id="user-photo" alt="">
-          <span id="user-name"></span>
-          <button class="logout-btn" onclick="logout()" title="Sair">Sair</button>
-        </div>
-      </div>
+    <div class="header-badge" id="fb-status-hdr" style="display:none"><span class="dot"></span>Online</div>
+    <div class="user-pill" id="user-pill" style="display:none">
+      <img id="user-photo" alt="">
+      <span id="user-name"></span>
+      <button class="logout-btn" onclick="logout()" title="Sair">Sair</button>
+    </div>
+  </div>
 </header>
 <nav>
   <button class="active" onclick="pg('dashboard',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
@@ -643,7 +640,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script>
 // ══════════════════════════════════════════════
 // DADOS INICIAIS
@@ -722,6 +719,9 @@ const DI={
   vendas:{loteAtivo:null,token:null},
 };
 
+// ══════════════════════════════════════════════
+// FIREBASE CONFIG
+// ══════════════════════════════════════════════
 const FIREBASE_CONFIG = {
   apiKey:"AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
   authDomain:"resenha-junina-2026.firebaseapp.com",
@@ -730,19 +730,15 @@ const FIREBASE_CONFIG = {
   storageBucket:"resenha-junina-2026.firebasestorage.app",
   messagingSenderId:"711313591458",
   appId:"1:711313591458:web:58f37b25c5c41d15a25bfb"
+};
 
- 
 // ══════════════════════════════════════════════
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
-// IMPORTANTE: liste aqui os e-mails Google dos organizadores.
-// As Firestore Rules tambem precisam ser atualizadas com os mesmos emails.
 const ADMIN_EMAILS = [
   'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
-  
-};
 
 // ══════════════════════════════════════════════
 // ESTADO
@@ -807,7 +803,6 @@ function initFirebase(){
   try{
     if(!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey==='SUA_API_KEY'){
       document.getElementById('fb-status').innerHTML='Offline (sem Firebase)';
-      // Sem Firebase, nao requer auth - libera admin em modo localStorage
       return;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
@@ -819,42 +814,37 @@ function initFirebase(){
     document.getElementById('fb-status').innerHTML='Erro Firebase';
   }
 }
- 
+
 // ══════════════════════════════════════════════
 // FIREBASE AUTH
 // ══════════════════════════════════════════════
 let _authReady=false, _currentUser=null;
- 
+
 function setupAuth(){
-  // Mostra a tela de login imediatamente (ate confirmar quem e)
   document.getElementById('auth-overlay').classList.add('on');
- 
+
   firebase.auth().onAuthStateChanged(user => {
     _authReady = true;
     _currentUser = user;
- 
+
     if(!user){
-      // Nao logado: mostra tela de login
       mostrarTelaLogin();
       return;
     }
- 
+
     if(!ADMIN_EMAILS.includes(user.email)){
-      // Logado mas nao autorizado
       mostrarErroAuth('Conta '+user.email+' nao tem permissao. Faca logout e entre com uma conta autorizada.');
-      // Mostra botao de "Sair" para trocar de conta
       const btn = document.getElementById('auth-btn-google');
       if(btn){ btn.textContent = 'Sair desta conta'; btn.onclick = () => firebase.auth().signOut(); }
       return;
     }
- 
-    // Autorizado: esconde overlay e inicia sync
+
     esconderTelaLogin();
     mostrarUsuario(user);
     fbSetupListeners();
   });
 }
- 
+
 function loginGoogle(){
   const btn = document.getElementById('auth-btn-google');
   const errEl = document.getElementById('auth-error');
@@ -862,7 +852,7 @@ function loginGoogle(){
   if(errEl) errEl.classList.remove('on');
   if(loadEl) loadEl.classList.add('on');
   if(btn) btn.disabled = true;
- 
+
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider)
     .catch(err => {
@@ -879,30 +869,29 @@ function loginGoogle(){
       if(btn) btn.disabled = false;
     });
 }
- 
+
 function logout(){
   if(!confirm('Sair do painel admin?')) return;
   firebase.auth().signOut()
     .then(() => location.reload())
     .catch(err => toast('Erro ao sair: '+err.message));
 }
- 
+
 function mostrarTelaLogin(){
   document.getElementById('auth-overlay').classList.add('on');
   document.getElementById('user-pill').style.display = 'none';
   document.getElementById('auth-error').classList.remove('on');
-  // Restaura botao caso tenha sido alterado
   const btn = document.getElementById('auth-btn-google');
   if(btn){
     btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Entrar com Google';
     btn.onclick = loginGoogle;
   }
 }
- 
+
 function esconderTelaLogin(){
   document.getElementById('auth-overlay').classList.remove('on');
 }
- 
+
 function mostrarUsuario(user){
   const pill = document.getElementById('user-pill');
   const photo = document.getElementById('user-photo');
@@ -911,65 +900,19 @@ function mostrarUsuario(user){
   if(photo) photo.src = user.photoURL || '';
   if(name) name.textContent = (user.displayName || user.email).split(' ')[0];
 }
- 
+
 function mostrarErroAuth(msg){
   const el = document.getElementById('auth-error');
   if(el){ el.textContent = msg; el.classList.add('on'); }
   const loadEl = document.getElementById('auth-loading');
   if(loadEl) loadEl.classList.remove('on');
 }
- 
- 
-═══════════════════════════════════════════════════════════════════
-  PATCH 6 — ATUALIZAR FIRESTORE RULES (origem 'admin' permitida)
-═══════════════════════════════════════════════════════════════════
- 
-  LOCALIZAR na funcao novoParticipanteValido() das rules:
- 
-      && d.origem == 'online'
- 
-  SUBSTITUIR POR:
- 
-      && d.origem in ['online', 'admin']
- 
-  E LOCALIZAR a regra de criacao de participantes:
- 
-      match /rj26_participantes/{doc} {
-        allow read: if isAdmin();
-        allow create: if novoParticipanteValido();
-        allow update, delete: if isAdmin();
-      }
- 
-  SUBSTITUIR POR (admin pode criar com qualquer origem; publico so com online):
- 
-      match /rj26_participantes/{doc} {
-        allow read: if isAdmin();
-        allow create: if novoParticipanteValido()
-          && (request.resource.data.origem == 'online' || isAdmin());
-        allow update, delete: if isAdmin();
-      }
- 
-  E ADICIONAR a regra para a colecao de log (estava faltando):
- 
-      match /rj26_log/{doc} {
-        allow read, write: if isAdmin();
-      }
- 
-  TROCAR o email no isAdmin() pelo seu email Google real:
- 
-      function isAdmin() {
-        return request.auth != null
-          && request.auth.token.email in ['SEU_EMAIL_REAL@gmail.com'];
-      }
- 
- 
 
 function fbSetupListeners(){
   if(!db) return;
   const u1=db.collection('rj26_participantes').onSnapshot(snap=>{
     if(_fbWriting) return;
     const parts=[];snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
-    // Firebase eh a fonte de verdade - nao sobrescrever com localStorage
     ST.participantes=parts.sort((a,b)=>(a.id||0)-(b.id||0));save();renderAll();
     document.getElementById('fb-status').innerHTML='Online - '+parts.length+' participantes';
     const ob=document.getElementById('offline-banner');if(ob)ob.remove();
@@ -1123,7 +1066,7 @@ function renderPart(){
   tb.innerHTML=lista.map(p=>`<tr>
     <td><span class="badge bb">${p.codigo}</span></td>
     <td class="bold">${p.pgto&&p.pgto.startsWith('Cortesia')?`<span class="badge bo" style="font-size:0.58rem;margin-right:4px;">Cortesia</span>`:''}${p.nome}${p.origem==='online'?'&nbsp;<span style="font-size:0.7rem;background:rgba(36,120,173,0.15);color:var(--b);padding:1px 6px;border-radius:10px;font-weight:700;">Online</span>':''}</td>
-    <td>${p.fone?`<a href="https://wa.me/55${p.fone.replace(/\\D/g,'')}" target="_blank" style="color:var(--g);text-decoration:none;font-size:0.75rem;">${p.fone}</a>`:'<span class="muted sm-txt">-</span>'}</td>
+    <td>${p.fone?`<a href="https://wa.me/55${p.fone.replace(/\D/g,'')}" target="_blank" style="color:var(--g);text-decoration:none;font-size:0.75rem;">${p.fone}</a>`:'<span class="muted sm-txt">-</span>'}</td>
     <td><span class="badge" style="background:${CL[p.lote]}22;color:${CL[p.lote]};border:1px solid ${CL[p.lote]}44">${p.lote}</span></td>
     <td class="muted sm-txt">${p.pgto||'-'}</td>
     <td>${p.recebido?R(p.recebido):'<span class="muted">-</span>'}</td>
@@ -1136,7 +1079,6 @@ function renderPart(){
       <button class="btn bgh sm" onclick="editPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       <button class="btn bdn sm" onclick="delPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
     </div></td></tr>`).join('')||'<tr><td colspan="9" class="tc muted" style="padding:18px">Nenhum resultado</td></tr>';
-  // Mobile cards
   const cards=document.getElementById('t-part-cards');
   if(cards)cards.innerHTML=lista.map(p=>{
     const statusBadge=p.pgto&&p.pgto.startsWith('Cortesia')?'<span class="badge bg">Cortesia</span>':pagou(p)?'<span class="badge bg">Pago</span>':'<span class="badge br">Pendente</span>';
@@ -1203,7 +1145,6 @@ async function enviarLote(){
       await enviarIngressoWpp(p);
       p.ingressoEnviado=true;save();fbSavePart(p);
       enviados++;
-      // Aguarda 2.5s entre cada envio para nao sobrecarregar
       await new Promise(r=>setTimeout(r,2500));
     }catch(e){
       console.warn('Erro ao enviar para '+p.nome+':',e);
@@ -1226,17 +1167,14 @@ function processarCodigo(raw){
   const p=(ST.participantes||[]).find(x=>x.codigo===v);
   if(!p)return{ok:false,tipo:'err',msg:'Codigo "'+v+'" nao encontrado'};
   if(p.entrou)return{ok:false,tipo:'dup',msg:'"'+p.nome+'" ja entrou!'};
-  // Cortesia → entrada direto
   if(p.pgto&&p.pgto.startsWith('Cortesia')){
     p.entrou=true;registrarEntrada(p);
     return{ok:true,tipo:'ok',msg:'Cortesia: '+p.nome};
   }
-  // Pagamento confirmado → entrada direto
   if(pagou(p)){
     p.entrou=true;registrarEntrada(p);
     return{ok:true,tipo:'ok',msg:p.nome+' - '+p.lote+' Lote'};
   }
-  // NAO pagou → NAO marca entrada, avisa portaria
   return{ok:false,tipo:'pend',msg:p.nome+' - PAGAMENTO PENDENTE\nCobrar R$'+(p.valor||PRECO[p.lote]||0)+' ou recusar entrada'};
 }
 function registrarEntrada(p){
@@ -1336,16 +1274,14 @@ function togglePat(id){const p=ST.patrocinadores.find(x=>x.id===id);if(p){p.pago
 function todosPagesPagos(){ST.patrocinadores.forEach(p=>p.pago=true);save();renderPat();renderDash();toast('Todos marcados como pagos!');}
 
 // ══════════════════════════════════════════════
-// QR CODE — FUNCOES CORRIGIDAS (bugs #2-#5 fixados)
+// QR CODE
 // ══════════════════════════════════════════════
 function gerarQR(containerId,texto){const el=document.getElementById(containerId);if(!el)return;el.innerHTML='';if(typeof QRCode==='undefined'){el.style.cssText='font-size:0.55rem;word-break:break-all;color:#1C0A00;padding:4px;background:#FFF8EE;border-radius:4px;';el.textContent=texto;return;}new QRCode(el,{text:texto,width:150,height:150,colorDark:'#000000',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});}
 
 function roundRect(ctx,x,y,w,h,r1,r2,r3,r4){if(r1===undefined)r1=8;if(r2===undefined)r2=r1;if(r3===undefined)r3=r1;if(r4===undefined)r4=r1;ctx.beginPath();ctx.moveTo(x+r1,y);ctx.lineTo(x+w-r2,y);ctx.arcTo(x+w,y,x+w,y+r2,r2);ctx.lineTo(x+w,y+h-r3);ctx.arcTo(x+w,y+h,x+w-r3,y+h,r3);ctx.lineTo(x+r4,y+h);ctx.arcTo(x,y+h,x,y+h-r4,r4);ctx.lineTo(x,y+r1);ctx.arcTo(x,y,x+r1,y,r1);ctx.closePath();}
 
-// FIX: getQRBlob SEMPRE recebe objeto {nome, codigo, lote} — nunca string
 async function getQRBlob(part,qrElSrc){
   if(!part||typeof part==='string'){
-    // Retrocompatibilidade: se recebeu string, tenta encontrar participante
     const codigo=typeof part==='string'?part:(part?part.codigo:null);
     if(!codigo)return null;
     const found=ST.participantes.find(p=>p.codigo===codigo||p.nome===codigo);
@@ -1382,9 +1318,6 @@ async function getQRBlob(part,qrElSrc){
   return new Promise(res=>C.toBlob(res,'image/png'));
 }
 
-// ══════════════════════════════════════════════
-// MODAL QR — DEFINICAO UNICA (bug #6-#13 fixado)
-// ══════════════════════════════════════════════
 let _qrModalId=null;
 
 function abrirQR(codigo){
@@ -1402,7 +1335,6 @@ function abrirQR(codigo){
 
 function fecharQR(){document.getElementById('qr-modal').classList.remove('on');setTimeout(()=>{const box=document.getElementById('qrm-box');if(box)box.innerHTML='';},250);}
 
-// FIX: async unico (bug #2 fixado - era "async async")
 async function baixarQR(){
   const p=ST.participantes.find(x=>x.codigo===_qrModalId);
   if(!p){toast('Participante nao encontrado');return;}
@@ -1411,7 +1343,6 @@ async function baixarQR(){
   catch(e){toast('Erro: '+e.message);}
 }
 
-// FIX: async unico (bug #3 fixado - era "async async")
 async function compartilharWhats(){
   const p=ST.participantes.find(x=>x.codigo===_qrModalId);
   if(!p){mostrarHint('Participante nao encontrado.');return;}
@@ -1431,7 +1362,7 @@ async function compartilharWhats(){
 function mostrarHint(msg){const h=document.getElementById('qrm-hint');if(h){h.textContent=msg;h.style.display='block';}}
 
 // ══════════════════════════════════════════════
-// CONFIRMAR PAGAMENTO + ENVIAR INGRESSO (definicao unica - bug #6 fixado)
+// CONFIRMAR PAGAMENTO + ENVIAR INGRESSO
 // ══════════════════════════════════════════════
 async function confirmarEEnviar(codigo){
   const p=ST.participantes.find(x=>x.codigo===codigo);if(!p)return;
@@ -1443,7 +1374,6 @@ async function confirmarEEnviar(codigo){
   p.ingressoEnviado=true;save();fbSavePart(p);renderPart();
 }
 
-// FIX: enviarIngressoWpp definicao unica (bug #7 + #5 tempDiv2 fixado)
 async function enviarIngressoWpp(p){
   if(!p)return;_qrModalId=p.codigo;toast('Gerando ingresso de '+p.nome.split(' ')[0]+'...');
   try{
@@ -1501,7 +1431,7 @@ function mostrarGuiaFirebase(){document.getElementById('fb-modal').classList.add
 // INIT
 // ══════════════════════════════════════════════
 const ft=document.createElement('div');ft.style='text-align:center;padding:16px;border-top:1px solid var(--border);margin-top:14px;';
-ft.innerHTML=`<button class="btn bb2 sm" onclick="exportJSON()">Backup</button> <label class="btn bgh sm" style="cursor:pointer">Restaurar<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label> <button class="btn bg2 sm" onclick="abrirRelatorio()">Relatorio</button> <button class="btn bdn sm" onclick="reset()">Resetar</button> <span class="muted sm-txt" style="margin-left:6px">v6.0</span>`;
+ft.innerHTML=`<button class="btn bb2 sm" onclick="exportJSON()">Backup</button> <label class="btn bgh sm" style="cursor:pointer">Restaurar<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label> <button class="btn bg2 sm" onclick="abrirRelatorio()">Relatorio</button> <button class="btn bdn sm" onclick="reset()">Resetar</button> <span class="muted sm-txt" style="margin-left:6px">v6.1</span>`;
 document.querySelector('main').appendChild(ft);
 document.getElementById('taxa-cred').value=ST.config.taxaCredito||5.09;
 renderAll();
