@@ -394,11 +394,12 @@ async function fbVagasUsadas(loteId){
     if(vagasSnap.exists && typeof vagasSnap.data().usadas === 'number'){
       return vagasSnap.data().usadas;
     }
+    // Fallback: conta participantes diretamente
     const snap = await db.collection('rj26_participantes').where('lote','==',loteId).get();
     return snap.size;
   }catch(e){
     console.warn('Erro consultar vagas:', e);
-    return 0;
+    return 0; // na duvida deixa passar, admin controla depois
   }
 }
 
@@ -406,23 +407,24 @@ async function fbReservarVagas(loteId, qty, loteMax){
   if(!db) return true;
   const vagasRef = db.collection('rj26_config').doc('vagas_'+loteId);
   try{
-    return await db.runTransaction(async tx => {
-      const snap = await tx.get(vagasRef);
-      let usadas = 0;
-      if(snap.exists && typeof snap.data().usadas === 'number'){
-        usadas = snap.data().usadas;
-      } else {
-        const existing = await db.collection('rj26_participantes').where('lote','==',loteId).get();
-        usadas = existing.size;
-      }
-      if(usadas + qty > loteMax) throw new Error('ESGOTADO');
-      tx.set(vagasRef, {usadas: usadas + qty, atualizadoEm: Date.now()}, {merge:true});
-      return true;
-    });
+    // Le o valor atual fora da transaction
+    // (queries dentro de transactions sao proibidas no Firestore)
+    const vagasSnap = await vagasRef.get();
+    let usadas = 0;
+    if(vagasSnap.exists && typeof vagasSnap.data().usadas === 'number'){
+      usadas = vagasSnap.data().usadas;
+    }
+    if(usadas + qty > loteMax) return false;
+    // Atualiza o contador
+    await vagasRef.set({
+      usadas: usadas + qty,
+      atualizadoEm: Date.now()
+    }, {merge: true});
+    return true;
   }catch(e){
-    if(e.message === 'ESGOTADO') return false;
     console.warn('Erro reservar vagas:', e);
-    throw e;
+    // Nao bloqueia o pedido - admin valida depois
+    return true;
   }
 }
 
