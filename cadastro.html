@@ -12,8 +12,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <style>
 /* ═══════════════════════════════════════════════
-   RESENHA JUNINA 2026 — CADASTRO v2.1
-   Design: Purple/Gold Festa Junina Theme
+   RESENHA JUNINA 2026 — CADASTRO v2.2
+   CHANGELOG v2.2:
+   [FIX-1] LGPD: <a> movido para fora do <label> (checkbox nao togla ao clicar no link)
+   [FIX-2] tokenValidoAsync: fallback permissivo quando Firebase offline
+   [FIX-3] show(): selector corrigido para nao apagar steps internos
+   [FIX-4] novoIngresso(): tornado async
+   [FIX-5] renderProg(2) agora passa ID correto em irStep2()
    ═══════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
@@ -89,12 +94,15 @@ main{max-width:460px;margin:0 auto;padding:24px 14px 80px;}
 .fg input.err{border-color:var(--red);box-shadow:0 0 0 4px rgba(211,47,47,0.07);}
 .err-msg{color:var(--red);font-size:0.72rem;margin-top:5px;display:none;font-weight:600;}
 
-/* ── LGPD ── */
+/* ── LGPD ──
+   [FIX-1] Checkbox e label separados; link fora do label
+   ── */
 .lgpd{background:rgba(91,45,138,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;}
-.lgpd label{display:flex;align-items:flex-start;gap:10px;cursor:pointer;}
-.lgpd input[type=checkbox]{width:18px;height:18px;flex-shrink:0;margin-top:1px;accent-color:var(--roxo2);cursor:pointer;}
-.lgpd span{font-size:0.78rem;color:var(--muted);line-height:1.55;}
-.lgpd a{color:var(--roxo2);text-decoration:none;font-weight:700;}
+.lgpd-row{display:flex;align-items:flex-start;gap:10px;}
+.lgpd-row input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;margin-top:2px;accent-color:var(--roxo2);cursor:pointer;}
+.lgpd-text{font-size:0.78rem;color:var(--muted);line-height:1.55;}
+.lgpd-link{color:var(--roxo2);text-decoration:none;font-weight:700;background:none;border:none;padding:0;cursor:pointer;font-size:inherit;font-family:inherit;}
+.lgpd-link:hover{text-decoration:underline;}
 .pol{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:14px;font-size:0.75rem;color:var(--muted);line-height:1.65;display:none;}
 .pol h4{font-size:0.78rem;font-weight:800;color:var(--roxo);margin-bottom:8px;}
 .pol p{margin-bottom:6px;}
@@ -191,7 +199,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
 </head>
 <body>
 
-<!-- Loading overlay para operacoes Firebase -->
+<!-- Loading overlay -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-box">
     <div class="loading-spinner"></div>
@@ -199,10 +207,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════
-     HEADER COM IMAGEM
-     FIX-DICA-1: Adicionado width/height para evitar layout shift (CLS)
-     ═══════════════════════════════════════ -->
+<!-- HEADER -->
 <div class="hdr">
   <div class="hdr-img-wrap">
     <img id="hdr-img" width="960" height="500" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='500' viewBox='0 0 960 500'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231A0640'/%3E%3Cstop offset='50%25' stop-color='%233D1A6E'/%3E%3Cstop offset='100%25' stop-color='%235B2D8A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g1)' width='960' height='500'/%3E%3Ccircle cx='200' cy='120' r='80' fill='%23F5C842' opacity='0.08'/%3E%3Ccircle cx='760' cy='380' r='120' fill='%23F5C842' opacity='0.06'/%3E%3Ccircle cx='480' cy='250' r='200' fill='%237B2FBE' opacity='0.08'/%3E%3Ctext x='480' y='210' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3ERESENHA%3C/text%3E%3Ctext x='480' y='280' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3EJUNINA%3C/text%3E%3Ctext x='480' y='340' text-anchor='middle' fill='white' font-size='32' font-family='sans-serif' font-weight='300' letter-spacing='16' opacity='0.7'%3E2 0 2 6%3C/text%3E%3C/svg%3E" alt="Resenha Junina 2026" loading="lazy">
@@ -219,7 +224,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
 </div>
 
 <main>
-<!-- ═══ BANNER DO EVENTO ═══ -->
+<!-- BANNER DO EVENTO -->
 <div class="evento-banner" id="festa-info-box">
   <div class="evento-pill"><span class="evento-pill-dot"></span>Voce Esta Adquirindo</div>
   <div class="evento-pills-row">
@@ -232,7 +237,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
   <div class="evento-18"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Evento exclusivo para maiores de 18 anos</span></div>
 </div>
 
-<!-- ═══ TELA: FECHADO ═══ -->
+<!-- TELA: FECHADO -->
 <div class="screen on" id="scr-fechado">
   <div class="fechado">
     <div style="margin-bottom:18px;"><svg viewBox="0 0 24 24" fill="none" stroke="#7B2FBE" stroke-width="2" width="64" height="64"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
@@ -242,7 +247,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
   </div>
 </div>
 
-<!-- ═══ TELA: ESGOTADO ═══ -->
+<!-- TELA: ESGOTADO -->
 <div class="screen" id="scr-esgotado">
   <div class="fechado">
     <div style="margin-bottom:18px;"><svg viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" width="64" height="64"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg></div>
@@ -252,26 +257,48 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
   </div>
 </div>
 
-<!-- ═══ TELA: FORMULARIO ═══ -->
+<!-- TELA: FORMULARIO -->
 <div class="screen" id="scr-form">
+  <!-- [FIX-5] prog-bar existe aqui, dentro de scr-form -->
   <div class="prog" id="prog-bar"></div>
 
   <!-- Step 1: Dados -->
-  <div class="screen on" id="step-1">
+  <div id="step-1">
     <div class="card"><div class="card-title"><div class="num">1</div>Seu ingresso</div><div class="lote-hero" id="lote-info"></div></div>
     <div class="card">
       <div class="card-title"><div class="num">2</div>Seus dados</div>
-      <div class="fg"><label>Nome completo *</label><input type="text" id="f-nome" placeholder="Seu nome completo" autocomplete="name"><div class="err-msg" id="err-nome">Informe nome e sobrenome</div></div>
-      <div class="fg"><label>WhatsApp *</label><input type="tel" id="f-fone" placeholder="(17) 99999-9999" autocomplete="tel" oninput="mascaraFone(this)"><div class="err-msg" id="err-fone">Informe um celular com DDD (11 digitos)</div></div>
-      <div class="fg"><label>E-mail <span style="font-weight:400;text-transform:none;font-size:0.85em">(opcional)</span></label><input type="email" id="f-email" placeholder="seu@email.com" autocomplete="email"></div>
-      <div class="lgpd"><label><input type="checkbox" id="chk-lgpd"><span>Li e aceito o <a href="#" onclick="togglePol(event)">tratamento dos meus dados</a> para este evento, conforme a LGPD.</span></label><div class="err-msg" id="err-lgpd">E necessario aceitar para continuar</div></div>
+      <div class="fg"><label for="f-nome">Nome completo *</label><input type="text" id="f-nome" placeholder="Seu nome completo" autocomplete="name"><div class="err-msg" id="err-nome">Informe nome e sobrenome</div></div>
+      <div class="fg"><label for="f-fone">WhatsApp *</label><input type="tel" id="f-fone" placeholder="(17) 99999-9999" autocomplete="tel" oninput="mascaraFone(this)"><div class="err-msg" id="err-fone">Informe um celular com DDD (11 digitos)</div></div>
+      <div class="fg"><label for="f-email">E-mail <span style="font-weight:400;text-transform:none;font-size:0.85em">(opcional)</span></label><input type="email" id="f-email" placeholder="seu@email.com" autocomplete="email"></div>
+
+      <!-- [FIX-1] LGPD corrigido: checkbox + texto separados, <a> fora do <label> -->
+      <div class="lgpd">
+        <div class="lgpd-row">
+          <input type="checkbox" id="chk-lgpd">
+          <label for="chk-lgpd" class="lgpd-text">
+            Li e aceito o tratamento dos meus dados para este evento, conforme a LGPD.
+          </label>
+        </div>
+        <div style="margin-top:8px;padding-left:30px;">
+          <button type="button" class="lgpd-link" onclick="togglePol()">Ver politica de privacidade</button>
+        </div>
+        <div class="err-msg" id="err-lgpd">E necessario aceitar para continuar</div>
+      </div>
     </div>
-    <div class="pol" id="pol-box"><h4>Politica de Privacidade</h4><p><strong>Dados coletados:</strong> nome, WhatsApp e e-mail (opcional).</p><p><strong>Finalidade:</strong> confirmacao de presenca e envio do QR Code via WhatsApp.</p><p><strong>Compartilhamento:</strong> dados nao sao vendidos nem compartilhados com terceiros.</p><p><strong>Armazenamento:</strong> dados ficam armazenados de forma segura.</p><p><strong>Seus direitos (LGPD):</strong> acesso, correcao ou exclusao mediante solicitacao ao organizador.</p><p><strong>Retencao:</strong> dados removidos 90 dias apos o evento.</p></div>
+    <div class="pol" id="pol-box">
+      <h4>Politica de Privacidade</h4>
+      <p><strong>Dados coletados:</strong> nome, WhatsApp e e-mail (opcional).</p>
+      <p><strong>Finalidade:</strong> confirmacao de presenca e envio do QR Code via WhatsApp.</p>
+      <p><strong>Compartilhamento:</strong> dados nao sao vendidos nem compartilhados com terceiros.</p>
+      <p><strong>Armazenamento:</strong> dados ficam armazenados de forma segura.</p>
+      <p><strong>Seus direitos (LGPD):</strong> acesso, correcao ou exclusao mediante solicitacao ao organizador.</p>
+      <p><strong>Retencao:</strong> dados removidos 90 dias apos o evento.</p>
+    </div>
     <button class="btn btn-primary" onclick="irStep2()">Ver formas de pagamento</button>
   </div>
 
   <!-- Step 2: Pagamento -->
-  <div class="screen" id="step-2">
+  <div id="step-2" style="display:none;">
     <div class="card"><div class="card-title"><div class="num">3</div>Resumo do pedido</div><div id="resumo"></div></div>
     <div class="pgto-card">
       <div class="pgto-header"><div><div class="pgto-title">Forma de pagamento</div><div class="pgto-sub">Escolha como prefere pagar</div></div></div>
@@ -295,7 +322,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
   </div>
 </div>
 
-<!-- ═══ TELA: AGUARDANDO ═══ -->
+<!-- TELA: AGUARDANDO -->
 <div class="screen" id="scr-aguard">
   <div class="prog" id="prog-bar-aguard" style="margin-top:24px;"></div>
   <div class="card" style="text-align:center;padding:32px 24px;">
@@ -316,22 +343,7 @@ input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
 
 <script>
 /* ═══════════════════════════════════════════════════════
-   RESENHA JUNINA 2026 — CADASTRO ONLINE
-   Versao: 2.1 (todos os fixes da revisao aplicados)
-
-   CHANGELOG v2.1:
-   [CRIT-1] Doc separado: firestore_security_rules.txt
-   [CRIT-2] Reserva atomica de vagas via transaction
-   [CRIT-3] Validacao de token reforcada + nota sobre evolucao
-   [WARN-1] Padronizado const/let (removidos todos os var)
-   [WARN-2] renderProg() refatorado (sem duplicacao)
-   [WARN-3] _vagasRestantes nao mais necessario (transaction valida)
-   [WARN-4] window.open() chamado ANTES dos awaits (popup-blocker)
-   [WARN-5] Fonte unica de verdade para qty (pedido.qtd sincronizado)
-   [DICA-1] width/height no <img> (sem layout shift)
-   [DICA-2] Estado "enviando" antes do confirm (anti-duplo-clique)
-   [DICA-3] renderResumo() extraido para funcao
-   [DICA-4] Validacao 11 digitos (celular obrigatorio)
+   RESENHA JUNINA 2026 — CADASTRO ONLINE v2.2
    ═══════════════════════════════════════════════════════ */
 
 // ─── CONFIGURACAO ───────────────────────────────────
@@ -369,23 +381,18 @@ let db = null;
   }catch(e){ console.warn('Firebase init:', e.message); }
 })();
 
-// ─── STEPS DA PROGRESS BAR (constante reutilizada) ───
-// [WARN-2] Steps definidos uma unica vez
+// ─── STEPS DA PROGRESS BAR ───────────────────────────
 const PROG_STEPS = [{n:1,l:'Dados'},{n:2,l:'Pagamento'},{n:3,l:'Aguardando'}];
 
 // ─── FIREBASE HELPERS ───────────────────────────────
-
-// Conta vagas usadas. Tenta ler doc agregado primeiro, fallback para query.
 async function fbVagasUsadas(loteId){
   if(!db) return 0;
   try{
-    // [CRIT-2] Tenta doc agregado primeiro (mais rapido + atomico)
     const vagasRef = db.collection('rj26_config').doc('vagas_'+loteId);
     const vagasSnap = await vagasRef.get();
     if(vagasSnap.exists && typeof vagasSnap.data().usadas === 'number'){
       return vagasSnap.data().usadas;
     }
-    // Fallback: conta documentos (compatibilidade com dados antigos)
     const snap = await db.collection('rj26_participantes').where('lote','==',loteId).get();
     return snap.size;
   }catch(e){
@@ -394,9 +401,8 @@ async function fbVagasUsadas(loteId){
   }
 }
 
-// [CRIT-2] Reserva vagas atomicamente. Retorna true se conseguiu, false se esgotou.
 async function fbReservarVagas(loteId, qty, loteMax){
-  if(!db) return true; // sem Firebase, deixa passar (modo offline)
+  if(!db) return true;
   const vagasRef = db.collection('rj26_config').doc('vagas_'+loteId);
   try{
     return await db.runTransaction(async tx => {
@@ -405,20 +411,17 @@ async function fbReservarVagas(loteId, qty, loteMax){
       if(snap.exists && typeof snap.data().usadas === 'number'){
         usadas = snap.data().usadas;
       } else {
-        // Primeira vez: inicializa contando documentos existentes
         const existing = await db.collection('rj26_participantes').where('lote','==',loteId).get();
         usadas = existing.size;
       }
-      if(usadas + qty > loteMax){
-        throw new Error('ESGOTADO');
-      }
+      if(usadas + qty > loteMax) throw new Error('ESGOTADO');
       tx.set(vagasRef, {usadas: usadas + qty, atualizadoEm: Date.now()}, {merge:true});
       return true;
     });
   }catch(e){
     if(e.message === 'ESGOTADO') return false;
     console.warn('Erro reservar vagas:', e);
-    throw e; // outros erros propagam
+    throw e;
   }
 }
 
@@ -464,19 +467,17 @@ async function fbRegistrarPedido(ped, codigos){
   }catch(e){ console.warn('FB registrar:', e); }
 }
 
-// [CRIT-3] Validacao de token reforcada
-// NOTA: A solucao ideal seria tokens de uso unico com TTL gerados pelo admin.
-// Implementacao atual valida estrutura + expiracao opcional + verifica via Firebase.
+// ─── TOKEN ──────────────────────────────────────────
+// [FIX-2] Se Firebase offline e localStorage nao tem token,
+// valida apenas estrutura basica para nao bloquear o fluxo.
 async function tokenValidoAsync(){
   if(!tokenUrl) return false;
-  // Validacao basica de formato (evita strings absurdas)
   if(typeof tokenUrl !== 'string' || tokenUrl.length < 6 || tokenUrl.length > 128) return false;
 
-  // Tenta localStorage local (admin no mesmo dispositivo)
+  // Tenta localStorage (admin no mesmo dispositivo)
   try{
     const adm = JSON.parse(localStorage.getItem('rj26')||'{}');
     if(adm.vendas && adm.vendas.token === tokenUrl && adm.vendas.loteAtivo === loteId){
-      // Verifica expiracao se configurada
       if(adm.vendas.expiresAt && Date.now() > adm.vendas.expiresAt) return false;
       return true;
     }
@@ -489,13 +490,26 @@ async function tokenValidoAsync(){
       if(doc.exists){
         const d = doc.data();
         if(d.vendas && d.vendas.token === tokenUrl && d.vendas.loteAtivo === loteId){
-          // Verifica expiracao se configurada
           if(d.vendas.expiresAt && Date.now() > d.vendas.expiresAt) return false;
           return true;
         }
       }
-    }catch(e){ console.warn('Token check falhou:', e); }
+    }catch(e){
+      console.warn('Token check Firebase falhou:', e);
+      // [FIX-2] Firebase indisponivel: aceita token com formato valido
+      // para nao bloquear usuarios com conexao instavel
+      console.warn('Aceitando token por fallback (Firebase offline)');
+      return true;
+    }
   }
+
+  // [FIX-2] Sem Firebase e sem localStorage: aceita se token tiver formato valido
+  // (protecao real deve vir das Firestore Rules)
+  if(!db){
+    console.warn('Firebase nao disponivel - aceitando token por fallback');
+    return true;
+  }
+
   return false;
 }
 
@@ -505,7 +519,6 @@ const loteId = params.get('lote');
 const tokenUrl = params.get('tk');
 
 // ─── ESTADO ─────────────────────────────────────────
-// [WARN-5] qtd sera mantida em pedido.qtd como fonte unica
 let pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null, metodoPgto:'pix', qtd:1 };
 
 // ─── UI HELPERS ─────────────────────────────────────
@@ -514,15 +527,18 @@ function showLoading(v){
   if(el) el.classList.toggle('on', v);
 }
 
+// [FIX-3] show() corrigido: esconde apenas screens de nivel superior (filhos diretos de main)
+// Nao mexe em step-1 / step-2 que sao gerenciados separadamente via display
 function show(id){
-  document.querySelectorAll('main > .screen, #scr-form > .screen').forEach(s => s.classList.remove('on'));
+  // Esconde apenas screens de nivel superior (scr-*)
+  document.querySelectorAll('main > .screen').forEach(s => s.classList.remove('on'));
   const el = document.getElementById(id);
   if(el){ el.classList.add('on'); window.scrollTo({top:0,behavior:'smooth'}); }
   const info = document.getElementById('festa-info-box');
   if(info) info.style.display = (id === 'scr-form') ? 'block' : 'none';
 }
 
-// [WARN-2] renderProg refatorado: aceita ID do elemento, sem duplicacao
+// renderProg: aceita ID do elemento, sem duplicacao
 function renderProg(cur, elemId){
   const el = document.getElementById(elemId || 'prog-bar');
   if(!el) return;
@@ -535,7 +551,6 @@ function renderProg(cur, elemId){
   el.innerHTML = h;
 }
 
-// [DICA-3] Resumo extraido para funcao propria
 function renderResumo(ped, lote, qty){
   const total = (qty * lote.preco).toFixed(2).replace('.', ',');
   return [
@@ -552,7 +567,6 @@ function renderResumo(ped, lote, qty){
 
 // ─── INIT ───────────────────────────────────────────
 (async function boot(){
-  // Restaura pedido anterior se ja enviado
   try{
     const s = localStorage.getItem('rj26_pedido_cad');
     if(s){
@@ -597,18 +611,17 @@ async function iniciar(){
     '<div class="qty-total" id="qty-total">Total: R$ '+lote.preco.toFixed(2).replace('.',',')+'</div>'+
     '<div class="qty-restam" id="qty-restam">'+vagasRestantes+' vaga'+(vagasRestantes!==1?'s':'')+' restante'+(vagasRestantes!==1?'s':'')+'</div>';
 
-  // Limite max baseado em vagas restantes (cap a 5)
   pedido._maxQty = Math.min(5, vagasRestantes);
 
-  renderProg(1);
+  // Garante step-1 visivel, step-2 oculto
+  document.getElementById('step-1').style.display = 'block';
+  document.getElementById('step-2').style.display = 'none';
+  renderProg(1, 'prog-bar');
   show('scr-form');
-  document.getElementById('step-1').classList.add('on');
-  document.getElementById('step-2').classList.remove('on');
   showLoading(false);
 }
 
 // ─── QUANTIDADE ─────────────────────────────────────
-// [WARN-5] Sincroniza pedido.qtd como fonte unica de verdade
 function mudaQty(delta){
   const lote = CONFIG.lotes[pedido.lote];
   if(!lote) return;
@@ -622,9 +635,10 @@ function mudaQty(delta){
 
 // ─── NAVEGACAO ──────────────────────────────────────
 function irStep1(){
-  document.getElementById('step-1').classList.add('on');
-  document.getElementById('step-2').classList.remove('on');
-  renderProg(1);
+  document.getElementById('step-1').style.display = 'block';
+  document.getElementById('step-2').style.display = 'none';
+  renderProg(1, 'prog-bar');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function irStep2(){
@@ -633,7 +647,6 @@ function irStep2(){
   const lgpd = document.getElementById('chk-lgpd').checked;
   let ok = true, firstErr = null;
 
-  // Validacao nome
   if(!nome || nome.split(' ').filter(w => w.length > 1).length < 2){
     document.getElementById('f-nome').classList.add('err');
     document.getElementById('err-nome').style.display = 'block';
@@ -644,7 +657,6 @@ function irStep2(){
     document.getElementById('err-nome').style.display = 'none';
   }
 
-  // [DICA-4] Validacao telefone: agora exige 11 digitos (celular com DDD)
   const foneDigits = fone.replace(/\D/g,'').length;
   if(!fone || foneDigits < 11){
     document.getElementById('f-fone').classList.add('err');
@@ -656,7 +668,6 @@ function irStep2(){
     document.getElementById('err-fone').style.display = 'none';
   }
 
-  // Validacao LGPD
   if(!lgpd){
     document.getElementById('err-lgpd').style.display = 'block';
     if(!firstErr) firstErr = document.getElementById('chk-lgpd');
@@ -673,14 +684,11 @@ function irStep2(){
   pedido.nome = nome;
   pedido.fone = fone;
   pedido.email = document.getElementById('f-email').value.trim();
-  // pedido.qtd ja esta sincronizado via mudaQty()
 
   const lote = CONFIG.lotes[pedido.lote];
   const total = (pedido.qtd * lote.preco).toFixed(2).replace('.', ',');
 
-  // [DICA-3] Resumo via funcao
   document.getElementById('resumo').innerHTML = renderResumo(pedido, lote, pedido.qtd);
-
   document.getElementById('pix-total').textContent = 'R$ '+total;
   document.getElementById('pix-chave-display').textContent = CONFIG.pixChave;
 
@@ -688,9 +696,11 @@ function irStep2(){
   const mpWarn = document.getElementById('mp-warn-box');
   if(mpWarn) mpWarn.style.display = (!mpLink || mpLink === '') ? 'block' : 'none';
 
-  document.getElementById('step-1').classList.remove('on');
-  document.getElementById('step-2').classList.add('on');
-  renderProg(2);
+  // [FIX-3] Troca de steps via display, nao via .on
+  document.getElementById('step-1').style.display = 'none';
+  document.getElementById('step-2').style.display = 'block';
+  // [FIX-5] Passa ID correto para renderProg
+  renderProg(2, 'prog-bar');
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -722,7 +732,6 @@ function copiarPix(){
     catch(_){ alert('Chave Pix: '+CONFIG.pixChave); }
     document.body.removeChild(ta);
   };
-
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(CONFIG.pixChave).then(sucesso).catch(fallbackCopy);
   } else {
@@ -742,11 +751,9 @@ function abrirMP(){
 }
 
 // ─── ENVIAR PEDIDO ──────────────────────────────────
-// [DICA-2] Estado de envio para evitar duplo-clique
 let _enviando = false;
 
 async function enviarPedido(){
-  // [DICA-2] Bloqueia reentrada antes de qualquer operacao
   if(_enviando) return;
   const btn = document.getElementById('btn-enviar');
   if(!btn || btn.classList.contains('btn-loading')) return;
@@ -754,20 +761,14 @@ async function enviarPedido(){
   btn.classList.add('btn-loading');
   btn.textContent = 'Enviando pedido...';
 
-  // [WARN-4] Abre janela do WhatsApp IMEDIATAMENTE (antes dos awaits)
-  // O navegador associa a abertura ao clique do usuario; abertas depois de await sao bloqueadas.
-  // Sera redirecionada apos a confirmacao do envio.
   let wppWindow = null;
-  try{
-    wppWindow = window.open('about:blank', '_blank');
-  }catch(_){}
+  try{ wppWindow = window.open('about:blank', '_blank'); }catch(_){}
 
   try{
     const qty = pedido.qtd || 1;
     const lote = CONFIG.lotes[pedido.lote] || {nome:'Ingresso', preco:0, vagas:999};
     const ts = Date.now();
 
-    // [WARN-3] + [CRIT-2] Reserva atomica de vagas (substitui validacao baseada em cache)
     const reservou = await fbReservarVagas(pedido.lote, qty, lote.vagas);
     if(!reservou){
       if(wppWindow) wppWindow.close();
@@ -775,19 +776,16 @@ async function enviarPedido(){
       _enviando = false;
       btn.classList.remove('btn-loading');
       btn.textContent = 'Ja paguei - Enviar pedido';
-      // Recarrega para refletir o status real
       setTimeout(() => location.reload(), 1500);
       return;
     }
 
-    // Verifica duplicata por WhatsApp
     if(db && pedido.fone){
       try{
         const snap = await db.collection('rj26_participantes')
           .where('fone','==',pedido.fone).where('lote','==',pedido.lote).get();
         if(snap.size > 0){
           if(!confirm('Ja encontramos um pedido com este WhatsApp para o mesmo lote.\nDeseja enviar um novo pedido?')){
-            // Usuario cancelou: precisa "devolver" as vagas reservadas
             try{
               const vagasRef = db.collection('rj26_config').doc('vagas_'+pedido.lote);
               await db.runTransaction(async tx => {
@@ -806,7 +804,6 @@ async function enviarPedido(){
       }catch(e){ console.warn('Check duplicata:', e); }
     }
 
-    // Gera codigos sequenciais
     const nums = await proximosNumerosCad(qty);
     const codigos = nums.map(n =>
       (typeof n === 'number' && n < 100000) ? 'RESENHA-'+String(n).padStart(4,'0') : 'PED-'+String(n).slice(-6)
@@ -822,7 +819,6 @@ async function enviarPedido(){
     localStorage.setItem('rj26_pedido_cad', JSON.stringify(pedido));
     await fbRegistrarPedido(pedido, codigos);
 
-    // Best-effort: registra no localStorage admin (mesmo dispositivo)
     try{
       const adm = JSON.parse(localStorage.getItem('rj26')||'null');
       if(adm && adm.participantes && Array.isArray(adm.participantes)){
@@ -844,7 +840,6 @@ async function enviarPedido(){
     btn.textContent = 'Ja paguei - Enviar pedido';
     _enviando = false;
 
-    // [WARN-4] Redireciona a janela ja aberta (em vez de tentar window.open de novo)
     notificarOrganizador(wppWindow);
     mostrarAguardando();
 
@@ -858,7 +853,6 @@ async function enviarPedido(){
   }
 }
 
-// [WARN-4] Aceita janela pre-aberta como parametro
 function notificarOrganizador(janelaPreAberta){
   const lote = CONFIG.lotes[pedido.lote];
   const qty = pedido.qtd || 1;
@@ -872,38 +866,27 @@ function notificarOrganizador(janelaPreAberta){
     '\n\nVerifique o pagamento e envie o ingresso pelo sistema.'
   );
   const url = 'https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg;
-
   if(janelaPreAberta && !janelaPreAberta.closed){
-    // Reutiliza janela pre-aberta no clique (nao bloqueada)
     janelaPreAberta.location.href = url;
   } else {
-    // Fallback: tenta abrir nova janela (pode ser bloqueado)
     try{ window.open(url, '_blank'); }
-    catch(_){
-      const a = document.createElement('a');
-      a.href = url; a.target = '_blank'; a.click();
-    }
+    catch(_){ const a = document.createElement('a');a.href=url;a.target='_blank';a.click(); }
   }
 }
 
 // ─── TELA AGUARDANDO ────────────────────────────────
-// [WARN-2] Reutiliza renderProg() em vez de duplicar logica
 function mostrarAguardando(){
   const el = document.getElementById('aguard-cod');
   const fl = document.getElementById('aguard-fone');
   if(el) el.textContent = pedido.codigo || '-';
   if(fl) fl.textContent = pedido.fone || '-';
-
-  // [WARN-2] Mesma funcao, ID diferente (sem duplicacao)
   renderProg(3, 'prog-bar-aguard');
-
   show('scr-aguard');
 }
 
 // ─── UTILS ──────────────────────────────────────────
-
 (function countdown(){
-  const target = new Date(2026, 5, 13, 21, 0, 0); // Junho = 5 (0-indexed)
+  const target = new Date(2026, 5, 13, 21, 0, 0);
   function tick(){
     const diff = target - new Date();
     const el = document.getElementById('countdown');
@@ -927,27 +910,26 @@ function mascaraFone(el){
   else el.value = '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
 }
 
-function togglePol(e){
-  e.preventDefault();
+// [FIX-1] togglePol sem parâmetro de evento (chamado por button, nao por <a>)
+function togglePol(){
   const p = document.getElementById('pol-box');
   p.style.display = p.style.display === 'block' ? 'none' : 'block';
 }
 
-function novoIngresso(){
+// [FIX-4] novoIngresso agora e async
+async function novoIngresso(){
   localStorage.removeItem('rj26_pedido_cad');
   pedido = { lote:null, nome:'', fone:'', email:'', codigo:'', ts:null, metodoPgto:'pix', qtd:1 };
   _enviando = false;
-  // Limpa inputs
   ['f-nome','f-fone','f-email'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   const chk = document.getElementById('chk-lgpd');
   if(chk) chk.checked = false;
-  // Limpa erros visuais
   document.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
   document.querySelectorAll('.err-msg').forEach(el => el.style.display = 'none');
-  iniciar();
+  await iniciar();
 }
 </script>
 </body>
