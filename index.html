@@ -736,7 +736,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -841,7 +841,8 @@ function setupAuth(){
 
     esconderTelaLogin();
     mostrarUsuario(user);
-    fbSetupListeners();
+    // Garante que o token JWT esta propagado antes de subir os listeners
+    user.getIdToken(true).then(() => fbSetupListeners()).catch(() => fbSetupListeners());
   });
 }
 
