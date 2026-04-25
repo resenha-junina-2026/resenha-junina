@@ -464,7 +464,12 @@ async function fbRegistrarPedido(ped, codigos){
       });
     });
     await batch.commit();
-  }catch(e){ console.warn('FB registrar:', e); }
+  }catch(e){
+    // [FIX-7] Propaga o erro para enviarPedido() poder avisar o usuario
+    // Sem isso, o pedido ficava salvo localmente mas nao chegava ao admin no Firebase
+    console.warn('FB registrar falhou:', e);
+    throw e;
+  }
 }
 
 // ─── TOKEN ──────────────────────────────────────────
@@ -571,7 +576,10 @@ function renderResumo(ped, lote, qty){
     const s = localStorage.getItem('rj26_pedido_cad');
     if(s){
       const p = JSON.parse(s);
-      if(p.codigo && p.lote && p.enviado){
+      // [FIX-6] Valida que o pedido salvo e do MESMO lote da URL atual
+      // Sem essa checagem, usuario com pedido antigo do lote 1 que abre
+      // o link do lote 2 veria a tela "aguardando" com dados do lote errado
+      if(p.codigo && p.lote && p.enviado && p.lote === loteId){
         pedido = p;
         if(!pedido.qtd) pedido.qtd = 1;
         mostrarAguardando();
