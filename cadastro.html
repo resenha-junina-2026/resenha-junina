@@ -193,7 +193,8 @@ main{max-width:460px;margin:0 auto;padding:24px 14px 80px;}
 .loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--roxo2);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;}
 
 /* ── Mobile ── */
-input,select,textarea{font-size:16px!important;-webkit-appearance:none;}
+input:not([type=checkbox]),select,textarea{font-size:16px!important;-webkit-appearance:none;}
+input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;margin-top:2px;accent-color:var(--roxo2);cursor:pointer;}
 @media(max-width:420px){.card{padding:18px 14px;}.hdr-overlay{padding:18px 14px 24px;}}
 </style>
 </head>
