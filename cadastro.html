@@ -312,6 +312,7 @@ input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;margin-
         <div class="pgto-panel on" id="panel-pix"><p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Copie a chave Pix e transfira o valor <strong>exato</strong> pelo seu banco.</p><div class="pix-box"><div class="pix-chave" id="pix-chave-display">-</div><button class="pix-copy" id="pix-copy-btn" onclick="copiarPix()">Copiar</button></div></div>
         <div class="pgto-panel" id="panel-mp">
           <div class="mp-info">Clique abaixo para abrir o <strong>Mercado Pago</strong> e pagar com cartao ou Pix. Apos pagar, volte aqui e clique em "Enviar pedido".</div>
+          <div id="mp-qty-aviso" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.35);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:0.78rem;color:#92400e;font-weight:600;">Para comprar mais de 1 ingresso com cartao, entre em contato pelo WhatsApp do organizador. Com Pix voce pode comprar quantos quiser.</div>
           <div class="mp-warn" id="mp-warn-box">Link do Mercado Pago nao configurado para este lote. Voce sera redirecionado ao WhatsApp do organizador.</div>
           <button class="btn btn-mp" onclick="abrirMP()" style="margin-bottom:0;">Abrir Mercado Pago</button>
         </div>
@@ -337,6 +338,20 @@ input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;margin-
       <div class="aguard-step"><div class="sn">3</div><div class="st">Seu <strong>ingresso QR Code</strong> e enviado pelo WhatsApp para <span id="aguard-fone" style="color:var(--roxo2);font-weight:700;">-</span></div></div>
     </div>
   </div>
+
+  <!-- ETAPA OBRIGATORIA: avisar organizador -->
+  <div id="wpp-obrigatorio" style="margin-bottom:12px;">
+    <div style="background:rgba(37,211,102,0.08);border:2px solid rgba(37,211,102,0.35);border-radius:14px;padding:20px;text-align:center;">
+      <div style="font-size:1rem;font-weight:900;color:#1a5c2e;margin-bottom:6px;">⚠️ Ultimo passo obrigatorio!</div>
+      <p style="font-size:0.82rem;color:#2d7a45;line-height:1.55;margin-bottom:14px;">Clique no botao abaixo para <strong>avisar o organizador</strong> que voce pagou. Sem isso, seu ingresso nao sera enviado.</p>
+      <button class="btn btn-green" id="btn-wpp-obrig" onclick="avisarOrganizadorWpp()" style="font-size:0.95rem;">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.857L0 24l6.335-1.521A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.028-1.38l-.36-.214-3.733.897.933-3.641-.235-.374A9.818 9.818 0 0 1 2.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        Avisar organizador no WhatsApp
+      </button>
+      <div id="wpp-enviado-confirm" style="display:none;margin-top:12px;font-size:0.82rem;color:#1a5c2e;font-weight:700;">✓ Aviso enviado! Aguarde a confirmacao do pagamento.</div>
+    </div>
+  </div>
+
   <div class="alert a-info">Guarde o numero do pedido como comprovante. Em caso de duvida, entre em contato com o organizador.</div>
   <button class="btn btn-ghost" style="margin-top:4px;" onclick="novoIngresso()">+ Comprar outro ingresso</button>
 </div>
@@ -358,8 +373,8 @@ const CONFIG = {
   pixChave: '4250e7fa-891d-4bb3-b5d4-c65a1fafb023',
   linksMP: {
     '1°': 'https://mpago.la/15AYPXV',
-    '2°': '',
-    '3°': '',
+    '2°': 'https://mpago.la/1kYF7Wu',
+    '3°': 'https://mpago.la/27qVoD5',
   },
   firebase: {
     apiKey:"AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
@@ -636,6 +651,12 @@ async function iniciar(){
 function mudaQty(delta){
   const lote = CONFIG.lotes[pedido.lote];
   if(!lote) return;
+  // Bloqueia aumento de qty quando cartao/MP selecionado (preco fixo)
+  if(delta > 0 && pedido.metodoPgto === 'mp'){
+    const aviso = document.getElementById('mp-qty-aviso');
+    if(aviso){ aviso.style.display='block'; aviso.style.animation='none'; setTimeout(()=>aviso.style.animation='',100); }
+    return;
+  }
   const max = pedido._maxQty || 5;
   pedido.qtd = Math.max(1, Math.min(max, (pedido.qtd || 1) + delta));
   const el = document.getElementById('qty-val');
@@ -722,6 +743,25 @@ function selecionarPgto(tipo, el){
   el.classList.add('active');
   document.getElementById('panel-'+tipo).classList.add('on');
   pedido.metodoPgto = tipo;
+
+  // Cartao/MP tem preco fixo — bloqueia qty > 1
+  const aviso = document.getElementById('mp-qty-aviso');
+  const qtyBtnPlus = document.querySelector('.qty-btn:last-child');
+  if(tipo === 'mp'){
+    if(pedido.qtd > 1){
+      pedido.qtd = 1;
+      const el2 = document.getElementById('qty-val');
+      const tot = document.getElementById('qty-total');
+      const lote = CONFIG.lotes[pedido.lote];
+      if(el2) el2.textContent = 1;
+      if(tot && lote) tot.textContent = 'Total: R$ '+lote.preco.toFixed(2).replace('.',',');
+    }
+    if(aviso) aviso.style.display = 'block';
+    if(qtyBtnPlus) qtyBtnPlus.setAttribute('data-mp-blocked','1');
+  } else {
+    if(aviso) aviso.style.display = 'none';
+    if(qtyBtnPlus) qtyBtnPlus.removeAttribute('data-mp-blocked');
+  }
 }
 
 function copiarPix(){
@@ -851,7 +891,8 @@ async function enviarPedido(){
     btn.textContent = 'Ja paguei - Enviar pedido';
     _enviando = false;
 
-    notificarOrganizador(wppWindow);
+    // Fecha a janela pre-alocada (nao precisa mais - usuario clica no botao obrigatorio)
+    if(wppWindow && !wppWindow.closed) wppWindow.close();
     mostrarAguardando();
 
   }catch(e){
@@ -864,25 +905,33 @@ async function enviarPedido(){
   }
 }
 
-function notificarOrganizador(janelaPreAberta){
+function _gerarUrlWpp(){
   const lote = CONFIG.lotes[pedido.lote];
   const qty = pedido.qtd || 1;
   const total = (qty * lote.preco).toFixed(2).replace('.',',');
   const metodo = pedido.metodoPgto === 'mp' ? 'Mercado Pago' : 'Pix';
   const msg = encodeURIComponent(
-    '*Novo pedido - Resenha Junina 2026*\n\n'+
-    '*Nome:* '+pedido.nome+'\n*WhatsApp:* '+pedido.fone+'\n'+
-    '*Lote:* '+lote.nome+'\n*Qtd:* '+qty+' ingresso'+(qty>1?'s':'')+'\n'+
-    '*Total:* R$'+total+' ('+metodo+')\n*Pedido:* '+pedido.codigo+
+    '*Novo pedido - Resenha Junina 2026*\n\n' +
+    '*Nome:* ' + pedido.nome + '\n*WhatsApp:* ' + pedido.fone + '\n' +
+    '*Lote:* ' + lote.nome + '\n*Qtd:* ' + qty + ' ingresso' + (qty>1?'s':'') + '\n' +
+    '*Total:* R$' + total + ' (' + metodo + ')\n*Pedido:* ' + pedido.codigo +
     '\n\nVerifique o pagamento e envie o ingresso pelo sistema.'
   );
-  const url = 'https://wa.me/'+CONFIG.wppOrganizador+'?text='+msg;
-  if(janelaPreAberta && !janelaPreAberta.closed){
-    janelaPreAberta.location.href = url;
-  } else {
-    try{ window.open(url, '_blank'); }
-    catch(_){ const a = document.createElement('a');a.href=url;a.target='_blank';a.click(); }
-  }
+  return 'https://wa.me/' + CONFIG.wppOrganizador + '?text=' + msg;
+}
+
+function notificarOrganizador(janelaPreAberta){
+  // Mantido por compatibilidade mas janela e fechada - usuario usa botao obrigatorio
+  if(janelaPreAberta && !janelaPreAberta.closed) janelaPreAberta.close();
+}
+
+function avisarOrganizadorWpp(){
+  const url = _gerarUrlWpp();
+  window.open(url, '_blank');
+  const btn = document.getElementById('btn-wpp-obrig');
+  const confirm2 = document.getElementById('wpp-enviado-confirm');
+  if(btn){ btn.innerHTML = '&#10003; Aviso enviado!'; btn.style.background = '#1a5c2e'; btn.disabled = true; }
+  if(confirm2) confirm2.style.display = 'block';
 }
 
 // ─── TELA AGUARDANDO ────────────────────────────────
@@ -891,6 +940,11 @@ function mostrarAguardando(){
   const fl = document.getElementById('aguard-fone');
   if(el) el.textContent = pedido.codigo || '-';
   if(fl) fl.textContent = pedido.fone || '-';
+  // Reseta o botao WPP obrigatorio
+  const btn = document.getElementById('btn-wpp-obrig');
+  const confirm2 = document.getElementById('wpp-enviado-confirm');
+  if(btn){ btn.disabled = false; btn.textContent = 'Avisar organizador no WhatsApp'; btn.style.background = ''; }
+  if(confirm2) confirm2.style.display = 'none';
   renderProg(3, 'prog-bar-aguard');
   show('scr-aguard');
 }
