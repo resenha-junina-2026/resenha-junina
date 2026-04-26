@@ -257,6 +257,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
 .user-pill img{width:22px;height:22px;border-radius:50%;}
 .user-pill .logout-btn{background:transparent;border:none;color:var(--t3);cursor:pointer;padding:2px 6px;font-size:11px;font-weight:600;border-left:1px solid var(--border2);margin-left:4px;}
 .user-pill .logout-btn:hover{color:var(--r);}
+@keyframes slideDown{from{opacity:0;transform:translateY(-100%);}to{opacity:1;transform:translateY(0);}}
 </style>
 </head>
 <body>
@@ -736,7 +737,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -911,13 +912,25 @@ function mostrarErroAuth(msg){
 
 function fbSetupListeners(){
   if(!db) return;
+  let _primeiraLeitura=true; // ignora notificacao no carregamento inicial
   const u1=db.collection('rj26_participantes').onSnapshot(snap=>{
     if(_fbWriting) return;
     const parts=[];snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
+    const qtdAntes=ST.participantes.length;
     ST.participantes=parts.sort((a,b)=>(a.id||0)-(b.id||0));save();renderAll();
     document.getElementById('fb-status').innerHTML='Online - '+parts.length+' participantes';
     const ob=document.getElementById('offline-banner');if(ob)ob.remove();
     const hdr=document.getElementById('fb-status-hdr');if(hdr){hdr.style.display='inline-flex';hdr.innerHTML='<span class="dot"></span>'+parts.length+' participantes';}
+    // Notifica pedidos online novos (apos carregamento inicial)
+    if(!_primeiraLeitura && parts.length > qtdAntes){
+      const novos=parts.filter(p=>p.origem==='online'&&!pagou(p)).slice(-(parts.length-qtdAntes));
+      novos.forEach(p=>{
+        beepNewOrder();
+        toast('🔔 Novo pedido online: '+p.nome.split(' ')[0]+' - '+p.lote, 6000);
+        _mostrarBannerPedido(p);
+      });
+    }
+    _primeiraLeitura=false;
   },err=>{
     document.getElementById('fb-status').innerHTML='Offline - erro: '+err.message;
     let banner=document.getElementById('offline-banner');
@@ -1427,6 +1440,44 @@ function exportarRelatorioCSV(){const fin=calcFin(),ps=ST.participantes;const Rv
 
 function toggleModoPortaria(){const body=document.body,btn=document.getElementById('btn-modo-port');if(body.classList.contains('modo-portaria')){body.classList.remove('modo-portaria');if(btn)btn.textContent='Tela cheia';try{document.exitFullscreen();}catch(_){}}else{body.classList.add('modo-portaria');if(btn)btn.textContent='Sair';try{document.documentElement.requestFullscreen();}catch(_){}}}
 function mostrarGuiaFirebase(){document.getElementById('fb-modal').classList.add('on');}
+
+// ══════════════════════════════════════════════
+// NOTIFICACAO DE PEDIDO NOVO
+// ══════════════════════════════════════════════
+function verPedidoNovo(){
+  const btn = document.querySelector('nav button:nth-child(2)');
+  pg('participantes', btn);
+  const sel = document.getElementById('bp-pgto');
+  if(sel) sel.value = 'online-pend';
+  renderPart();
+  fecharBannerPedido();
+}
+
+function fecharBannerPedido(){
+  const b = document.getElementById('banner-pedido-novo');
+  if(b) b.remove();
+}
+
+function _mostrarBannerPedido(p){
+  // Remove banner anterior se existir
+  const anterior = document.getElementById('banner-pedido-novo');
+  if(anterior) anterior.remove();
+  const banner = document.createElement('div');
+  banner.id = 'banner-pedido-novo';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(135deg,#1a7a3a,#25D366);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation:slideDown 0.3s ease;flex-wrap:wrap;';
+  banner.innerHTML = '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">' +
+    '<span style="font-size:1.4rem;">🔔</span>' +
+    '<div><div style="font-weight:800;font-size:0.95rem;">Novo pedido online!</div>' +
+    '<div style="font-size:0.82rem;opacity:0.9;">'+p.nome+' - '+p.lote+' Lote - '+p.fone+'</div></div></div>' +
+    '<div style="display:flex;gap:8px;flex-shrink:0;">' +
+    '<button onclick="verPedidoNovo()" ' +
+    'style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;font-family:inherit;">Ver pedido</button>' +
+    '<button onclick="fecharBannerPedido()" ' +
+    'style="background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-family:inherit;">X</button></div>';
+  document.body.prepend(banner);
+  // Remove automaticamente após 30s
+  setTimeout(() => { if(document.getElementById('banner-pedido-novo')) banner.remove(); }, 30000);
+}
 
 // ══════════════════════════════════════════════
 // INIT
