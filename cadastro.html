@@ -84,7 +84,7 @@ main{max-width:460px;margin:0 auto;padding:24px 14px 80px;}
 .qty-val{flex:1;text-align:center;font-size:1.1rem;font-weight:800;color:var(--text);}
 .qty-lbl{font-size:0.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:10px;}
 .qty-total{font-size:0.85rem;color:var(--roxo2);font-weight:700;margin-top:6px;}
-.qty-restam{font-size:0.7rem;color:var(--muted);margin-top:4px;}
+
 
 /* ── Form ── */
 .fg{margin-bottom:16px;}
@@ -373,8 +373,8 @@ const CONFIG = {
   pixChave: '4250e7fa-891d-4bb3-b5d4-c65a1fafb023',
   linksMP: {
     '1°': 'https://mpago.la/15AYPXV',
-    '2°': 'https://mpago.la/1kYF7Wu',
-    '3°': 'https://mpago.la/27qVoD5',
+    '2°': '',
+    '3°': '',
   },
   firebase: {
     apiKey:"AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
@@ -634,7 +634,7 @@ async function iniciar(){
     '<div class="lote-preco">R$ '+lote.preco.toFixed(2).replace('.',',')+'</div>'+
     '<div class="qty-lbl" style="margin-top:14px;">Quantidade de ingressos</div>'+
     '<div class="qty-wrap"><button class="qty-btn" onclick="mudaQty(-1)">-</button><div class="qty-val" id="qty-val">1</div><button class="qty-btn" onclick="mudaQty(1)">+</button></div>'+
-    '<div class="qty-total" id="qty-total">Total: R$ '+lote.preco.toFixed(2).replace('.',',')+'</div>'+
+    '<div class="qty-total" id="qty-total">Total: R$ '+lote.preco.toFixed(2).replace('.',',')+'</div>';
 
   pedido._maxQty = Math.min(5, vagasRestantes);
 
@@ -745,7 +745,7 @@ function selecionarPgto(tipo, el){
 
   // Cartao/MP tem preco fixo — bloqueia qty > 1
   const aviso = document.getElementById('mp-qty-aviso');
-  const qtyBtnPlus = document.querySelector('.qty-btn:last-child');
+  const qtyBtnPlus = document.querySelector('#lote-info .qty-btn:last-child');
   if(tipo === 'mp'){
     if(pedido.qtd > 1){
       pedido.qtd = 1;
@@ -811,9 +811,6 @@ async function enviarPedido(){
   btn.classList.add('btn-loading');
   btn.textContent = 'Enviando pedido...';
 
-  let wppWindow = null;
-  try{ wppWindow = window.open('about:blank', '_blank'); }catch(_){}
-
   try{
     const qty = pedido.qtd || 1;
     const lote = CONFIG.lotes[pedido.lote] || {nome:'Ingresso', preco:0, vagas:999};
@@ -821,7 +818,6 @@ async function enviarPedido(){
 
     const reservou = await fbReservarVagas(pedido.lote, qty, lote.vagas);
     if(!reservou){
-      if(wppWindow) wppWindow.close();
       alert('Vagas esgotadas durante o processo. Por favor, tente novamente ou aguarde o proximo lote.');
       _enviando = false;
       btn.classList.remove('btn-loading');
@@ -844,7 +840,6 @@ async function enviarPedido(){
                 tx.set(vagasRef, {usadas: Math.max(0, usadas - qty)}, {merge:true});
               });
             }catch(_){}
-            if(wppWindow) wppWindow.close();
             _enviando = false;
             btn.classList.remove('btn-loading');
             btn.textContent = 'Ja paguei - Enviar pedido';
@@ -890,14 +885,11 @@ async function enviarPedido(){
     btn.textContent = 'Ja paguei - Enviar pedido';
     _enviando = false;
 
-    // Fecha a janela pre-alocada (nao precisa mais - usuario clica no botao obrigatorio)
-    if(wppWindow && !wppWindow.closed) wppWindow.close();
     mostrarAguardando();
 
   }catch(e){
     console.warn('Erro ao enviar:', e);
     alert('Erro ao enviar pedido. Verifique sua conexao e tente novamente.');
-    if(wppWindow) wppWindow.close();
     _enviando = false;
     btn.classList.remove('btn-loading');
     btn.textContent = 'Ja paguei - Enviar pedido';
@@ -917,11 +909,6 @@ function _gerarUrlWpp(){
     '\n\nVerifique o pagamento e envie o ingresso pelo sistema.'
   );
   return 'https://wa.me/' + CONFIG.wppOrganizador + '?text=' + msg;
-}
-
-function notificarOrganizador(janelaPreAberta){
-  // Mantido por compatibilidade mas janela e fechada - usuario usa botao obrigatorio
-  if(janelaPreAberta && !janelaPreAberta.closed) janelaPreAberta.close();
 }
 
 function avisarOrganizadorWpp(){
@@ -993,6 +980,9 @@ async function novoIngresso(){
   if(chk) chk.checked = false;
   document.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
   document.querySelectorAll('.err-msg').forEach(el => el.style.display = 'none');
+  // Reseta aviso de MP ao reiniciar
+  const avisoMp = document.getElementById('mp-qty-aviso');
+  if(avisoMp) avisoMp.style.display = 'none';
   await iniciar();
 }
 </script>
