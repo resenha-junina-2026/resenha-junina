@@ -635,7 +635,6 @@ async function iniciar(){
     '<div class="qty-lbl" style="margin-top:14px;">Quantidade de ingressos</div>'+
     '<div class="qty-wrap"><button class="qty-btn" onclick="mudaQty(-1)">-</button><div class="qty-val" id="qty-val">1</div><button class="qty-btn" onclick="mudaQty(1)">+</button></div>'+
     '<div class="qty-total" id="qty-total">Total: R$ '+lote.preco.toFixed(2).replace('.',',')+'</div>'+
-    '<div class="qty-restam" id="qty-restam">'+vagasRestantes+' vaga'+(vagasRestantes!==1?'s':'')+' restante'+(vagasRestantes!==1?'s':'')+'</div>';
 
   pedido._maxQty = Math.min(5, vagasRestantes);
 
