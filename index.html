@@ -737,7 +737,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -770,7 +770,7 @@ function clone(o){return JSON.parse(JSON.stringify(o));}
 // CONSTANTES
 // ══════════════════════════════════════════════
 const PRECO={'1°':90,'2°':110,'3°':130};
-const LINKS_MP={'1°':'https://mpago.la/15AYPXV','2°':'https://link.mercadopago.com.br/SEU_LINK_LOTE2','3°':'https://link.mercadopago.com.br/SEU_LINK_LOTE3'};
+const LINKS_MP={'1°':'https://mpago.la/15AYPXV','2°':'https://mpago.la/1kYF7Wu','3°':'https://mpago.la/27qVoD5'};
 const VAGAS={'1°':50,'2°':100,'3°':200};
 const CL={'1°':'#2D6A2D','2°':'#E8A020','3°':'#7B2FBE'};
 const R=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -912,7 +912,10 @@ function mostrarErroAuth(msg){
 
 function fbSetupListeners(){
   if(!db) return;
-  let _primeiraLeitura=true; // ignora notificacao no carregamento inicial
+  // Desativa listeners anteriores para evitar duplicatas
+  if(_fbListeners && _fbListeners.length){ _fbListeners.forEach(u=>{ try{u();}catch(_){} }); _fbListeners=[]; }
+  // _primeiraLeitura declarado fora para sobreviver a reconexoes
+  if(typeof fbSetupListeners._primeiraLeitura === 'undefined') fbSetupListeners._primeiraLeitura = true;
   const u1=db.collection('rj26_participantes').onSnapshot(snap=>{
     if(_fbWriting) return;
     const parts=[];snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
@@ -922,15 +925,15 @@ function fbSetupListeners(){
     const ob=document.getElementById('offline-banner');if(ob)ob.remove();
     const hdr=document.getElementById('fb-status-hdr');if(hdr){hdr.style.display='inline-flex';hdr.innerHTML='<span class="dot"></span>'+parts.length+' participantes';}
     // Notifica pedidos online novos (apos carregamento inicial)
-    if(!_primeiraLeitura && parts.length > qtdAntes){
-      const novos=parts.filter(p=>p.origem==='online'&&!pagou(p)).slice(-(parts.length-qtdAntes));
+    if(!fbSetupListeners._primeiraLeitura && parts.length > qtdAntes){
+      const agora=Date.now(); const novos=parts.filter(p=>p.origem==='online'&&!pagou(p)&&p.ts&&(agora-p.ts)<30000);
       novos.forEach(p=>{
         beepNewOrder();
         toast('🔔 Novo pedido online: '+p.nome.split(' ')[0]+' - '+p.lote, 6000);
         _mostrarBannerPedido(p);
       });
     }
-    _primeiraLeitura=false;
+    fbSetupListeners._primeiraLeitura=false;
   },err=>{
     document.getElementById('fb-status').innerHTML='Offline - erro: '+err.message;
     let banner=document.getElementById('offline-banner');
