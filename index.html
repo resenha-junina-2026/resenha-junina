@@ -737,7 +737,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -920,7 +920,19 @@ function fbSetupListeners(){
     if(_fbWriting) return;
     const parts=[];snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
     const qtdAntes=ST.participantes.length;
-    ST.participantes=parts.sort((a,b)=>(a.id||0)-(b.id||0));save();renderAll();
+    ST.participantes=parts.sort((a,b)=>(a.id||0)-(b.id||0));
+    // Preserva dados locais (patrocinadores, despesas, etc) antes do save()
+    // Sem isso o snapshot do Firebase podia sobrescrever edicoes locais
+    try{
+      const local=JSON.parse(localStorage.getItem('rj26')||'{}');
+      if(local.patrocinadores) ST.patrocinadores=local.patrocinadores;
+      if(local.despesas) ST.despesas=local.despesas;
+      if(local.openbar) ST.openbar=local.openbar;
+      if(local.openfood) ST.openfood=local.openfood;
+      if(local.config) ST.config=local.config;
+      if(local.vendas) ST.vendas=local.vendas;
+    }catch(_){}
+    save();renderAll();
     document.getElementById('fb-status').innerHTML='Online - '+parts.length+' participantes';
     const ob=document.getElementById('offline-banner');if(ob)ob.remove();
     const hdr=document.getElementById('fb-status-hdr');if(hdr){hdr.style.display='inline-flex';hdr.innerHTML='<span class="dot"></span>'+parts.length+' participantes';}
