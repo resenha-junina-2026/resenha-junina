@@ -593,6 +593,8 @@ function renderProg(cur, elemId){
   el.innerHTML = h;
 }
 
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
 function renderResumo(ped, lote, qty){
   const total = (qty * lote.preco).toFixed(2).replace('.', ',');
   return [
@@ -601,8 +603,8 @@ function renderResumo(ped, lote, qty){
     '<div class="res-row"><span class="lbl">Local</span><span class="val">Chacara Diniz</span></div>',
     '<div class="res-row"><span class="lbl">Lote</span><span class="val" style="color:var(--roxo2)">'+lote.nome+'</span></div>',
     '<div class="res-row"><span class="lbl">Quantidade</span><span class="val">'+qty+' ingresso'+(qty>1?'s':'')+'</span></div>',
-    '<div class="res-row"><span class="lbl">Participante</span><span class="val">'+ped.nome+'</span></div>',
-    '<div class="res-row"><span class="lbl">WhatsApp</span><span class="val">'+ped.fone+'</span></div>',
+    '<div class="res-row"><span class="lbl">Participante</span><span class="val">'+esc(ped.nome)+'</span></div>',
+    '<div class="res-row"><span class="lbl">WhatsApp</span><span class="val">'+esc(ped.fone)+'</span></div>',
     '<div class="res-total"><span class="lbl">Total</span><span class="val">R$ '+total+'</span></div>'
   ].join('');
 }
@@ -840,7 +842,9 @@ async function enviarPedido(){
     const lote = CONFIG.lotes[pedido.lote] || {nome:'Ingresso', preco:0, vagas:999};
     const ts = Date.now();
 
-    const reservou = await fbReservarVagas(pedido.lote, qty, lote.vagas);
+    // Timeout de 15s para não travar o usuário
+    const withTimeout = (p,ms=15000) => Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
+    const reservou = await withTimeout(fbReservarVagas(pedido.lote, qty, lote.vagas));
     if(!reservou){
       alert('Vagas esgotadas durante o processo. Por favor, tente novamente ou aguarde o proximo lote.');
       _enviando = false;
