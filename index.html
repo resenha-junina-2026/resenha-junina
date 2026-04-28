@@ -738,7 +738,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -922,17 +922,6 @@ function fbSetupListeners(){
     const parts=[];snap.forEach(doc=>parts.push({...doc.data(),_fbId:doc.id}));
     const qtdAntes=ST.participantes.length;
     ST.participantes=parts.sort((a,b)=>(a.id||0)-(b.id||0));
-    // Preserva dados locais (patrocinadores, despesas, etc) antes do save()
-    // Sem isso o snapshot do Firebase podia sobrescrever edicoes locais
-    try{
-      const local=JSON.parse(localStorage.getItem('rj26')||'{}');
-      if(local.patrocinadores) ST.patrocinadores=local.patrocinadores;
-      if(local.despesas) ST.despesas=local.despesas;
-      if(local.openbar) ST.openbar=local.openbar;
-      if(local.openfood) ST.openfood=local.openfood;
-      if(local.config) ST.config=local.config;
-      if(local.vendas) ST.vendas=local.vendas;
-    }catch(_){}
     save();renderAll();
     document.getElementById('fb-status').innerHTML='Online - '+parts.length+' participantes';
     const ob=document.getElementById('offline-banner');if(ob)ob.remove();
@@ -958,17 +947,15 @@ function fbSetupListeners(){
   const u3=db.collection('rj26_config').doc('main').onSnapshot(doc=>{
     if(doc.exists){
       const d=doc.data();
-      // Só atualiza vendas/config se o Firebase tiver dados mais recentes
-      // Preserva edições locais (ex: taxa de crédito editada mas não salva ainda)
-      const local=JSON.parse(localStorage.getItem('rj26')||'{}');
       if(d.vendas) ST.vendas=d.vendas;
       if(d.taxaCredito!=null) ST.config.taxaCredito=d.taxaCredito;
-      // Preserva dados que nao vem do config/main
-      if(local.patrocinadores) ST.patrocinadores=local.patrocinadores;
-      if(local.despesas) ST.despesas=local.despesas;
-      if(local.openbar) ST.openbar=local.openbar;
-      if(local.openfood) ST.openfood=local.openfood;
-      save();renderVendas();
+      // Sincroniza todas as seções do Firebase (patrocinadores, despesas, etc)
+      if(d.patrocinadores && Array.isArray(d.patrocinadores)) ST.patrocinadores=d.patrocinadores;
+      if(d.despesas && Array.isArray(d.despesas)) ST.despesas=d.despesas;
+      if(d.openbar && Array.isArray(d.openbar)) ST.openbar=d.openbar;
+      if(d.openfood && Array.isArray(d.openfood)) ST.openfood=d.openfood;
+      if(d.ids) ST.ids={...ST.ids,...d.ids};
+      save();renderAll();
     }
   });
   _fbListeners=[u1,u2,u3];
@@ -1006,7 +993,9 @@ async function fbSavePart(p){
 
 async function fbDeletePart(fbId){if(!db||!fbId)return;_fbWriting=true;try{await db.collection('rj26_participantes').doc(fbId).delete();}catch(e){console.warn('FB delete error:',e);}finally{await new Promise(r=>setTimeout(r,300));_fbWriting=false;}}
 async function fbLogEntrada(entry){if(!db)return;try{const data={...entry};delete data._fbId;await db.collection('rj26_log').add(data);}catch(e){console.warn('FB log error:',e);}}
-async function fbSaveConfig(){if(!db)return;try{await db.collection('rj26_config').doc('main').set({vendas:ST.vendas,taxaCredito:ST.config.taxaCredito});}catch(e){console.warn('FB config error:',e);}}
+async function fbSaveConfig(){if(!db)return;try{await db.collection('rj26_config').doc('main').set({vendas:ST.vendas,taxaCredito:ST.config.taxaCredito,patrocinadores:ST.patrocinadores,despesas:ST.despesas,openbar:ST.openbar,openfood:ST.openfood,ids:ST.ids});}catch(e){console.warn('FB config error:',e);}}
+// Sync individual para cada seção (chamado ao editar)
+async function fbSyncLocal(){if(!db)return;fbSaveConfig();}
 async function fbResetParts(){if(!db)return;try{let snap=await db.collection('rj26_participantes').get();let batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();snap=await db.collection('rj26_log').get();batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();toast('Firebase resetado');}catch(e){toast('Erro ao resetar Firebase');}}
 
 function reset(){if(!confirm('Resetar todos os dados locais e do Firebase?'))return;ST=clone(DI);save();if(fbReady)fbResetParts();renderAll();toast('Dados resetados');}
@@ -1275,18 +1264,18 @@ function onCodigoLido(raw){autoEnableSom();const now=Date.now();if(raw===portLas
 function renderOB(){const lista=ST.openbar,total=lista.reduce((a,b)=>a+(b.qtd||0)*(b.preco||0),0),comp=lista.filter(x=>x.comprado==='sim').length;const rt=document.getElementById('ob-resumo');if(rt)rt.innerHTML=`<span class="badge bg">${comp}/${lista.length} comprados</span> <span class="badge br">Custo: ${R(total)}</span>`;const el=document.getElementById('ob-lista');if(!el)return;el.innerHTML=lista.map(x=>`<div class="ob-row"><span class="bold sm-txt">${esc(x.nome)}</span><span class="sm-txt">${x.qtd||0}</span><span class="sm-txt">${x.preco?R(x.preco):'-'}</span><span class="sm-txt ${x.preco&&x.qtd?'v neg':''}">${x.preco&&x.qtd?R(x.qtd*x.preco):'-'}</span><div style="display:flex;gap:4px;align-items:center;"><span class="badge ${x.comprado==='sim'?'bg':'br'}" style="cursor:pointer;font-size:0.6rem;padding:3px 6px;" onclick="toggleOB(${x.id})">${x.comprado==='sim'?'Sim':'Nao'}</span><button class="btn bgh sm" onclick="editOB(${x.id})" style="padding:4px 7px;">E</button><button class="btn bdn sm" onclick="delOB(${x.id})" style="padding:4px 7px;">X</button></div></div>`).join('')||'<div class="tc muted sm-txt" style="padding:14px">Nenhum item</div>';const tot=document.getElementById('ob-total');if(tot)tot.textContent=R(total);}
 function addItemOB(){document.getElementById('form-ob').style.display='block';document.getElementById('ob-nome').focus();}
 function cancelOB(){document.getElementById('form-ob').style.display='none';['ob-nome','ob-qtd','ob-preco','ob-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('ob-status').value='nao';}
-function salvarOB(){const nome=document.getElementById('ob-nome').value.trim(),qtd=parseInt(document.getElementById('ob-qtd').value)||0,preco=parseFloat(document.getElementById('ob-preco').value)||0,comprado=document.getElementById('ob-status').value;if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('ob-eid').value;if(eid){const idx=ST.openbar.findIndex(x=>x.id==eid);if(idx!==-1)ST.openbar[idx]={...ST.openbar[idx],nome,qtd,preco,comprado};}else ST.openbar.push({id:ST.ids.ob++,nome,qtd,preco,comprado});save();cancelOB();renderOB();renderDash();toast('Item salvo!');}
+function salvarOB(){const nome=document.getElementById('ob-nome').value.trim(),qtd=parseInt(document.getElementById('ob-qtd').value)||0,preco=parseFloat(document.getElementById('ob-preco').value)||0,comprado=document.getElementById('ob-status').value;if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('ob-eid').value;if(eid){const idx=ST.openbar.findIndex(x=>x.id==eid);if(idx!==-1)ST.openbar[idx]={...ST.openbar[idx],nome,qtd,preco,comprado};}else ST.openbar.push({id:ST.ids.ob++,nome,qtd,preco,comprado});save();fbSyncLocal();cancelOB();renderOB();renderDash();toast('Item salvo!');}
 function editOB(id){const x=ST.openbar.find(i=>i.id===id);if(!x)return;document.getElementById('form-ob').style.display='block';document.getElementById('ob-nome').value=x.nome;document.getElementById('ob-qtd').value=x.qtd;document.getElementById('ob-preco').value=x.preco;document.getElementById('ob-status').value=x.comprado;document.getElementById('ob-eid').value=id;}
-function delOB(id){if(!confirm('Remover item?'))return;ST.openbar=ST.openbar.filter(x=>x.id!==id);save();renderOB();renderDash();}
-function toggleOB(id){const x=ST.openbar.find(i=>i.id===id);if(x){x.comprado=x.comprado==='sim'?'nao':'sim';save();renderOB();renderDash();}}
+function delOB(id){if(!confirm('Remover item?'))return;ST.openbar=ST.openbar.filter(x=>x.id!==id);save();fbSyncLocal();renderOB();renderDash();}
+function toggleOB(id){const x=ST.openbar.find(i=>i.id===id);if(x){x.comprado=x.comprado==='sim'?'nao':'sim';save();fbSyncLocal();renderOB();renderDash();}}
 
 function renderOF(){const lista=ST.openfood,total=lista.reduce((a,b)=>a+(b.qtd||0)*(b.preco||0),0),comp=lista.filter(x=>x.comprado==='sim').length;const rt=document.getElementById('of-resumo');if(rt)rt.innerHTML=`<span class="badge bg">${comp}/${lista.length} comprados</span> <span class="badge br">Custo: ${R(total)}</span>`;const el=document.getElementById('of-lista');if(!el)return;el.innerHTML=lista.map(x=>`<div class="ob-row"><span class="bold sm-txt">${esc(x.nome)}</span><span class="sm-txt">${x.qtd||0}</span><span class="sm-txt">${x.preco?R(x.preco):'-'}</span><span class="sm-txt ${x.preco&&x.qtd?'v neg':''}">${x.preco&&x.qtd?R(x.qtd*x.preco):'-'}</span><div style="display:flex;gap:4px;align-items:center;"><span class="badge ${x.comprado==='sim'?'bg':'br'}" style="cursor:pointer;font-size:0.6rem;padding:3px 6px;" onclick="toggleOF(${x.id})">${x.comprado==='sim'?'Sim':'Nao'}</span><button class="btn bgh sm" onclick="editOF(${x.id})" style="padding:4px 7px;">E</button><button class="btn bdn sm" onclick="delOF(${x.id})" style="padding:4px 7px;">X</button></div></div>`).join('')||'<div class="tc muted sm-txt" style="padding:14px">Nenhum item</div>';const tot=document.getElementById('of-total');if(tot)tot.textContent=R(total);}
 function addItemOF(){document.getElementById('form-of').style.display='block';document.getElementById('of-nome').focus();}
 function cancelOF(){document.getElementById('form-of').style.display='none';['of-nome','of-qtd','of-preco','of-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('of-status').value='nao';}
-function salvarOF(){const nome=document.getElementById('of-nome').value.trim(),qtd=parseInt(document.getElementById('of-qtd').value)||0,preco=parseFloat(document.getElementById('of-preco').value)||0,comprado=document.getElementById('of-status').value;if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('of-eid').value;if(eid){const idx=ST.openfood.findIndex(x=>x.id==eid);if(idx!==-1)ST.openfood[idx]={...ST.openfood[idx],nome,qtd,preco,comprado};}else ST.openfood.push({id:ST.ids.of++,nome,qtd,preco,comprado});save();cancelOF();renderOF();renderDash();toast('Item salvo!');}
+function salvarOF(){const nome=document.getElementById('of-nome').value.trim(),qtd=parseInt(document.getElementById('of-qtd').value)||0,preco=parseFloat(document.getElementById('of-preco').value)||0,comprado=document.getElementById('of-status').value;if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('of-eid').value;if(eid){const idx=ST.openfood.findIndex(x=>x.id==eid);if(idx!==-1)ST.openfood[idx]={...ST.openfood[idx],nome,qtd,preco,comprado};}else ST.openfood.push({id:ST.ids.of++,nome,qtd,preco,comprado});save();fbSyncLocal();cancelOF();renderOF();renderDash();toast('Item salvo!');}
 function editOF(id){const x=ST.openfood.find(i=>i.id===id);if(!x)return;document.getElementById('form-of').style.display='block';document.getElementById('of-nome').value=x.nome;document.getElementById('of-qtd').value=x.qtd;document.getElementById('of-preco').value=x.preco;document.getElementById('of-status').value=x.comprado;document.getElementById('of-eid').value=id;}
-function delOF(id){if(!confirm('Remover item?'))return;ST.openfood=ST.openfood.filter(x=>x.id!==id);save();renderOF();renderDash();}
-function toggleOF(id){const x=ST.openfood.find(i=>i.id===id);if(x){x.comprado=x.comprado==='sim'?'nao':'sim';save();renderOF();renderDash();}}
+function delOF(id){if(!confirm('Remover item?'))return;ST.openfood=ST.openfood.filter(x=>x.id!==id);save();fbSyncLocal();renderOF();renderDash();}
+function toggleOF(id){const x=ST.openfood.find(i=>i.id===id);if(x){x.comprado=x.comprado==='sim'?'nao':'sim';save();fbSyncLocal();renderOF();renderDash();}}
 
 // ══════════════════════════════════════════════
 // FINANCEIRO
@@ -1303,9 +1292,9 @@ function renderFin(){
 function renderDesps(){const total=ST.despesas.reduce((a,b)=>a+b.val,0);const cats={};ST.despesas.forEach(d=>{if(!cats[d.cat])cats[d.cat]=[];cats[d.cat].push(d);});let h='<div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;">';Object.entries(cats).forEach(([cat,items])=>items.forEach(d=>{h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);"><span class="badge bb" style="font-size:0.62rem">${esc(d.cat)}</span><span class="sm-txt">${esc(d.desc)}</span><span class="v neg bold sm-txt">${R(d.val)}</span><div class="flex gap8"><button class="btn bgh sm" onclick="editDesp(${d.id})">E</button><button class="btn bdn sm" onclick="delDesp(${d.id})">X</button></div></div>`;}));h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;gap:6px;padding:7px 10px;background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span></span><span class="bold sm-txt">TOTAL</span><span class="v neg bold sm-txt">${R(total)}</span><span></span></div></div>`;document.getElementById('fin-desps').innerHTML=h;}
 function showDespForm(){document.getElementById('form-desp').style.display='block';document.getElementById('d-cat').focus();}
 function cancelDesp(){document.getElementById('form-desp').style.display='none';['d-cat','d-desc','d-val','d-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
-function salvarDesp(){const cat=document.getElementById('d-cat').value.trim(),desc=document.getElementById('d-desc').value.trim(),val=parseFloat(document.getElementById('d-val').value)||0;if(!cat||!desc){alert('Preencha categoria e descricao');return;}const eid=document.getElementById('d-eid').value;if(eid){const idx=ST.despesas.findIndex(x=>x.id==eid);if(idx!==-1)ST.despesas[idx]={...ST.despesas[idx],cat,desc,val};}else ST.despesas.push({id:ST.ids.desp++,cat,desc,val});save();cancelDesp();renderFin();renderDash();toast('Despesa salva!');}
+function salvarDesp(){const cat=document.getElementById('d-cat').value.trim(),desc=document.getElementById('d-desc').value.trim(),val=parseFloat(document.getElementById('d-val').value)||0;if(!cat||!desc){alert('Preencha categoria e descricao');return;}const eid=document.getElementById('d-eid').value;if(eid){const idx=ST.despesas.findIndex(x=>x.id==eid);if(idx!==-1)ST.despesas[idx]={...ST.despesas[idx],cat,desc,val};}else ST.despesas.push({id:ST.ids.desp++,cat,desc,val});save();fbSyncLocal();cancelDesp();renderFin();renderDash();toast('Despesa salva!');}
 function editDesp(id){const d=ST.despesas.find(x=>x.id===id);if(!d)return;document.getElementById('form-desp').style.display='block';document.getElementById('d-cat').value=d.cat;document.getElementById('d-desc').value=d.desc;document.getElementById('d-val').value=d.val;document.getElementById('d-eid').value=id;}
-function delDesp(id){const d=ST.despesas.find(x=>x.id===id);if(!d||!confirm('Remover "'+d.desc+'"?'))return;ST.despesas=ST.despesas.filter(x=>x.id!==id);save();renderFin();renderDash();}
+function delDesp(id){const d=ST.despesas.find(x=>x.id===id);if(!d||!confirm('Remover "'+d.desc+'"?'))return;ST.despesas=ST.despesas.filter(x=>x.id!==id);save();fbSyncLocal();renderFin();renderDash();}
 
 // ══════════════════════════════════════════════
 // PATROCINADORES
@@ -1315,11 +1304,11 @@ function togglePend(){filtroPend=!filtroPend;const btn=document.getElementById('
 function renderPat(){const b=(document.getElementById('pat-busca')||{value:''}).value.toLowerCase();const lista=ST.patrocinadores.filter(p=>(!b||p.nome.toLowerCase().includes(b))&&(!filtroPend||!p.pago));const pagos=ST.patrocinadores.filter(p=>p.pago),pend=ST.patrocinadores.filter(p=>!p.pago);const vp=pagos.reduce((a,p)=>a+(p.valor||0),0),vpend=pend.reduce((a,p)=>a+(p.valor||0),0);const rt=document.getElementById('pat-res');if(rt)rt.innerHTML=`<span class="badge bg">${pagos.length} pagos - ${R(vp)}</span> <span class="badge br">${pend.length} pendentes - ${R(vpend)}</span>`;const el=document.getElementById('pat-lista');if(!el)return;el.innerHTML=lista.length?lista.map(p=>`<div class="pt-row"><span class="bold sm-txt">${esc(p.nome)}</span><span style="font-weight:800;font-size:0.83rem;color:var(--g)">${R(p.valor||0)}</span><span><span class="badge ${p.pago?'bg':'br'}" style="cursor:pointer" onclick="togglePat(${p.id})">${p.pago?'Pago':'Pendente'}</span></span><div class="flex gap8"><button class="btn bgh sm" onclick="editPat(${p.id})">E</button><button class="btn bdn sm" onclick="delPat(${p.id})">X</button></div></div>`).join(''):'<div class="tc muted sm-txt" style="padding:16px">Nenhum resultado</div>';}
 function showPatForm(){document.getElementById('form-pat').style.display='block';document.getElementById('pt-nome').focus();}
 function cancelPat(){document.getElementById('form-pat').style.display='none';document.getElementById('pt-nome').value='';document.getElementById('pt-val').value='150';document.getElementById('pt-st').value='true';document.getElementById('pt-eid').value='';}
-function salvarPat(){const nome=document.getElementById('pt-nome').value.trim(),val=parseFloat(document.getElementById('pt-val').value)||0,pago=document.getElementById('pt-st').value==='true';if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('pt-eid').value;if(eid){const idx=ST.patrocinadores.findIndex(p=>p.id==eid);if(idx!==-1)ST.patrocinadores[idx]={...ST.patrocinadores[idx],nome,valor:val,pago};}else ST.patrocinadores.push({id:ST.ids.pat++,nome,valor:val,pago});save();cancelPat();renderPat();renderDash();toast('Patrocinador salvo!');}
+function salvarPat(){const nome=document.getElementById('pt-nome').value.trim(),val=parseFloat(document.getElementById('pt-val').value)||0,pago=document.getElementById('pt-st').value==='true';if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('pt-eid').value;if(eid){const idx=ST.patrocinadores.findIndex(p=>p.id==eid);if(idx!==-1)ST.patrocinadores[idx]={...ST.patrocinadores[idx],nome,valor:val,pago};}else ST.patrocinadores.push({id:ST.ids.pat++,nome,valor:val,pago});save();fbSyncLocal();cancelPat();renderPat();renderDash();toast('Patrocinador salvo!');}
 function editPat(id){const p=ST.patrocinadores.find(x=>x.id===id);if(!p)return;document.getElementById('form-pat').style.display='block';document.getElementById('pt-nome').value=p.nome;document.getElementById('pt-val').value=p.valor||150;document.getElementById('pt-st').value=p.pago?'true':'false';document.getElementById('pt-eid').value=id;document.getElementById('pt-nome').focus();}
-function delPat(id){const p=ST.patrocinadores.find(x=>x.id===id);if(!p||!confirm('Remover "'+p.nome+'"?'))return;ST.patrocinadores=ST.patrocinadores.filter(x=>x.id!==id);save();renderPat();renderDash();}
-function togglePat(id){const p=ST.patrocinadores.find(x=>x.id===id);if(p){p.pago=!p.pago;save();renderPat();renderDash();}}
-function todosPagesPagos(){ST.patrocinadores.forEach(p=>p.pago=true);save();renderPat();renderDash();toast('Todos marcados como pagos!');}
+function delPat(id){const p=ST.patrocinadores.find(x=>x.id===id);if(!p||!confirm('Remover "'+p.nome+'"?'))return;ST.patrocinadores=ST.patrocinadores.filter(x=>x.id!==id);save();fbSyncLocal();renderPat();renderDash();}
+function togglePat(id){const p=ST.patrocinadores.find(x=>x.id===id);if(p){p.pago=!p.pago;save();fbSyncLocal();renderPat();renderDash();}}
+function todosPagesPagos(){ST.patrocinadores.forEach(p=>p.pago=true);save();fbSyncLocal();renderPat();renderDash();toast('Todos marcados como pagos!');}
 
 // ══════════════════════════════════════════════
 // QR CODE
