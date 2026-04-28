@@ -193,8 +193,10 @@ main{max-width:460px;margin:0 auto;padding:24px 14px 80px;}
 .loading-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--roxo2);border-radius:50%;animation:spin 0.7s linear infinite;margin:0 auto 14px;}
 
 /* ── Mobile ── */
-input:not([type=checkbox]),select,textarea{font-size:16px!important;-webkit-appearance:none;}
-input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;margin-top:2px;accent-color:var(--roxo2);cursor:pointer;}
+input:not([type=checkbox]),select,textarea{font-size:16px!important;-webkit-appearance:none;-moz-appearance:none;}
+input[type=checkbox]{width:20px;height:20px;min-width:20px;flex-shrink:0;margin-top:2px;accent-color:var(--roxo2);cursor:pointer;-webkit-appearance:checkbox;-moz-appearance:checkbox;appearance:checkbox;}
+.btn{touch-action:manipulation;}
+main{padding-bottom:max(80px,calc(80px + env(safe-area-inset-bottom,0px)));}
 @media(max-width:420px){.card{padding:18px 14px;}.hdr-overlay{padding:18px 14px 24px;}}
 </style>
 </head>
@@ -373,8 +375,8 @@ const CONFIG = {
   pixChave: '4250e7fa-891d-4bb3-b5d4-c65a1fafb023',
   linksMP: {
     '1°': 'https://mpago.la/15AYPXV',
-    '2°': 'https://mpago.la/1kYF7Wu',
-    '3°': 'https://mpago.la/27qVoD5',
+    '2°': '',
+    '3°': '',
   },
   firebase: {
     apiKey:"AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
@@ -483,10 +485,27 @@ async function fbRegistrarPedido(ped, codigos){
     });
     await batch.commit();
   }catch(e){
-    // [FIX-7] Propaga o erro para enviarPedido() poder avisar o usuario
-    // Sem isso, o pedido ficava salvo localmente mas nao chegava ao admin no Firebase
-    console.warn('FB registrar falhou:', e);
-    throw e;
+    console.warn('FB registrar falhou, tentando novamente:', e);
+    // Retry 1 vez após 1.5s
+    try{
+      await new Promise(r => setTimeout(r, 1500));
+      const batch2 = db.batch();
+      codigos.forEach((cod,i) => {
+        const ref2 = db.collection('rj26_participantes').doc();
+        batch2.set(ref2, {
+          codigo: cod, pedido: ped.codigo,
+          nome: codigos.length>1 ? ped.nome+' ('+(i+1)+'/'+codigos.length+')' : ped.nome,
+          fone: ped.fone, lote: ped.lote, valor: lote.preco,
+          pgto: 'Pendente', recebido: null, entrou: false,
+          origem: 'online', metodoPgto: ped.metodoPgto || 'pix', ts: Date.now()
+        });
+      });
+      await batch2.commit();
+      console.log('Retry bem sucedido');
+    }catch(e2){
+      console.warn('Retry tambem falhou:', e2);
+      throw e2;
+    }
   }
 }
 
@@ -627,6 +646,11 @@ async function iniciar(){
   }
 
   pedido.lote = loteId;
+  pedido.qtd = 1;
+  pedido.metodoPgto = 'pix';
+  pedido.nome = '';
+  pedido.fone = '';
+  pedido.email = '';
   const vagasRestantes = lote.vagas - usadas;
 
   document.getElementById('lote-info').innerHTML =
@@ -858,11 +882,13 @@ async function enviarPedido(){
     pedido.codigo = codigos[0];
     pedido.ts = ts;
     pedido.status = 'aguardando';
-    pedido.enviado = true;
     pedido.origem = 'online';
 
-    localStorage.setItem('rj26_pedido_cad', JSON.stringify(pedido));
+    // Registra no Firebase ANTES de marcar como enviado
+    // Se falhar, o catch externo avisa o usuário e pedido não fica marcado
     await fbRegistrarPedido(pedido, codigos);
+    pedido.enviado = true;
+    localStorage.setItem('rj26_pedido_cad', JSON.stringify(pedido));
 
     try{
       const adm = JSON.parse(localStorage.getItem('rj26')||'null');
@@ -913,9 +939,15 @@ function _gerarUrlWpp(){
 
 function avisarOrganizadorWpp(){
   const url = _gerarUrlWpp();
-  window.open(url, '_blank');
   const btn = document.getElementById('btn-wpp-obrig');
   const confirm2 = document.getElementById('wpp-enviado-confirm');
+  // Tenta window.open; se bloqueado pelo browser, usa link direto
+  let abriu = false;
+  try{ const w = window.open(url, '_blank'); if(w) abriu = true; }catch(_){}
+  if(!abriu){
+    // Fallback: redireciona a própria página
+    window.location.href = url;
+  }
   if(btn){ btn.innerHTML = '&#10003; Aviso enviado!'; btn.style.background = '#1a5c2e'; btn.disabled = true; }
   if(confirm2) confirm2.style.display = 'block';
 }
