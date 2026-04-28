@@ -374,7 +374,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
   </div>
   <div class="panel">
     <div class="sb">
-      <input type="text" id="bp-busca" placeholder="Nome, codigo ou WhatsApp..." oninput="renderPart()" style="min-width:200px;">
+      <input type="text" id="bp-busca" placeholder="Nome, codigo ou WhatsApp..." oninput="clearTimeout(window._buscaDebounce);window._buscaDebounce=setTimeout(renderPart,200)" style="min-width:200px;">
       <select id="bp-lote" onchange="renderPart()"><option value="">Todos os lotes</option><option value="1°">1°</option><option value="2°">2°</option><option value="3°">3°</option></select>
       <select id="bp-pgto" onchange="renderPart()"><option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option><option value="online-pend">Online Pendente</option><option value="cortesia">Cortesia</option></select>
     </div>
@@ -942,7 +942,7 @@ function fbSetupListeners(){
       const agora=Date.now(); const novos=parts.filter(p=>p.origem==='online'&&!pagou(p)&&p.ts&&(agora-p.ts)<30000);
       novos.forEach(p=>{
         beepNewOrder();
-        toast('🔔 Novo pedido online: '+p.nome.split(' ')[0]+' - '+p.lote, 6000);
+        toast('🔔 Novo pedido online: '+esc(p.nome.split(' ')[0])+' - '+esc(p.lote), 6000);
         _mostrarBannerPedido(p);
       });
     }
@@ -997,10 +997,14 @@ async function fbSavePart(p){
       else{const ref=await db.collection('rj26_participantes').add(data);p._fbId=ref.id;}
     }
   }catch(e){console.warn('FB write error:',e);toast('Erro ao salvar no Firebase');}
-  finally{setTimeout(()=>{_fbWriting=false;},1500);}
+  finally{
+    // Aguarda um tick para o snapshot processar antes de desbloquear
+    await new Promise(r=>setTimeout(r,300));
+    _fbWriting=false;
+  }
 }
 
-async function fbDeletePart(fbId){if(!db||!fbId)return;_fbWriting=true;try{await db.collection('rj26_participantes').doc(fbId).delete();}catch(e){console.warn('FB delete error:',e);}finally{setTimeout(()=>{_fbWriting=false;},1500);}}
+async function fbDeletePart(fbId){if(!db||!fbId)return;_fbWriting=true;try{await db.collection('rj26_participantes').doc(fbId).delete();}catch(e){console.warn('FB delete error:',e);}finally{await new Promise(r=>setTimeout(r,300));_fbWriting=false;}}
 async function fbLogEntrada(entry){if(!db)return;try{const data={...entry};delete data._fbId;await db.collection('rj26_log').add(data);}catch(e){console.warn('FB log error:',e);}}
 async function fbSaveConfig(){if(!db)return;try{await db.collection('rj26_config').doc('main').set({vendas:ST.vendas,taxaCredito:ST.config.taxaCredito});}catch(e){console.warn('FB config error:',e);}}
 async function fbResetParts(){if(!db)return;try{let snap=await db.collection('rj26_participantes').get();let batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();snap=await db.collection('rj26_log').get();batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();toast('Firebase resetado');}catch(e){toast('Erro ao resetar Firebase');}}
@@ -1023,10 +1027,15 @@ function pg(id,btn){
   if(id==='participantes')setTimeout(()=>{autoLote();atualizarSelectLote();},60);
   updateSomBtns();
 }
+let _renderRAF=null;
 function renderAll(){
-  const m={dashboard:renderDash,participantes:renderPart,portaria:renderPort,vendas:renderVendas,financeiro:renderFin,patrocinadores:renderPat,openbar:renderOB,openfood:renderOF,impressao:renderImp};
-  if(m[cur])m[cur]();
-  if(cur!=='dashboard')try{renderDash();}catch(_){}
+  if(_renderRAF) return; // debounce via rAF
+  _renderRAF=requestAnimationFrame(()=>{
+    _renderRAF=null;
+    const m={dashboard:renderDash,participantes:renderPart,portaria:renderPort,vendas:renderVendas,financeiro:renderFin,patrocinadores:renderPat,openbar:renderOB,openfood:renderOF,impressao:renderImp};
+    if(m[cur])m[cur]();
+    if(cur!=='dashboard')try{renderDash();}catch(_){}
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -1103,34 +1112,34 @@ function renderPart(){
   const lista=(ST.participantes||[]).filter(p=>(!b||p.nome.toLowerCase().includes(b)||p.codigo.toLowerCase().includes(b)||(p.fone||'').includes(b))&&(!fl||p.lote===fl)&&(!fp||(fp==='ok'&&pagou(p))||(fp==='pend'&&!pagou(p))||(fp==='online-pend'&&p.origem==='online'&&!pagou(p))||(fp==='cortesia'&&(p.pgto||'').startsWith('Cortesia')))).sort((a,b)=>(a.id||0)-(b.id||0));
   const tb=document.getElementById('t-part');if(!tb)return;
   tb.innerHTML=lista.map(p=>`<tr>
-    <td><span class="badge bb">${p.codigo}</span></td>
-    <td class="bold">${p.pgto&&p.pgto.startsWith('Cortesia')?`<span class="badge bo" style="font-size:0.58rem;margin-right:4px;">Cortesia</span>`:''}${p.nome}${p.origem==='online'?'&nbsp;<span style="font-size:0.7rem;background:rgba(36,120,173,0.15);color:var(--b);padding:1px 6px;border-radius:10px;font-weight:700;">Online</span>':''}</td>
-    <td>${p.fone?`<a href="https://wa.me/55${p.fone.replace(/\D/g,'')}" target="_blank" style="color:var(--g);text-decoration:none;font-size:0.75rem;">${p.fone}</a>`:'<span class="muted sm-txt">-</span>'}</td>
+    <td><span class="badge bb">${esc(p.codigo)}</span></td>
+    <td class="bold">${p.pgto&&p.pgto.startsWith('Cortesia')?`<span class="badge bo" style="font-size:0.58rem;margin-right:4px;">Cortesia</span>`:''}${esc(p.nome)}${p.origem==='online'?'&nbsp;<span style="font-size:0.7rem;background:rgba(36,120,173,0.15);color:var(--b);padding:1px 6px;border-radius:10px;font-weight:700;">Online</span>':''}</td>
+    <td>${p.fone?`<a href="https://wa.me/55${p.fone.replace(/\D/g,'')}" target="_blank" style="color:var(--g);text-decoration:none;font-size:0.75rem;">${esc(p.fone)}</a>`:'<span class="muted sm-txt">-</span>'}</td>
     <td><span class="badge" style="background:${CL[p.lote]}22;color:${CL[p.lote]};border:1px solid ${CL[p.lote]}44">${p.lote}</span></td>
     <td class="muted sm-txt">${p.pgto||'-'}</td>
     <td>${p.recebido?R(p.recebido):'<span class="muted">-</span>'}</td>
     <td>${p.pgto&&p.pgto.startsWith('Cortesia')?'<span class="badge bg">Cortesia</span>':pagou(p)?'<span class="badge bg">Pago</span>':'<span class="badge br">Pendente</span>'}</td>
     <td>${p.entrou?'<span class="badge bg">Entrou</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--t2)">Aguardando</span>'}</td>
     <td><div class="flex gap8" style="flex-wrap:wrap;gap:4px;">
-      ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" title="Confirmar e enviar" onclick="confirmarEEnviar('${p.codigo}')" style="font-size:0.68rem;padding:4px 7px;">Enviar</button>`:''}
+      ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" title="Confirmar e enviar" onclick="confirmarEEnviar('${esc(p.codigo)}')" style="font-size:0.68rem;padding:4px 7px;">Enviar</button>`:''}
       ${p.ingressoEnviado?'<span class="badge bg" style="font-size:0.6rem;">Enviado</span>':''}
-      <button class="btn bgh sm" onclick="abrirQR('${p.codigo}')" title="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zm3 3h3v3h-3zm0-3h3"/></svg></button>
-      <button class="btn bgh sm" onclick="editPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-      <button class="btn bdn sm" onclick="delPart('${p.codigo}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      <button class="btn bgh sm" onclick="abrirQR('${esc(p.codigo)}')" title="QR Code" aria-label="QR Code"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zm3 3h3v3h-3zm0-3h3"/></svg></button>
+      <button class="btn bgh sm" onclick="editPart('${esc(p.codigo)}')" aria-label="Editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+      <button class="btn bdn sm" onclick="delPart('${esc(p.codigo)}')" aria-label="Excluir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
     </div></td></tr>`).join('')||'<tr><td colspan="9" class="tc muted" style="padding:18px">Nenhum resultado</td></tr>';
   const cards=document.getElementById('t-part-cards');
   if(cards)cards.innerHTML=lista.map(p=>{
     const statusBadge=p.pgto&&p.pgto.startsWith('Cortesia')?'<span class="badge bg">Cortesia</span>':pagou(p)?'<span class="badge bg">Pago</span>':'<span class="badge br">Pendente</span>';
     const entradaBadge=p.entrou?'<span class="badge bg">Entrou</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--t2)">Aguardando</span>';
     return `<div class="pcard">
-      <div class="pcard-top"><div><div class="pcard-nome">${p.nome}</div><div class="pcard-codigo">${p.codigo}</div></div><span class="badge" style="background:${CL[p.lote]}22;color:${CL[p.lote]};border:1px solid ${CL[p.lote]}44">${p.lote}</span></div>
+      <div class="pcard-top"><div><div class="pcard-nome">${esc(p.nome)}</div><div class="pcard-codigo">${esc(p.codigo)}</div></div><span class="badge" style="background:${CL[p.lote]}22;color:${CL[p.lote]};border:1px solid ${CL[p.lote]}44">${p.lote}</span></div>
       <div class="pcard-tags">${statusBadge}${entradaBadge}${p.origem==='online'?'<span class="badge bb">Online</span>':''}${p.ingressoEnviado?'<span class="badge bg" style="font-size:0.6rem">Enviado</span>':''}</div>
       <div class="pcard-grid"><div><div class="pcard-label">WhatsApp</div><div class="pcard-val">${p.fone||'-'}</div></div><div><div class="pcard-label">Recebido</div><div class="pcard-val">${p.recebido?R(p.recebido):'-'}</div></div><div><div class="pcard-label">Pagamento</div><div class="pcard-val">${p.pgto||'-'}</div></div><div><div class="pcard-label">Valor</div><div class="pcard-val">${R(p.valor||PRECO[p.lote]||0)}</div></div></div>
       <div class="pcard-actions">
-        ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" onclick="confirmarEEnviar('${p.codigo}')">Confirmar</button>`:''}
-        <button class="btn bgh sm" onclick="abrirQR('${p.codigo}')">QR</button>
-        <button class="btn bgh sm" onclick="editPart('${p.codigo}')">Editar</button>
-        <button class="btn bdn sm" onclick="delPart('${p.codigo}')">Excluir</button>
+        ${p.origem==='online'&&!pagou(p)?`<button class="btn bg2 sm" onclick="confirmarEEnviar('${esc(p.codigo)}')">Confirmar</button>`:''}
+        <button class="btn bgh sm" onclick="abrirQR('${esc(p.codigo)}')">QR</button>
+        <button class="btn bgh sm" onclick="editPart('${esc(p.codigo)}')">Editar</button>
+        <button class="btn bdn sm" onclick="delPart('${esc(p.codigo)}')">Excluir</button>
       </div></div>`;}).join('')||'<div class="tc muted" style="padding:24px">Nenhum resultado</div>';
   const cnt=document.getElementById('part-cnt');if(cnt)cnt.textContent=lista.length+' de '+ST.participantes.length+' participantes';
 }
@@ -1263,7 +1272,7 @@ function onCodigoLido(raw){autoEnableSom();const now=Date.now();if(raw===portLas
 // ══════════════════════════════════════════════
 // OPEN BAR & OPEN FOOD
 // ══════════════════════════════════════════════
-function renderOB(){const lista=ST.openbar,total=lista.reduce((a,b)=>a+(b.qtd||0)*(b.preco||0),0),comp=lista.filter(x=>x.comprado==='sim').length;const rt=document.getElementById('ob-resumo');if(rt)rt.innerHTML=`<span class="badge bg">${comp}/${lista.length} comprados</span> <span class="badge br">Custo: ${R(total)}</span>`;const el=document.getElementById('ob-lista');if(!el)return;el.innerHTML=lista.map(x=>`<div class="ob-row"><span class="bold sm-txt">${x.nome}</span><span class="sm-txt">${x.qtd||0}</span><span class="sm-txt">${x.preco?R(x.preco):'-'}</span><span class="sm-txt ${x.preco&&x.qtd?'v neg':''}">${x.preco&&x.qtd?R(x.qtd*x.preco):'-'}</span><div style="display:flex;gap:4px;align-items:center;"><span class="badge ${x.comprado==='sim'?'bg':'br'}" style="cursor:pointer;font-size:0.6rem;padding:3px 6px;" onclick="toggleOB(${x.id})">${x.comprado==='sim'?'Sim':'Nao'}</span><button class="btn bgh sm" onclick="editOB(${x.id})" style="padding:4px 7px;">E</button><button class="btn bdn sm" onclick="delOB(${x.id})" style="padding:4px 7px;">X</button></div></div>`).join('')||'<div class="tc muted sm-txt" style="padding:14px">Nenhum item</div>';const tot=document.getElementById('ob-total');if(tot)tot.textContent=R(total);}
+function renderOB(){const lista=ST.openbar,total=lista.reduce((a,b)=>a+(b.qtd||0)*(b.preco||0),0),comp=lista.filter(x=>x.comprado==='sim').length;const rt=document.getElementById('ob-resumo');if(rt)rt.innerHTML=`<span class="badge bg">${comp}/${lista.length} comprados</span> <span class="badge br">Custo: ${R(total)}</span>`;const el=document.getElementById('ob-lista');if(!el)return;el.innerHTML=lista.map(x=>`<div class="ob-row"><span class="bold sm-txt">${esc(x.nome)}</span><span class="sm-txt">${x.qtd||0}</span><span class="sm-txt">${x.preco?R(x.preco):'-'}</span><span class="sm-txt ${x.preco&&x.qtd?'v neg':''}">${x.preco&&x.qtd?R(x.qtd*x.preco):'-'}</span><div style="display:flex;gap:4px;align-items:center;"><span class="badge ${x.comprado==='sim'?'bg':'br'}" style="cursor:pointer;font-size:0.6rem;padding:3px 6px;" onclick="toggleOB(${x.id})">${x.comprado==='sim'?'Sim':'Nao'}</span><button class="btn bgh sm" onclick="editOB(${x.id})" style="padding:4px 7px;">E</button><button class="btn bdn sm" onclick="delOB(${x.id})" style="padding:4px 7px;">X</button></div></div>`).join('')||'<div class="tc muted sm-txt" style="padding:14px">Nenhum item</div>';const tot=document.getElementById('ob-total');if(tot)tot.textContent=R(total);}
 function addItemOB(){document.getElementById('form-ob').style.display='block';document.getElementById('ob-nome').focus();}
 function cancelOB(){document.getElementById('form-ob').style.display='none';['ob-nome','ob-qtd','ob-preco','ob-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('ob-status').value='nao';}
 function salvarOB(){const nome=document.getElementById('ob-nome').value.trim(),qtd=parseInt(document.getElementById('ob-qtd').value)||0,preco=parseFloat(document.getElementById('ob-preco').value)||0,comprado=document.getElementById('ob-status').value;if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('ob-eid').value;if(eid){const idx=ST.openbar.findIndex(x=>x.id==eid);if(idx!==-1)ST.openbar[idx]={...ST.openbar[idx],nome,qtd,preco,comprado};}else ST.openbar.push({id:ST.ids.ob++,nome,qtd,preco,comprado});save();cancelOB();renderOB();renderDash();toast('Item salvo!');}
@@ -1271,7 +1280,7 @@ function editOB(id){const x=ST.openbar.find(i=>i.id===id);if(!x)return;document.
 function delOB(id){if(!confirm('Remover item?'))return;ST.openbar=ST.openbar.filter(x=>x.id!==id);save();renderOB();renderDash();}
 function toggleOB(id){const x=ST.openbar.find(i=>i.id===id);if(x){x.comprado=x.comprado==='sim'?'nao':'sim';save();renderOB();renderDash();}}
 
-function renderOF(){const lista=ST.openfood,total=lista.reduce((a,b)=>a+(b.qtd||0)*(b.preco||0),0),comp=lista.filter(x=>x.comprado==='sim').length;const rt=document.getElementById('of-resumo');if(rt)rt.innerHTML=`<span class="badge bg">${comp}/${lista.length} comprados</span> <span class="badge br">Custo: ${R(total)}</span>`;const el=document.getElementById('of-lista');if(!el)return;el.innerHTML=lista.map(x=>`<div class="ob-row"><span class="bold sm-txt">${x.nome}</span><span class="sm-txt">${x.qtd||0}</span><span class="sm-txt">${x.preco?R(x.preco):'-'}</span><span class="sm-txt ${x.preco&&x.qtd?'v neg':''}">${x.preco&&x.qtd?R(x.qtd*x.preco):'-'}</span><div style="display:flex;gap:4px;align-items:center;"><span class="badge ${x.comprado==='sim'?'bg':'br'}" style="cursor:pointer;font-size:0.6rem;padding:3px 6px;" onclick="toggleOF(${x.id})">${x.comprado==='sim'?'Sim':'Nao'}</span><button class="btn bgh sm" onclick="editOF(${x.id})" style="padding:4px 7px;">E</button><button class="btn bdn sm" onclick="delOF(${x.id})" style="padding:4px 7px;">X</button></div></div>`).join('')||'<div class="tc muted sm-txt" style="padding:14px">Nenhum item</div>';const tot=document.getElementById('of-total');if(tot)tot.textContent=R(total);}
+function renderOF(){const lista=ST.openfood,total=lista.reduce((a,b)=>a+(b.qtd||0)*(b.preco||0),0),comp=lista.filter(x=>x.comprado==='sim').length;const rt=document.getElementById('of-resumo');if(rt)rt.innerHTML=`<span class="badge bg">${comp}/${lista.length} comprados</span> <span class="badge br">Custo: ${R(total)}</span>`;const el=document.getElementById('of-lista');if(!el)return;el.innerHTML=lista.map(x=>`<div class="ob-row"><span class="bold sm-txt">${esc(x.nome)}</span><span class="sm-txt">${x.qtd||0}</span><span class="sm-txt">${x.preco?R(x.preco):'-'}</span><span class="sm-txt ${x.preco&&x.qtd?'v neg':''}">${x.preco&&x.qtd?R(x.qtd*x.preco):'-'}</span><div style="display:flex;gap:4px;align-items:center;"><span class="badge ${x.comprado==='sim'?'bg':'br'}" style="cursor:pointer;font-size:0.6rem;padding:3px 6px;" onclick="toggleOF(${x.id})">${x.comprado==='sim'?'Sim':'Nao'}</span><button class="btn bgh sm" onclick="editOF(${x.id})" style="padding:4px 7px;">E</button><button class="btn bdn sm" onclick="delOF(${x.id})" style="padding:4px 7px;">X</button></div></div>`).join('')||'<div class="tc muted sm-txt" style="padding:14px">Nenhum item</div>';const tot=document.getElementById('of-total');if(tot)tot.textContent=R(total);}
 function addItemOF(){document.getElementById('form-of').style.display='block';document.getElementById('of-nome').focus();}
 function cancelOF(){document.getElementById('form-of').style.display='none';['of-nome','of-qtd','of-preco','of-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('of-status').value='nao';}
 function salvarOF(){const nome=document.getElementById('of-nome').value.trim(),qtd=parseInt(document.getElementById('of-qtd').value)||0,preco=parseFloat(document.getElementById('of-preco').value)||0,comprado=document.getElementById('of-status').value;if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('of-eid').value;if(eid){const idx=ST.openfood.findIndex(x=>x.id==eid);if(idx!==-1)ST.openfood[idx]={...ST.openfood[idx],nome,qtd,preco,comprado};}else ST.openfood.push({id:ST.ids.of++,nome,qtd,preco,comprado});save();cancelOF();renderOF();renderDash();toast('Item salvo!');}
@@ -1291,7 +1300,7 @@ function renderFin(){
   const mar=fin.totRec>0?fin.saldo/fin.totRec*100:0;
   document.getElementById('fin-resumo').innerHTML=`<div class="fr"><span>Receita realizada</span><span class="v pos">${R(fin.totRec)}</span></div><div class="fr"><span>Open Bar</span><span class="v neg">-${R(fin.despOB)}</span></div><div class="fr"><span>Open Food</span><span class="v neg">-${R(fin.despOF)}</span></div><div class="fr"><span>Despesas gerais</span><span class="v neg">-${R(fin.despGeral)}</span></div><div class="fr"><span>Margem</span><span class="v ${mar>=0?'pos':'neg'}">${mar.toFixed(1)}%</span></div><div class="fr" style="border-top:2px solid var(--border);margin-top:6px;padding-top:9px;"><span class="bold" style="font-size:0.95rem">SALDO FINAL</span><span class="v ${fin.saldo>=0?'pos':'neg'} bold" style="font-size:1rem">${R(fin.saldo)}</span></div>`;
 }
-function renderDesps(){const total=ST.despesas.reduce((a,b)=>a+b.val,0);const cats={};ST.despesas.forEach(d=>{if(!cats[d.cat])cats[d.cat]=[];cats[d.cat].push(d);});let h='<div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;">';Object.entries(cats).forEach(([cat,items])=>items.forEach(d=>{h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);"><span class="badge bb" style="font-size:0.62rem">${d.cat}</span><span class="sm-txt">${d.desc}</span><span class="v neg bold sm-txt">${R(d.val)}</span><div class="flex gap8"><button class="btn bgh sm" onclick="editDesp(${d.id})">E</button><button class="btn bdn sm" onclick="delDesp(${d.id})">X</button></div></div>`;}));h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;gap:6px;padding:7px 10px;background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span></span><span class="bold sm-txt">TOTAL</span><span class="v neg bold sm-txt">${R(total)}</span><span></span></div></div>`;document.getElementById('fin-desps').innerHTML=h;}
+function renderDesps(){const total=ST.despesas.reduce((a,b)=>a+b.val,0);const cats={};ST.despesas.forEach(d=>{if(!cats[d.cat])cats[d.cat]=[];cats[d.cat].push(d);});let h='<div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;">';Object.entries(cats).forEach(([cat,items])=>items.forEach(d=>{h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);"><span class="badge bb" style="font-size:0.62rem">${esc(d.cat)}</span><span class="sm-txt">${esc(d.desc)}</span><span class="v neg bold sm-txt">${R(d.val)}</span><div class="flex gap8"><button class="btn bgh sm" onclick="editDesp(${d.id})">E</button><button class="btn bdn sm" onclick="delDesp(${d.id})">X</button></div></div>`;}));h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;gap:6px;padding:7px 10px;background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span></span><span class="bold sm-txt">TOTAL</span><span class="v neg bold sm-txt">${R(total)}</span><span></span></div></div>`;document.getElementById('fin-desps').innerHTML=h;}
 function showDespForm(){document.getElementById('form-desp').style.display='block';document.getElementById('d-cat').focus();}
 function cancelDesp(){document.getElementById('form-desp').style.display='none';['d-cat','d-desc','d-val','d-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function salvarDesp(){const cat=document.getElementById('d-cat').value.trim(),desc=document.getElementById('d-desc').value.trim(),val=parseFloat(document.getElementById('d-val').value)||0;if(!cat||!desc){alert('Preencha categoria e descricao');return;}const eid=document.getElementById('d-eid').value;if(eid){const idx=ST.despesas.findIndex(x=>x.id==eid);if(idx!==-1)ST.despesas[idx]={...ST.despesas[idx],cat,desc,val};}else ST.despesas.push({id:ST.ids.desp++,cat,desc,val});save();cancelDesp();renderFin();renderDash();toast('Despesa salva!');}
@@ -1303,7 +1312,7 @@ function delDesp(id){const d=ST.despesas.find(x=>x.id===id);if(!d||!confirm('Rem
 // ══════════════════════════════════════════════
 let filtroPend=false;
 function togglePend(){filtroPend=!filtroPend;const btn=document.getElementById('btn-pend');if(btn){btn.style.background=filtroPend?'rgba(217,66,53,0.2)':'';btn.style.borderColor=filtroPend?'rgba(217,66,53,0.4)':'';}renderPat();}
-function renderPat(){const b=(document.getElementById('pat-busca')||{value:''}).value.toLowerCase();const lista=ST.patrocinadores.filter(p=>(!b||p.nome.toLowerCase().includes(b))&&(!filtroPend||!p.pago));const pagos=ST.patrocinadores.filter(p=>p.pago),pend=ST.patrocinadores.filter(p=>!p.pago);const vp=pagos.reduce((a,p)=>a+(p.valor||0),0),vpend=pend.reduce((a,p)=>a+(p.valor||0),0);const rt=document.getElementById('pat-res');if(rt)rt.innerHTML=`<span class="badge bg">${pagos.length} pagos - ${R(vp)}</span> <span class="badge br">${pend.length} pendentes - ${R(vpend)}</span>`;const el=document.getElementById('pat-lista');if(!el)return;el.innerHTML=lista.length?lista.map(p=>`<div class="pt-row"><span class="bold sm-txt">${p.nome}</span><span style="font-weight:800;font-size:0.83rem;color:var(--g)">${R(p.valor||0)}</span><span><span class="badge ${p.pago?'bg':'br'}" style="cursor:pointer" onclick="togglePat(${p.id})">${p.pago?'Pago':'Pendente'}</span></span><div class="flex gap8"><button class="btn bgh sm" onclick="editPat(${p.id})">E</button><button class="btn bdn sm" onclick="delPat(${p.id})">X</button></div></div>`).join(''):'<div class="tc muted sm-txt" style="padding:16px">Nenhum resultado</div>';}
+function renderPat(){const b=(document.getElementById('pat-busca')||{value:''}).value.toLowerCase();const lista=ST.patrocinadores.filter(p=>(!b||p.nome.toLowerCase().includes(b))&&(!filtroPend||!p.pago));const pagos=ST.patrocinadores.filter(p=>p.pago),pend=ST.patrocinadores.filter(p=>!p.pago);const vp=pagos.reduce((a,p)=>a+(p.valor||0),0),vpend=pend.reduce((a,p)=>a+(p.valor||0),0);const rt=document.getElementById('pat-res');if(rt)rt.innerHTML=`<span class="badge bg">${pagos.length} pagos - ${R(vp)}</span> <span class="badge br">${pend.length} pendentes - ${R(vpend)}</span>`;const el=document.getElementById('pat-lista');if(!el)return;el.innerHTML=lista.length?lista.map(p=>`<div class="pt-row"><span class="bold sm-txt">${esc(p.nome)}</span><span style="font-weight:800;font-size:0.83rem;color:var(--g)">${R(p.valor||0)}</span><span><span class="badge ${p.pago?'bg':'br'}" style="cursor:pointer" onclick="togglePat(${p.id})">${p.pago?'Pago':'Pendente'}</span></span><div class="flex gap8"><button class="btn bgh sm" onclick="editPat(${p.id})">E</button><button class="btn bdn sm" onclick="delPat(${p.id})">X</button></div></div>`).join(''):'<div class="tc muted sm-txt" style="padding:16px">Nenhum resultado</div>';}
 function showPatForm(){document.getElementById('form-pat').style.display='block';document.getElementById('pt-nome').focus();}
 function cancelPat(){document.getElementById('form-pat').style.display='none';document.getElementById('pt-nome').value='';document.getElementById('pt-val').value='150';document.getElementById('pt-st').value='true';document.getElementById('pt-eid').value='';}
 function salvarPat(){const nome=document.getElementById('pt-nome').value.trim(),val=parseFloat(document.getElementById('pt-val').value)||0,pago=document.getElementById('pt-st').value==='true';if(!nome){alert('Informe o nome');return;}const eid=document.getElementById('pt-eid').value;if(eid){const idx=ST.patrocinadores.findIndex(p=>p.id==eid);if(idx!==-1)ST.patrocinadores[idx]={...ST.patrocinadores[idx],nome,valor:val,pago};}else ST.patrocinadores.push({id:ST.ids.pat++,nome,valor:val,pago});save();cancelPat();renderPat();renderDash();toast('Patrocinador salvo!');}
@@ -1437,7 +1446,7 @@ async function enviarIngressoWpp(p){
 // ══════════════════════════════════════════════
 // IMPRESSAO
 // ══════════════════════════════════════════════
-function renderImp(){const fi=(document.getElementById('imp-fil')||{value:'todos'}).value;const li=(document.getElementById('imp-lot')||{value:''}).value;const lista=(ST.participantes||[]).filter(p=>(!li||p.lote===li)&&(fi==='todos'||(fi==='nao'&&!p.entrou)||(fi==='sim'&&p.entrou)));const ic=document.getElementById('imp-cnt');if(ic)ic.textContent=lista.length+' credencial(is)';const grid=document.getElementById('print-grid');if(!grid)return;grid.innerHTML=lista.map(p=>`<div class="pcred"><div class="ce">RESENHA JUNINA 2026</div><div class="cl2">${p.lote} Lote</div><div id="qrc-${p.id}" style="width:150px;height:150px;margin:5px auto;display:flex;align-items:center;justify-content:center;"></div><div class="cc">${p.codigo}</div><div class="cn2">${p.nome}</div><div class="ci2">Chacara Diniz - 13/06/2026 - 21:00</div></div>`).join('');requestAnimationFrame(()=>lista.forEach(p=>gerarQR('qrc-'+p.id,p.codigo)));}
+function renderImp(){const fi=(document.getElementById('imp-fil')||{value:'todos'}).value;const li=(document.getElementById('imp-lot')||{value:''}).value;const lista=(ST.participantes||[]).filter(p=>(!li||p.lote===li)&&(fi==='todos'||(fi==='nao'&&!p.entrou)||(fi==='sim'&&p.entrou)));const ic=document.getElementById('imp-cnt');if(ic)ic.textContent=lista.length+' credencial(is)';const grid=document.getElementById('print-grid');if(!grid)return;grid.innerHTML=lista.map(p=>`<div class="pcred"><div class="ce">RESENHA JUNINA 2026</div><div class="cl2">${p.lote} Lote</div><div id="qrc-${p.id}" style="width:150px;height:150px;margin:5px auto;display:flex;align-items:center;justify-content:center;"></div><div class="cc">${esc(p.codigo)}</div><div class="cn2">${esc(p.nome)}</div><div class="ci2">Chacara Diniz - 13/06/2026 - 21:00</div></div>`).join('');requestAnimationFrame(()=>lista.forEach(p=>gerarQR('qrc-'+p.id,p.codigo)));}
 
 // ══════════════════════════════════════════════
 // VENDAS ONLINE
@@ -1488,6 +1497,18 @@ function toggleModoPortaria(){const body=document.body,btn=document.getElementBy
 function mostrarGuiaFirebase(){document.getElementById('fb-modal').classList.add('on');}
 
 // ══════════════════════════════════════════════
+// TIMEOUT HELPER
+// ══════════════════════════════════════════════
+function withTimeout(promise, ms=15000){
+  return Promise.race([promise, new Promise((_,rej)=>setTimeout(()=>rej(new Error('Timeout')),ms))]);
+}
+
+// ══════════════════════════════════════════════
+// ESCAPE HTML (XSS prevention)
+// ══════════════════════════════════════════════
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+// ══════════════════════════════════════════════
 // NOTIFICACAO DE PEDIDO NOVO
 // ══════════════════════════════════════════════
 function verPedidoNovo(){
@@ -1514,7 +1535,7 @@ function _mostrarBannerPedido(p){
   banner.innerHTML = '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">' +
     '<span style="font-size:1.4rem;">🔔</span>' +
     '<div><div style="font-weight:800;font-size:0.95rem;">Novo pedido online!</div>' +
-    '<div style="font-size:0.82rem;opacity:0.9;">'+p.nome+' - '+p.lote+' Lote - '+p.fone+'</div></div></div>' +
+    '<div style="font-size:0.82rem;opacity:0.9;">'+esc(p.nome)+' - '+esc(p.lote)+' Lote - '+esc(p.fone)+'</div></div></div>' +
     '<div style="display:flex;gap:8px;flex-shrink:0;">' +
     '<button onclick="verPedidoNovo()" ' +
     'style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700;font-size:0.82rem;font-family:inherit;">Ver pedido</button>' +
