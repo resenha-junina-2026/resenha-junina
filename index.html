@@ -37,6 +37,7 @@ header{display:flex;align-items:center;justify-content:center;flex-direction:col
 .header-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0;}
 nav{display:flex;gap:1px;padding:0 20px;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg1);scrollbar-width:none;align-items:center;justify-content:center;}
 nav::-webkit-scrollbar{display:none;}
+nav{-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);}
 nav button{background:transparent;border:none;color:var(--t3);padding:12px 14px;cursor:pointer;font-family:'Figtree',sans-serif;font-weight:500;font-size:13px;white-space:nowrap;transition:color 0.15s;display:flex;align-items:center;gap:6px;position:relative;}
 nav button::after{content:'';position:absolute;bottom:0;left:14px;right:14px;height:1.5px;background:var(--gold);opacity:0;transition:opacity 0.15s;}
 nav button:hover{color:var(--t1);}
@@ -172,7 +173,7 @@ input.autofill{border-color:var(--g);background:var(--g-s);}
 .toggle input:checked+.toggle-slider::before{transform:translateX(22px);background:#000;}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;backdrop-filter:blur(6px);}
 .modal-overlay.on{display:flex;animation:fadeIn 0.15s ease;}
-.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);padding:22px 20px 20px;max-width:400px;width:100%;margin:20px auto;box-shadow:var(--shadow-lg);position:relative;animation:slideUp 0.2s cubic-bezier(0.4,0,0.2,1);}
+.modal-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r3);padding:22px 20px 20px;max-width:400px;width:100%;margin:20px auto;box-shadow:var(--shadow-lg);position:relative;animation:slideUp 0.2s cubic-bezier(0.4,0,0.2,1);max-height:90vh;overflow-y:auto;}
 .modal-box-wide{max-width:500px;}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 .modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.06);border:none;color:var(--t2);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:background 0.15s;}
@@ -737,7 +738,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -777,7 +778,7 @@ const R=v=>'R$ '+(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumF
 const pagou=p=>(p.recebido&&p.recebido>0)||(p.pgto&&p.pgto.startsWith('Cortesia'));
 const qtdLote=l=>ST.participantes.filter(p=>p.lote===l).length;
 const cheio=l=>qtdLote(l)>=VAGAS[l];
-const proxLote=()=>['1°','2°','3°'].find(l=>!cheio(l))||'3°';
+const proxLote=()=>['1°','2°','3°'].find(l=>!cheio(l))||null;
 const taxa=()=>parseFloat(document.getElementById('taxa-cred')?.value||ST.config.taxaCredito)||5.09;
 function salvarConfig(){ST.config.taxaCredito=taxa();save();fbSaveConfig();}
 
@@ -955,7 +956,20 @@ function fbSetupListeners(){
     const logs=[];snap.forEach(doc=>logs.push({...doc.data(),_fbId:doc.id}));ST.log=logs;save();renderPort();
   });
   const u3=db.collection('rj26_config').doc('main').onSnapshot(doc=>{
-    if(doc.exists){const d=doc.data();if(d.vendas)ST.vendas=d.vendas;if(d.taxaCredito)ST.config.taxaCredito=d.taxaCredito;save();renderVendas();}
+    if(doc.exists){
+      const d=doc.data();
+      // Só atualiza vendas/config se o Firebase tiver dados mais recentes
+      // Preserva edições locais (ex: taxa de crédito editada mas não salva ainda)
+      const local=JSON.parse(localStorage.getItem('rj26')||'{}');
+      if(d.vendas) ST.vendas=d.vendas;
+      if(d.taxaCredito!=null) ST.config.taxaCredito=d.taxaCredito;
+      // Preserva dados que nao vem do config/main
+      if(local.patrocinadores) ST.patrocinadores=local.patrocinadores;
+      if(local.despesas) ST.despesas=local.despesas;
+      if(local.openbar) ST.openbar=local.openbar;
+      if(local.openfood) ST.openfood=local.openfood;
+      save();renderVendas();
+    }
   });
   _fbListeners=[u1,u2,u3];
 }
@@ -992,11 +1006,7 @@ async function fbSaveConfig(){if(!db)return;try{await db.collection('rj26_config
 async function fbResetParts(){if(!db)return;try{let snap=await db.collection('rj26_participantes').get();let batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();snap=await db.collection('rj26_log').get();batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();toast('Firebase resetado');}catch(e){toast('Erro ao resetar Firebase');}}
 
 function reset(){if(!confirm('Resetar todos os dados locais e do Firebase?'))return;ST=clone(DI);save();if(fbReady)fbResetParts();renderAll();toast('Dados resetados');}
-async function zerarParticipantes(){
-  if(!confirm('Zerar APENAS os participantes e reiniciar o contador?\nPatrocinadores, despesas e configuracoes serao mantidos.'))return;
-  if(db){try{const snap=await db.collection('rj26_participantes').get();const batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();await db.collection('rj26_config').doc('contador').set({next:1});}catch(e){console.warn('Erro ao zerar Firebase:',e);}}
-  ST.participantes=[];ST.log=[];ST.ids.part=1;save();renderAll();toast('Participantes zerados');
-}
+// zerarParticipantes removida (codigo morto)
 
 // ══════════════════════════════════════════════
 // NAVEGACAO
@@ -1130,7 +1140,7 @@ function salvarPart(){
   const fone=document.getElementById('p-fone').value.trim();
   const eid=document.getElementById('eid').value;
   let lote=document.getElementById('p-lote').value;
-  if(!eid&&cheio(lote)){const pr=proxLote();if(!confirm('Lote '+lote+' esgotado. Usar '+pr+'?'))return;lote=pr;}
+  if(!eid&&cheio(lote)){const pr=proxLote();if(!pr){alert('Todos os lotes estao esgotados.');return;}if(!confirm('Lote '+lote+' esgotado. Usar '+pr+'?'))return;lote=pr;}
   const pgto=document.getElementById('p-pgto').value;
   const rv=document.getElementById('p-valor').value;
   const isCort=pgto&&pgto.startsWith('Cortesia');
@@ -1236,7 +1246,7 @@ function renderPeak(){
   pl.innerHTML=sorted.map(([h])=>`<span>${h}h</span>`).join('');
 }
 function desfazer(){if(!(ST.log||[]).length){alert('Nenhuma entrada para desfazer');return;}const u=ST.log[0];const p=ST.participantes.find(x=>x.codigo===u.codigo);if(p){p.entrou=false;if(fbReady)fbSavePart(p);}ST.log.shift();save();renderPort();renderDash();toast('Ultima entrada desfeita');}
-function limparLog(){if(!confirm('Limpar log E resetar todas as entradas?\nOs participantes voltarao para "Aguardando".'))return;ST.participantes.forEach(p=>{if(p.entrou){p.entrou=false;fbSavePart(p);}});ST.log=[];save();renderPort();renderDash();renderPart();toast('Log e entradas resetados');}
+async function limparLog(){if(!confirm('Limpar log E resetar todas as entradas?\nOs participantes voltarao para "Aguardando".'))return;const promises=[];ST.participantes.forEach(p=>{if(p.entrou){p.entrou=false;promises.push(fbSavePart(p));}});try{await Promise.all(promises);}catch(_){}ST.log=[];save();renderPort();renderDash();renderPart();toast('Log e entradas resetados');}
 function exportarLog(){if(!(ST.log||[]).length){toast('Nenhuma entrada');return;}const h=['Hora','Nome','Codigo','Lote'];const rows=ST.log.map(e=>{const p=ST.participantes.find(x=>x.codigo===e.codigo);return[e.hora||'-',e.nome,e.codigo,p?p.lote:'-'];});const csv=[h,...rows].map(r=>r.join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='log_entradas_rj2026.csv';a.click();URL.revokeObjectURL(a.href);toast('Log exportado!');}
 
 // ══════════════════════════════════════════════
@@ -1396,11 +1406,16 @@ function mostrarHint(msg){const h=document.getElementById('qrm-hint');if(h){h.te
 async function confirmarEEnviar(codigo){
   const p=ST.participantes.find(x=>x.codigo===codigo);if(!p)return;
   if(!confirm('Confirmar pagamento de '+p.nome+' e enviar ingresso pelo WhatsApp?'))return;
-  p.pgto=p.pgto==='Pendente'?'Pix':p.pgto;
-  p.recebido=p.recebido||p.valor||PRECO[p.lote];
-  save();fbSavePart(p);renderPart();renderDash();toast('Pagamento confirmado!');
-  await enviarIngressoWpp(p);
-  p.ingressoEnviado=true;save();fbSavePart(p);renderPart();
+  try{
+    p.pgto=p.pgto==='Pendente'?'Pix':p.pgto;
+    p.recebido=p.recebido||p.valor||PRECO[p.lote];
+    save();await fbSavePart(p);renderPart();renderDash();toast('Pagamento confirmado!');
+    await enviarIngressoWpp(p);
+    p.ingressoEnviado=true;save();await fbSavePart(p);renderPart();
+  }catch(e){
+    console.warn('Erro ao confirmar pagamento:',e);
+    toast('Erro ao salvar no Firebase - tente novamente');
+  }
 }
 
 async function enviarIngressoWpp(p){
@@ -1448,7 +1463,23 @@ function renderVendas(){
 // ══════════════════════════════════════════════
 function checarBackup(){const ult=localStorage.getItem('rj26_ultimo_backup');if(!ult)return;const dias=Math.floor((Date.now()-parseInt(ult))/(1000*60*60*24));if(dias>=3)toast('Ultimo backup ha '+dias+' dias. Faca um backup!');}
 function exportJSON(){localStorage.setItem('rj26_ultimo_backup',Date.now().toString());const data=JSON.stringify(ST,null,2);const blob=new Blob([data],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resenha_junina_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);toast('Backup salvo!');}
-function importJSON(evt){const file=evt.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const data=JSON.parse(e.target.result);if(!data.participantes)throw new Error('Arquivo invalido');if(!confirm('Restaurar backup de '+data.participantes.length+' participantes?'))return;ST=data;if(!ST.config)ST.config={taxaCredito:5.09};if(!ST.ids)ST.ids={part:16,pat:72,desp:11,ob:10,of:4};if(!ST.openbar)ST.openbar=clone(DI.openbar);if(!ST.openfood)ST.openfood=clone(DI.openfood);if(!ST.vendas)ST.vendas={loteAtivo:null,token:null};save();renderAll();toast('Backup restaurado!');}catch(err){alert('Erro ao restaurar: '+err.message);}};r.readAsText(file);evt.target.value='';}
+function importJSON(evt){const file=evt.target.files[0];if(!file)return;const r=new FileReader();r.onload=async e=>{try{const data=JSON.parse(e.target.result);if(!data.participantes)throw new Error('Arquivo invalido');if(!confirm('Restaurar backup de '+data.participantes.length+' participantes?'))return;ST=data;if(!ST.config)ST.config={taxaCredito:5.09};if(!ST.ids)ST.ids={part:16,pat:72,desp:11,ob:10,of:4};if(!ST.openbar)ST.openbar=clone(DI.openbar);if(!ST.openfood)ST.openfood=clone(DI.openfood);if(!ST.vendas)ST.vendas={loteAtivo:null,token:null};save();renderAll();
+      // Sincroniza participantes com Firebase
+      if(db && ST.participantes.length){
+        toast('Sincronizando '+ST.participantes.length+' participantes com Firebase...');
+        try{
+          // Limpa participantes atuais do Firebase
+          const snap=await db.collection('rj26_participantes').get();
+          const batch=db.batch();snap.forEach(doc=>batch.delete(doc.ref));await batch.commit();
+          // Reenvia todos do backup
+          for(let i=0;i<ST.participantes.length;i+=400){
+            const b2=db.batch();
+            ST.participantes.slice(i,i+400).forEach(p=>{const d={...p};delete d._fbId;b2.set(db.collection('rj26_participantes').doc(),d);});
+            await b2.commit();
+          }
+          toast('Backup restaurado e sincronizado!');
+        }catch(e){console.warn('Erro ao sincronizar Firebase:',e);toast('Restaurado localmente. Erro ao sincronizar Firebase.');}
+      } else { toast('Backup restaurado!'); }}catch(err){alert('Erro ao restaurar: '+err.message);}};r.readAsText(file);evt.target.value='';}
 function abrirRelatorio(){document.getElementById('rel-modal').classList.add('on');const fin=calcFin(),ps=ST.participantes||[],total=ps.length,dentro=ps.filter(p=>p.entrou).length,faltou=total-dentro,pagos=ps.filter(p=>pagou(p)).length,pend=total-pagos;const loteRows=['1°','2°','3°'].map(l=>{const q=ps.filter(p=>p.lote===l).length,ent=ps.filter(p=>p.lote===l&&p.entrou).length;return `<div class="fr"><span style="color:${CL[l]}">${l} Lote</span><span>${ent}/${q} presentes</span></div>`;}).join('');const patPagos=ST.patrocinadores.filter(p=>p.pago).length,patTotal=ST.patrocinadores.length;document.getElementById('rel-body').innerHTML=`<div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;margin-bottom:12px;"><div style="font-size:0.7rem;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Presenca</div><div class="fr"><span>Total cadastrados</span><span class="bold">${total}</span></div><div class="fr"><span>Compareceram</span><span class="bold" style="color:var(--g)">${dentro} (${total>0?Math.round(dentro/total*100):0}%)</span></div><div class="fr"><span>Nao compareceram</span><span class="bold" style="color:var(--r)">${faltou}</span></div>${loteRows}</div><div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;margin-bottom:12px;"><div style="font-size:0.7rem;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Financeiro</div><div class="fr"><span>Receita total</span><span class="bold" style="color:var(--g)">${R(fin.totRec)}</span></div><div class="fr"><span>Despesas totais</span><span class="bold" style="color:var(--r)">${R(fin.totDesp)}</span></div><div class="fr" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px;"><span class="bold">Saldo final</span><span class="bold" style="color:${fin.saldo>=0?'var(--g)':'var(--r)'}">${R(fin.saldo)}</span></div></div><div style="background:rgba(232,160,32,0.08);border-radius:10px;padding:12px;"><div style="font-size:0.7rem;font-weight:800;color:var(--t2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Pagamentos</div><div class="fr"><span>Pulseiras pagas</span><span class="bold" style="color:var(--g)">${pagos}/${total}</span></div><div class="fr"><span>Pulseiras pendentes</span><span class="bold" style="color:var(--r)">${pend}</span></div><div class="fr"><span>Patrocinios pagos</span><span class="bold">${patPagos}/${patTotal}</span></div></div>`;}
 function fecharRelatorio(){document.getElementById('rel-modal').classList.remove('on');}
 function exportarRelatorioCSV(){const fin=calcFin(),ps=ST.participantes;const Rv=v=>(v||0).toFixed(2).replace('.',',');const rows=[['RELATORIO FINAL - RESENHA JUNINA 2026'],[''],['PRESENCA'],['Total cadastrados',ps.length],['Compareceram',ps.filter(p=>p.entrou).length],[''],['FINANCEIRO'],['Receita total',Rv(fin.totRec)],['Despesas totais',Rv(fin.totDesp)],['Saldo final',Rv(fin.saldo)],[''],['PARTICIPANTES'],['Codigo','Nome','WhatsApp','Lote','Pagamento','Recebido','Entrou'],...ps.map(p=>[p.codigo,p.nome,p.fone||'',p.lote,p.pgto||'',Rv(p.recebido),p.entrou?'Sim':'Nao'])];const csv=rows.map(r=>Array.isArray(r)?r.join(';'):r).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='relatorio_final_resenha2026.csv';a.click();URL.revokeObjectURL(a.href);toast('Relatorio exportado!');}
