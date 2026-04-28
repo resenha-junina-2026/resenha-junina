@@ -49,12 +49,14 @@ body{
 .hdr-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(245,200,66,0.15);border:1px solid rgba(245,200,66,0.4);color:var(--amarelo);font-size:0.68rem;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:5px 16px;border-radius:20px;margin-bottom:20px;}
 .hdr-info{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:18px;}
 .hdr-chip{font-size:0.78rem;color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.1);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);}
-#countdown{margin-top:14px;font-size:0.78rem;color:rgba(255,255,255,0.65);letter-spacing:0.5px;background:rgba(0,0,0,0.25);display:inline-block;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);}
+#countdown{margin-top:14px;font-size:0.95rem;font-weight:700;color:var(--amarelo);letter-spacing:1px;background:rgba(0,0,0,0.4);display:inline-block;padding:8px 20px;border-radius:24px;border:1px solid rgba(245,200,66,0.3);text-shadow:0 1px 4px rgba(0,0,0,0.5);}
 
 /* ── Layout ── */
 main{max-width:460px;margin:0 auto;padding:24px 14px 80px;}
 .screen{display:none;}.screen.on{display:block;animation:up 0.3s cubic-bezier(0.22,1,0.36,1);}
 @keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideLeft{from{opacity:0;transform:translateX(30px);}to{opacity:1;transform:translateX(0);}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-30px);}to{opacity:1;transform:translateX(0);}}
 
 /* ── Progress Bar ── */
 .prog{display:flex;align-items:center;justify-content:center;margin:28px 0 22px;}
@@ -213,7 +215,7 @@ main{padding-bottom:max(80px,calc(80px + env(safe-area-inset-bottom,0px)));}
 <!-- HEADER -->
 <div class="hdr">
   <div class="hdr-img-wrap">
-    <img id="hdr-img" width="960" height="500" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='960' height='500' viewBox='0 0 960 500'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%231A0640'/%3E%3Cstop offset='50%25' stop-color='%233D1A6E'/%3E%3Cstop offset='100%25' stop-color='%235B2D8A'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g1)' width='960' height='500'/%3E%3Ccircle cx='200' cy='120' r='80' fill='%23F5C842' opacity='0.08'/%3E%3Ccircle cx='760' cy='380' r='120' fill='%23F5C842' opacity='0.06'/%3E%3Ccircle cx='480' cy='250' r='200' fill='%237B2FBE' opacity='0.08'/%3E%3Ctext x='480' y='210' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3ERESENHA%3C/text%3E%3Ctext x='480' y='280' text-anchor='middle' fill='%23F5C842' font-size='72' font-family='sans-serif' font-weight='900' opacity='0.9'%3EJUNINA%3C/text%3E%3Ctext x='480' y='340' text-anchor='middle' fill='white' font-size='32' font-family='sans-serif' font-weight='300' letter-spacing='16' opacity='0.7'%3E2 0 2 6%3C/text%3E%3C/svg%3E" alt="Resenha Junina 2026" loading="lazy">
+    <img id="hdr-img" width="960" height="500" src="banner.jpg" alt="Resenha Junina 2026" loading="lazy">
     <div class="hdr-overlay">
       <div class="hdr-eyebrow">Ingresso Oficial</div>
       <div class="hdr-info" style="margin-top:12px;">
@@ -311,7 +313,22 @@ main{padding-bottom:max(80px,calc(80px + env(safe-area-inset-bottom,0px)));}
           <div class="pgto-tab active" onclick="selecionarPgto('pix',this)"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/></svg></span>Pix</div>
           <div class="pgto-tab" onclick="selecionarPgto('mp',this)"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>Cartao / MP</div>
         </div>
-        <div class="pgto-panel on" id="panel-pix"><p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Copie a chave Pix e transfira o valor <strong>exato</strong> pelo seu banco.</p><div class="pix-box"><div class="pix-chave" id="pix-chave-display">-</div><button class="pix-copy" id="pix-copy-btn" onclick="copiarPix()">Copiar</button></div></div>
+        <div class="pgto-panel on" id="panel-pix">
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Use o <strong>Pix Copia e Cola</strong> com valor preenchido ou copie a chave manual.</p>
+          <div style="text-align:center;margin:12px 0;">
+            <div id="pix-qr-container" style="display:inline-block;background:#fff;padding:12px;border-radius:12px;border:1.5px solid rgba(0,160,80,0.25);"></div>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:6px;">Escaneie o QR Code pelo app do banco</div>
+          </div>
+          <div class="pix-box" style="flex-direction:column;align-items:stretch;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;">Pix Copia e Cola</div>
+              <button class="pix-copy" id="pix-copiacola-btn" onclick="copiarPixCopiaCola()">Copiar Pix</button>
+            </div>
+            <div style="font-size:0.65rem;color:var(--green);word-break:break-all;max-height:40px;overflow:hidden;font-family:monospace;" id="pix-copiacola-display">-</div>
+          </div>
+          <div style="margin-top:8px;font-size:0.72rem;color:var(--muted);text-align:center;">ou copie a chave manual:</div>
+          <div class="pix-box"><div class="pix-chave" id="pix-chave-display">-</div><button class="pix-copy" id="pix-copy-btn" onclick="copiarPix()">Copiar chave</button></div>
+        </div>
         <div class="pgto-panel" id="panel-mp">
           <div class="mp-info">Clique abaixo para abrir o <strong>Mercado Pago</strong> e pagar com cartao ou Pix. Apos pagar, volte aqui e clique em "Enviar pedido".</div>
           <div id="mp-qty-aviso" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.35);border-radius:10px;padding:10px 14px;margin-bottom:10px;font-size:0.78rem;color:#92400e;font-weight:600;">Para comprar mais de 1 ingresso com cartao, entre em contato pelo WhatsApp do organizador. Com Pix voce pode comprar quantos quiser.</div>
@@ -375,8 +392,8 @@ const CONFIG = {
   pixChave: '4250e7fa-891d-4bb3-b5d4-c65a1fafb023',
   linksMP: {
     '1°': 'https://mpago.la/15AYPXV',
-    '2°': 'https://mpago.la/1kYF7Wu',
-    '3°': 'https://mpago.la/27qVoD5',
+    '2°': '',
+    '3°': '',
   },
   firebase: {
     apiKey:"AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
@@ -692,7 +709,9 @@ function mudaQty(delta){
 
 // ─── NAVEGACAO ──────────────────────────────────────
 function irStep1(){
-  document.getElementById('step-1').style.display = 'block';
+  const s1 = document.getElementById('step-1');
+  s1.style.display = 'block';
+  s1.style.animation = 'slideRight 0.3s ease';
   document.getElementById('step-2').style.display = 'none';
   renderProg(1, 'prog-bar');
   window.scrollTo({top:0, behavior:'smooth'});
@@ -749,13 +768,26 @@ function irStep2(){
   document.getElementById('pix-total').textContent = 'R$ '+total;
   document.getElementById('pix-chave-display').textContent = CONFIG.pixChave;
 
+  // Gera Pix Copia e Cola e QR Code
+  const pixPayload = gerarPixCopiaCola(pedido.qtd * lote.preco);
+  document.getElementById('pix-copiacola-display').textContent = pixPayload;
+  const qrContainer = document.getElementById('pix-qr-container');
+  if(qrContainer){
+    qrContainer.innerHTML = '';
+    if(typeof QRCode !== 'undefined'){
+      new QRCode(qrContainer, {text: pixPayload, width: 180, height: 180, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M});
+    }
+  }
+
   const mpLink = CONFIG.linksMP[pedido.lote];
   const mpWarn = document.getElementById('mp-warn-box');
   if(mpWarn) mpWarn.style.display = (!mpLink || mpLink === '') ? 'block' : 'none';
 
   // [FIX-3] Troca de steps via display, nao via .on
   document.getElementById('step-1').style.display = 'none';
-  document.getElementById('step-2').style.display = 'block';
+  const s2 = document.getElementById('step-2');
+  s2.style.display = 'block';
+  s2.style.animation = 'slideLeft 0.3s ease';
   // [FIX-5] Passa ID correto para renderProg
   renderProg(2, 'prog-bar');
   window.scrollTo({top:0, behavior:'smooth'});
@@ -786,6 +818,64 @@ function selecionarPgto(tipo, el){
   } else {
     if(aviso) aviso.style.display = 'none';
     if(qtyBtnPlus) qtyBtnPlus.removeAttribute('data-mp-blocked');
+  }
+}
+
+function gerarPixCopiaCola(valor){
+  // Gera string Pix Copia e Cola (EMV format simplificado)
+  // Chave Pix UUID do organizador
+  const chave = CONFIG.pixChave;
+  const nome = 'RESENHA JUNINA 2026';
+  const cidade = 'NHANDEARA';
+  const valorStr = valor.toFixed(2);
+
+  function tlv(id, val){ return id + String(val.length).padStart(2,'0') + val; }
+
+  let payload = '';
+  payload += tlv('00', '01'); // Payload Format Indicator
+  payload += tlv('26', // Merchant Account Info
+    tlv('00', 'BR.GOV.BCB.PIX') +
+    tlv('01', chave)
+  );
+  payload += tlv('52', '0000'); // Merchant Category Code
+  payload += tlv('53', '986'); // Currency (BRL)
+  payload += tlv('54', valorStr); // Amount
+  payload += tlv('58', 'BR'); // Country
+  payload += tlv('59', nome.substring(0,25)); // Merchant Name
+  payload += tlv('60', cidade.substring(0,15)); // City
+  payload += tlv('62', tlv('05', '***')); // Additional Data
+
+  // CRC16 placeholder - calcula depois
+  payload += '6304';
+
+  // Calcula CRC16-CCITT
+  function crc16(str){
+    let crc = 0xFFFF;
+    for(let i=0; i<str.length; i++){
+      crc ^= str.charCodeAt(i) << 8;
+      for(let j=0; j<8; j++){
+        if(crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+        else crc <<= 1;
+        crc &= 0xFFFF;
+      }
+    }
+    return crc.toString(16).toUpperCase().padStart(4,'0');
+  }
+
+  const crc = crc16(payload);
+  return payload.slice(0,-4) + crc;
+}
+
+function copiarPixCopiaCola(){
+  const payload = document.getElementById('pix-copiacola-display').textContent;
+  const btn = document.getElementById('pix-copiacola-btn');
+  const sucesso = () => { if(btn){ btn.textContent='Copiado!'; btn.style.background='#006644'; setTimeout(()=>{btn.textContent='Copiar Pix';btn.style.background='';},2000); }};
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(payload).then(sucesso).catch(()=>{
+      const ta=document.createElement('textarea');ta.value=payload;ta.style.cssText='position:fixed;left:-9999px;';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');sucesso();}catch(_){alert('Copie manualmente: '+payload);}document.body.removeChild(ta);
+    });
+  } else {
+    const ta=document.createElement('textarea');ta.value=payload;ta.style.cssText='position:fixed;left:-9999px;';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');sucesso();}catch(_){alert('Copie manualmente: '+payload);}document.body.removeChild(ta);
   }
 }
 
