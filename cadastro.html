@@ -314,20 +314,8 @@ main{padding-bottom:max(80px,calc(80px + env(safe-area-inset-bottom,0px)));}
           <div class="pgto-tab" onclick="selecionarPgto('mp',this)"><span class="tab-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>Cartao / MP</div>
         </div>
         <div class="pgto-panel on" id="panel-pix">
-          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Use o <strong>Pix Copia e Cola</strong> com valor preenchido ou copie a chave manual.</p>
-          <div style="text-align:center;margin:12px 0;">
-            <div id="pix-qr-container" style="display:inline-block;background:#fff;padding:12px;border-radius:12px;border:1.5px solid rgba(0,160,80,0.25);"></div>
-            <div style="font-size:0.72rem;color:var(--muted);margin-top:6px;">Escaneie o QR Code pelo app do banco</div>
-          </div>
-          <div class="pix-box" style="flex-direction:column;align-items:stretch;gap:8px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-              <div style="font-size:0.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;">Pix Copia e Cola</div>
-              <button class="pix-copy" id="pix-copiacola-btn" onclick="copiarPixCopiaCola()">Copiar Pix</button>
-            </div>
-            <div style="font-size:0.65rem;color:var(--green);word-break:break-all;max-height:40px;overflow:hidden;font-family:monospace;" id="pix-copiacola-display">-</div>
-          </div>
-          <div style="margin-top:8px;font-size:0.72rem;color:var(--muted);text-align:center;">ou copie a chave manual:</div>
-          <div class="pix-box"><div class="pix-chave" id="pix-chave-display">-</div><button class="pix-copy" id="pix-copy-btn" onclick="copiarPix()">Copiar chave</button></div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-bottom:10px;">Copie a chave Pix abaixo e transfira o valor <strong>exato</strong> pelo app do seu banco.</p>
+          <div class="pix-box"><div class="pix-chave" id="pix-chave-display">-</div><button class="pix-copy" id="pix-copy-btn" onclick="copiarPix()">Copiar</button></div>
         </div>
         <div class="pgto-panel" id="panel-mp">
           <div class="mp-info">Clique abaixo para abrir o <strong>Mercado Pago</strong> e pagar com cartao ou Pix. Apos pagar, volte aqui e clique em "Enviar pedido".</div>
@@ -768,16 +756,6 @@ function irStep2(){
   document.getElementById('pix-total').textContent = 'R$ '+total;
   document.getElementById('pix-chave-display').textContent = CONFIG.pixChave;
 
-  // Gera Pix Copia e Cola e QR Code
-  const pixPayload = gerarPixCopiaCola(pedido.qtd * lote.preco);
-  document.getElementById('pix-copiacola-display').textContent = pixPayload;
-  const qrContainer = document.getElementById('pix-qr-container');
-  if(qrContainer){
-    qrContainer.innerHTML = '';
-    if(typeof QRCode !== 'undefined'){
-      new QRCode(qrContainer, {text: pixPayload, width: 180, height: 180, colorDark: '#000', colorLight: '#fff', correctLevel: QRCode.CorrectLevel.M});
-    }
-  }
 
   const mpLink = CONFIG.linksMP[pedido.lote];
   const mpWarn = document.getElementById('mp-warn-box');
@@ -821,63 +799,7 @@ function selecionarPgto(tipo, el){
   }
 }
 
-function gerarPixCopiaCola(valor){
-  // Gera string Pix Copia e Cola (EMV format simplificado)
-  // Chave Pix UUID do organizador
-  const chave = CONFIG.pixChave;
-  const nome = 'RESENHA JUNINA 2026';
-  const cidade = 'NHANDEARA';
-  const valorStr = valor.toFixed(2);
 
-  function tlv(id, val){ return id + String(val.length).padStart(2,'0') + val; }
-
-  let payload = '';
-  payload += tlv('00', '01'); // Payload Format Indicator
-  payload += tlv('26', // Merchant Account Info
-    tlv('00', 'BR.GOV.BCB.PIX') +
-    tlv('01', chave)
-  );
-  payload += tlv('52', '0000'); // Merchant Category Code
-  payload += tlv('53', '986'); // Currency (BRL)
-  payload += tlv('54', valorStr); // Amount
-  payload += tlv('58', 'BR'); // Country
-  payload += tlv('59', nome.substring(0,25)); // Merchant Name
-  payload += tlv('60', cidade.substring(0,15)); // City
-  payload += tlv('62', tlv('05', '***')); // Additional Data
-
-  // CRC16 placeholder - calcula depois
-  payload += '6304';
-
-  // Calcula CRC16-CCITT
-  function crc16(str){
-    let crc = 0xFFFF;
-    for(let i=0; i<str.length; i++){
-      crc ^= str.charCodeAt(i) << 8;
-      for(let j=0; j<8; j++){
-        if(crc & 0x8000) crc = (crc << 1) ^ 0x1021;
-        else crc <<= 1;
-        crc &= 0xFFFF;
-      }
-    }
-    return crc.toString(16).toUpperCase().padStart(4,'0');
-  }
-
-  const crc = crc16(payload);
-  return payload.slice(0,-4) + crc;
-}
-
-function copiarPixCopiaCola(){
-  const payload = document.getElementById('pix-copiacola-display').textContent;
-  const btn = document.getElementById('pix-copiacola-btn');
-  const sucesso = () => { if(btn){ btn.textContent='Copiado!'; btn.style.background='#006644'; setTimeout(()=>{btn.textContent='Copiar Pix';btn.style.background='';},2000); }};
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(payload).then(sucesso).catch(()=>{
-      const ta=document.createElement('textarea');ta.value=payload;ta.style.cssText='position:fixed;left:-9999px;';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');sucesso();}catch(_){alert('Copie manualmente: '+payload);}document.body.removeChild(ta);
-    });
-  } else {
-    const ta=document.createElement('textarea');ta.value=payload;ta.style.cssText='position:fixed;left:-9999px;';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');sucesso();}catch(_){alert('Copie manualmente: '+payload);}document.body.removeChild(ta);
-  }
-}
 
 function copiarPix(){
   const btn = document.getElementById('pix-copy-btn');
