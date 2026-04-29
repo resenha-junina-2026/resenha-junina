@@ -336,9 +336,9 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
       <div class="fgl"><label>WhatsApp <span class="muted" style="font-weight:400;text-transform:none">(opcional)</span></label><input type="tel" id="p-fone" placeholder="(17) 99999-9999"></div>
       <div class="fgl"><label>Lote</label>
         <select id="p-lote" onchange="onLote()">
-          <option value="1°">1o Lote - R$90</option>
-          <option value="2°">2o Lote - R$110</option>
-          <option value="3°">3o Lote - R$130</option>
+          <option value="1°">1º Lote - R$90</option>
+          <option value="2°">2º Lote - R$110</option>
+          <option value="3°">3º Lote - R$130</option>
         </select>
         <div class="hint" id="h-lote">Selecionado automaticamente</div>
       </div>
@@ -568,7 +568,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
   <div class="panel no-print">
     <div class="flex gap8 wrap aic mb12">
       <select id="imp-fil" onchange="renderImp()"><option value="todos">Todos</option><option value="nao">Nao entrou</option><option value="sim">Ja entrou</option></select>
-      <select id="imp-lot" onchange="renderImp()"><option value="">Todos lotes</option><option value="1°">1o Lote</option><option value="2°">2o Lote</option><option value="3°">3o Lote</option></select>
+      <select id="imp-lot" onchange="renderImp()"><option value="">Todos lotes</option><option value="1º">1o Lote</option><option value="2º">2o Lote</option><option value="3º">3o Lote</option></select>
       <button class="btn bp" onclick="window.print()">Imprimir</button>
       <span id="imp-cnt" class="sm-txt muted"></span>
     </div>
@@ -1455,7 +1455,7 @@ function renderImp(){const fi=(document.getElementById('imp-fil')||{value:'todos
 // ══════════════════════════════════════════════
 // VENDAS ONLINE
 // ══════════════════════════════════════════════
-const LOTES_CONFIG=[{id:'1°',nome:'1o Lote',preco:90,vagas:50},{id:'2°',nome:'2o Lote',preco:110,vagas:100},{id:'3°',nome:'3o Lote',preco:130,vagas:200}];
+const LOTES_CONFIG=[{id:'1º',nome:'1º Lote',preco:90,vagas:50},{id:'2º',nome:'2º Lote',preco:110,vagas:100},{id:'3º',nome:'3º Lote',preco:130,vagas:200}];
 function gerarToken(){return Math.random().toString(36).slice(2,10).toUpperCase();}
 function ativarLote(loteId){if(ST.vendas.loteAtivo===loteId){ST.vendas.loteAtivo=null;ST.vendas.token=null;}else{ST.vendas.loteAtivo=loteId;ST.vendas.token=ST.vendas.token||gerarToken();}save();fbSaveConfig();renderVendas();}
 function getLinkBase(){const loc=window.location.href.split('?')[0].split('#')[0];const base=loc.substring(0,loc.lastIndexOf('/')+1);return base+'cadastro.html';}
