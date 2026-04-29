@@ -336,9 +336,9 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
       <div class="fgl"><label>WhatsApp <span class="muted" style="font-weight:400;text-transform:none">(opcional)</span></label><input type="tel" id="p-fone" placeholder="(17) 99999-9999"></div>
       <div class="fgl"><label>Lote</label>
         <select id="p-lote" onchange="onLote()">
-          <option value="1°">1º Lote - R$90</option>
-          <option value="2°">2º Lote - R$110</option>
-          <option value="3°">3º Lote - R$130</option>
+          <option value="1°">1o Lote - R$90</option>
+          <option value="2°">2o Lote - R$110</option>
+          <option value="3°">3o Lote - R$130</option>
         </select>
         <div class="hint" id="h-lote">Selecionado automaticamente</div>
       </div>
@@ -568,7 +568,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
   <div class="panel no-print">
     <div class="flex gap8 wrap aic mb12">
       <select id="imp-fil" onchange="renderImp()"><option value="todos">Todos</option><option value="nao">Nao entrou</option><option value="sim">Ja entrou</option></select>
-      <select id="imp-lot" onchange="renderImp()"><option value="">Todos lotes</option><option value="1º">1o Lote</option><option value="2º">2o Lote</option><option value="3º">3o Lote</option></select>
+      <select id="imp-lot" onchange="renderImp()"><option value="">Todos lotes</option><option value="1°">1o Lote</option><option value="2°">2o Lote</option><option value="3°">3o Lote</option></select>
       <button class="btn bp" onclick="window.print()">Imprimir</button>
       <span id="imp-cnt" class="sm-txt muted"></span>
     </div>
@@ -967,6 +967,28 @@ function fbSetupListeners(){
     if(doc.exists&&doc.data().data){ST.openfood=doc.data().data;save();renderOF();try{renderDash();}catch(_){}}
   });
   _fbListeners=[u1,u2,u3,u4,u5,u6,u7];
+
+  // Upload inicial: se documentos não existem no Firebase, cria com dados locais
+  (async function uploadInicial(){
+    try{
+      const docs=['patrocinadores','despesas','openbar','openfood'];
+      for(const nome of docs){
+        const ref=db.collection('rj26_config').doc(nome);
+        const snap=await ref.get();
+        if(!snap.exists && ST[nome] && ST[nome].length){
+          await ref.set({data:ST[nome]});
+          console.log('Upload inicial:',nome,ST[nome].length,'itens');
+        }
+      }
+      // Também garante que main tem ids
+      const mainRef=db.collection('rj26_config').doc('main');
+      const mainSnap=await mainRef.get();
+      if(mainSnap.exists){
+        const d=mainSnap.data();
+        if(!d.ids) await mainRef.set({ids:ST.ids},{merge:true});
+      }
+    }catch(e){console.warn('Upload inicial:',e);}
+  })();
 }
 
 async function proximoNumero(){
@@ -1455,7 +1477,7 @@ function renderImp(){const fi=(document.getElementById('imp-fil')||{value:'todos
 // ══════════════════════════════════════════════
 // VENDAS ONLINE
 // ══════════════════════════════════════════════
-const LOTES_CONFIG=[{id:'1º',nome:'1º Lote',preco:90,vagas:50},{id:'2º',nome:'2º Lote',preco:110,vagas:100},{id:'3º',nome:'3º Lote',preco:130,vagas:200}];
+const LOTES_CONFIG=[{id:'1°',nome:'1º Lote',preco:90,vagas:50},{id:'2°',nome:'2º Lote',preco:110,vagas:100},{id:'3°',nome:'3º Lote',preco:130,vagas:200}];
 function gerarToken(){return Math.random().toString(36).slice(2,10).toUpperCase();}
 function ativarLote(loteId){if(ST.vendas.loteAtivo===loteId){ST.vendas.loteAtivo=null;ST.vendas.token=null;}else{ST.vendas.loteAtivo=loteId;ST.vendas.token=ST.vendas.token||gerarToken();}save();fbSaveConfig();renderVendas();}
 function getLinkBase(){const loc=window.location.href.split('?')[0].split('#')[0];const base=loc.substring(0,loc.lastIndexOf('/')+1);return base+'cadastro.html';}
@@ -1464,7 +1486,7 @@ function copiarLink(){const link=getLinkAtivo();if(!link)return;navigator.clipbo
 function compartilharLinkWpp(){const link=getLinkAtivo();if(!link)return;const lote=LOTES_CONFIG.find(l=>l.id===ST.vendas.loteAtivo);const msg=encodeURIComponent('*Resenha Junina 2026*\n\nGaranta seu ingresso!\n\n*'+lote.nome+'* - R$'+lote.preco.toFixed(2).replace('.',',')+'\n\nChacara Diniz\n13/06/2026 - 21:00\n\nClique para se inscrever:\n'+link);window.open('https://wa.me/?text='+msg,'_blank');}
 function renderVendas(){
   const el=document.getElementById('vendas-lotes');if(!el)return;
-  const mpWarn=document.getElementById('mp-warn');if(mpWarn){const semLink=LOTES_CONFIG.filter(l=>!LINKS_MP[l.id]||LINKS_MP[l.id].includes('SEU_LINK'));mpWarn.style.display=semLink.length?'block':'none';if(semLink.length)mpWarn.innerHTML=`<div class="alert aw">Links Mercado Pago nao configurados para: ${semLink.map(l=>l.nome).join(', ')}.</div>`;}
+  const mpWarn=document.getElementById('mp-warn');if(mpWarn){const semLink=LOTES_CONFIG.filter(l=>!LINKS_MP[l.id]||!LINKS_MP[l.id].startsWith('https://'));mpWarn.style.display=semLink.length?'block':'none';if(semLink.length)mpWarn.innerHTML=`<div class="alert aw">Links Mercado Pago nao configurados para: ${semLink.map(l=>l.nome).join(', ')}.</div>`;}
   el.innerHTML=LOTES_CONFIG.map(l=>{const usadas=ST.participantes.filter(p=>p.lote===l.id).length;const restam=l.vagas-usadas;const esg=restam<=0;const ativo=ST.vendas.loteAtivo===l.id;const pct=Math.round(usadas/l.vagas*100);return `<div class="lote-ctrl ${ativo?'ativo':''} ${esg?'esgotado':''}"><div class="lote-ctrl-info"><div class="lote-ctrl-nome">${l.nome} <span class="badge ${ativo?'by':'bb'}">${ativo?'ATIVO':'Inativo'}</span></div><div class="lote-ctrl-detalhe">R$ ${l.preco.toFixed(2).replace('.',',')} - ${usadas}/${l.vagas} vendidos (${pct}%) - ${esg?'<span style="color:var(--r)">Esgotado</span>':restam+' restantes'}</div><div style="margin-top:6px;background:rgba(255,255,255,0.06);border-radius:20px;height:4px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:${ativo?'var(--gold)':'var(--t2)'};border-radius:20px;transition:width 0.4s;"></div></div></div><div class="toggle-wrap"><label class="toggle"><input type="checkbox" ${ativo?'checked':''} ${esg?'disabled':''} onchange="ativarLote('${l.id}')"><div class="toggle-slider"></div></label></div></div>`;}).join('');
   const link=getLinkAtivo(),lb=document.getElementById('link-box'),lf=document.getElementById('link-fechado');
   if(link){lb.style.display='block';lf.style.display='none';document.getElementById('link-text').textContent=link;}else{lb.style.display='none';lf.style.display='block';}
