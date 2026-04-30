@@ -195,7 +195,7 @@ main{padding-bottom:env(safe-area-inset-bottom,0)}
 </div>
 
 <div class="panel" id="panel-1">
-  <div class="card"><div class="card-head">Escolha seu lote</div><div id="lotes-list"></div></div>
+  <div class="card"><div class="card-head">Seu ingresso</div><div id="lotes-list"></div></div>
   <div class="card">
     <div class="card-head">Seus dados</div>
     <div class="fg"><label>Nome completo *</label><input type="text" id="f-nome" placeholder="Seu nome completo" autocomplete="name"><div class="err-msg" id="err-nome">Informe nome e sobrenome</div></div>
@@ -231,43 +231,498 @@ main{padding-bottom:env(safe-area-inset-bottom,0)}
 </div>
 
 <script>
-const C={lotes:{'1°':{nome:'1º Lote',preco:90,vagas:50},'2°':{nome:'2º Lote',preco:110,vagas:100},'3°':{nome:'3º Lote',preco:130,vagas:200}},wpp:'5517997230392',pix:'4250e7fa-891d-4bb3-b5d4-c65a1fafb023',mp:{'1°':'https://mpago.la/15AYPXV','2°':'https://mpago.la/1kYF7Wu','3°':'https://mpago.la/27qVoD5'},fb:{apiKey:"AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",authDomain:"resenha-junina-2026.firebaseapp.com",databaseURL:"https://resenha-junina-2026-default-rtdb.firebaseio.com",projectId:"resenha-junina-2026",storageBucket:"resenha-junina-2026.firebasestorage.app",messagingSenderId:"711313591458",appId:"1:711313591458:web:58f37b25c5c41d15a25bfb"}};
-let db=null;try{if(C.fb.apiKey!=='SUA_API_KEY'){firebase.initializeApp(C.fb);db=firebase.firestore()}}catch(e){console.warn('FB:',e.message)}
-const params=new URLSearchParams(location.search),loteId=params.get('lote'),tokenUrl=params.get('tk');
-let ped={lote:null,nome:'',fone:'',email:'',codigo:'',metodoPgto:'pix',qtd:1,enviado:false},curTab=0,_enviando=false,vagasData={};
-function esc(s){return s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
-function showLoad(v){document.getElementById('loading').classList.toggle('on',v)}
-const TT=(p,ms=15000)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error('Timeout')),ms))]);
+/* ═══════════════════════════════════════════════════════════
+   RESENHA JUNINA 2026 — CADASTRO ONLINE v3.0
+   Dark theme, abas, popup WhatsApp obrigatório
+   ═══════════════════════════════════════════════════════════ */
 
-async function fbVagas(id){if(!db)return 0;try{const r=db.collection('rj26_config').doc('vagas_'+id);const s=await r.get();if(s.exists&&typeof s.data().usadas==='number')return s.data().usadas;const snap=await db.collection('rj26_participantes').where('lote','==',id).get();return snap.size}catch(_){return 0}}
-async function fbReservar(id,qty,max){if(!db)return true;try{const r=db.collection('rj26_config').doc('vagas_'+id);const s=await r.get();let u=0;if(s.exists&&typeof s.data().usadas==='number')u=s.data().usadas;if(u+qty>max)return false;await r.set({usadas:u+qty,ts:Date.now()},{merge:true});return true}catch(_){return true}}
-async function fbNums(qty){if(!db)return Array.from({length:qty},(_,i)=>Date.now()+i);try{const ref=db.collection('rj26_config').doc('contador');return await db.runTransaction(async tx=>{const d=await tx.get(ref);const n=d.exists?(d.data().next||16):16;tx.set(ref,{next:n+qty},{merge:true});return Array.from({length:qty},(_,i)=>n+i)})}catch(_){return Array.from({length:qty},(_,i)=>Date.now()+i)}}
-async function fbRegistrar(p,cods){if(!db)return;const lote=C.lotes[p.lote]||{preco:0};try{const b=db.batch();cods.forEach((c,i)=>{b.set(db.collection('rj26_participantes').doc(),{codigo:c,pedido:p.codigo,nome:cods.length>1?p.nome+' ('+(i+1)+'/'+cods.length+')':p.nome,fone:p.fone,lote:p.lote,valor:lote.preco,pgto:'Pendente',recebido:null,entrou:false,origem:'online',metodoPgto:p.metodoPgto||'pix',ts:Date.now()})});await b.commit()}catch(e){console.warn('Retry...');await new Promise(r=>setTimeout(r,1500));const b2=db.batch();cods.forEach((c,i)=>{b2.set(db.collection('rj26_participantes').doc(),{codigo:c,pedido:p.codigo,nome:cods.length>1?p.nome+' ('+(i+1)+'/'+cods.length+')':p.nome,fone:p.fone,lote:p.lote,valor:lote.preco,pgto:'Pendente',recebido:null,entrou:false,origem:'online',metodoPgto:p.metodoPgto||'pix',ts:Date.now()})});await b2.commit()}}
-async function tokenOk(){if(!tokenUrl||tokenUrl.length<6)return false;try{const a=JSON.parse(localStorage.getItem('rj26')||'{}');if(a.vendas&&a.vendas.token===tokenUrl&&a.vendas.loteAtivo===loteId)return!(a.vendas.expiresAt&&Date.now()>a.vendas.expiresAt)}catch(_){}if(db){try{const d=await db.collection('rj26_config').doc('main').get();if(d.exists){const v=d.data();if(v.vendas&&v.vendas.token===tokenUrl&&v.vendas.loteAtivo===loteId)return!(v.vendas.expiresAt&&Date.now()>v.vendas.expiresAt)}}catch(_){return true}}if(!db)return true;return false}
+// ─── CONFIGURAÇÃO ─────────────────────────────────────────
+const C = {
+  lotes: {
+    '1°': { nome: '1º Lote', preco: 90,  vagas: 50  },
+    '2°': { nome: '2º Lote', preco: 110, vagas: 100 },
+    '3°': { nome: '3º Lote', preco: 130, vagas: 200 },
+  },
+  wpp: '5517997230392',
+  pix: '4250e7fa-891d-4bb3-b5d4-c65a1fafb023',
+  mp: {
+    '1°': 'https://mpago.la/15AYPXV',
+    '2°': 'https://mpago.la/1kYF7Wu',
+    '3°': 'https://mpago.la/27qVoD5',
+  },
+  fb: {
+    apiKey: "AIzaSyBAw83HY-zhmjp2D7cblWA8IR0gIY4Z1PI",
+    authDomain: "resenha-junina-2026.firebaseapp.com",
+    databaseURL: "https://resenha-junina-2026-default-rtdb.firebaseio.com",
+    projectId: "resenha-junina-2026",
+    storageBucket: "resenha-junina-2026.firebasestorage.app",
+    messagingSenderId: "711313591458",
+    appId: "1:711313591458:web:58f37b25c5c41d15a25bfb"
+  }
+};
 
-function goTab(n){if(n>curTab+1)return;curTab=n;document.querySelectorAll('.tab').forEach((t,i)=>{t.className='tab'+(i===n?' active':i<n?' done':' locked')});document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));const p=document.getElementById('panel-'+n);if(p){p.classList.add('on');window.scrollTo({top:0,behavior:'smooth'})}}
+// ─── FIREBASE INIT ────────────────────────────────────────
+let db = null;
+try {
+  if (C.fb.apiKey !== 'SUA_API_KEY') {
+    firebase.initializeApp(C.fb);
+    db = firebase.firestore();
+  }
+} catch(e) { console.warn('FB:', e.message); }
 
-function renderLotes(){const el=document.getElementById('lotes-list');if(!el)return;let h='';for(const[id,l]of Object.entries(C.lotes)){const u=vagasData[id]||0,esg=u>=l.vagas,sel=ped.lote===id;h+=`<div class="lote-card${sel?' selected':''}${esg?' esgotado':''}" onclick="selLote('${id}')"><div class="lote-top"><div><div class="lote-nome">${l.nome}</div><div class="lote-preco">R$ ${l.preco},00</div></div><div class="lote-radio"></div></div>`;if(sel&&!esg)h+=`<div class="qty-row"><span class="qty-label">Quantidade</span><div class="qty-ctrl"><button class="qty-btn" onclick="event.stopPropagation();mudaQty(-1)">−</button><div class="qty-val" id="qty-val">${ped.qtd}</div><button class="qty-btn" onclick="event.stopPropagation();mudaQty(1)">+</button></div><span class="qty-total" id="qty-total">R$ ${(ped.qtd*l.preco).toFixed(2).replace('.',',')}</span></div>`;h+=`</div>`}el.innerHTML=h}
-function selLote(id){if(C.lotes[id]&&!((vagasData[id]||0)>=C.lotes[id].vagas)){ped.lote=id;ped.qtd=1;ped.metodoPgto='pix';renderLotes()}}
-function mudaQty(d){const l=C.lotes[ped.lote];if(!l)return;if(d>0&&ped.metodoPgto==='mp')return;const mx=Math.min(5,l.vagas-(vagasData[ped.lote]||0));ped.qtd=Math.max(1,Math.min(mx,ped.qtd+d));document.getElementById('qty-val').textContent=ped.qtd;document.getElementById('qty-total').textContent='R$ '+(ped.qtd*l.preco).toFixed(2).replace('.',',')}
+// ─── URL PARAMS & ESTADO ──────────────────────────────────
+const params = new URLSearchParams(location.search);
+const loteId = params.get('lote');
+const tokenUrl = params.get('tk');
 
-function validarEIrPgto(){if(!ped.lote){alert('Selecione um lote');return}const nome=document.getElementById('f-nome').value.trim(),fone=document.getElementById('f-fone').value.trim(),lgpd=document.getElementById('chk-lgpd').checked;let ok=true,first=null;if(!nome||nome.split(' ').filter(w=>w.length>1).length<2){document.getElementById('f-nome').classList.add('err');document.getElementById('err-nome').style.display='block';if(!first)first=document.getElementById('f-nome');ok=false}else{document.getElementById('f-nome').classList.remove('err');document.getElementById('err-nome').style.display='none'}if(!fone||fone.replace(/\D/g,'').length<11){document.getElementById('f-fone').classList.add('err');document.getElementById('err-fone').style.display='block';if(!first)first=document.getElementById('f-fone');ok=false}else{document.getElementById('f-fone').classList.remove('err');document.getElementById('err-fone').style.display='none'}if(!lgpd){document.getElementById('err-lgpd').style.display='block';if(!first)first=document.getElementById('chk-lgpd');ok=false}else{document.getElementById('err-lgpd').style.display='none'}if(!ok){if(first)first.scrollIntoView({behavior:'smooth',block:'center'});return}ped.nome=nome;ped.fone=fone;ped.email=document.getElementById('f-email').value.trim();const l=C.lotes[ped.lote],total=(ped.qtd*l.preco).toFixed(2).replace('.',',');document.getElementById('resumo').innerHTML=[`<div class="resumo-row"><span class="lbl">Evento</span><span class="val">Resenha Junina 2026</span></div>`,`<div class="resumo-row"><span class="lbl">Local</span><span class="val">Chácara Diniz</span></div>`,`<div class="resumo-row"><span class="lbl">Data</span><span class="val">13/06/2026 — 21h</span></div>`,`<div class="resumo-row"><span class="lbl">Lote</span><span class="val" style="color:var(--gold)">${l.nome}</span></div>`,`<div class="resumo-row"><span class="lbl">Qtd</span><span class="val">${ped.qtd} ingresso${ped.qtd>1?'s':''}</span></div>`,`<div class="resumo-row"><span class="lbl">Nome</span><span class="val">${esc(ped.nome)}</span></div>`,`<div class="resumo-row"><span class="lbl">WhatsApp</span><span class="val">${esc(ped.fone)}</span></div>`,`<div class="resumo-total"><span class="lbl">Total</span><span class="val">R$ ${total}</span></div>`].join('');document.getElementById('pgto-total').textContent='R$ '+total;document.getElementById('pix-chave').textContent=C.pix;goTab(2)}
+let ped = { lote: null, nome: '', fone: '', email: '', codigo: '', metodoPgto: 'pix', qtd: 1, enviado: false };
+let curTab = 0, _enviando = false, vagasData = {};
 
-function selPgto(tipo,el){document.querySelectorAll('.pgto-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.pgto-panel').forEach(p=>p.classList.remove('on'));el.classList.add('active');document.getElementById('p-'+tipo).classList.add('on');ped.metodoPgto=tipo;if(tipo==='mp'&&ped.qtd>1){ped.qtd=1;renderLotes()}const av=document.getElementById('mp-aviso');if(av)av.style.display=tipo==='mp'?'block':'none'}
-function copiarPix(){const b=document.getElementById('pix-btn');const ok=()=>{b.textContent='Copiado!';b.style.background='#059669';setTimeout(()=>{b.textContent='Copiar';b.style.background=''},2000)};if(navigator.clipboard)navigator.clipboard.writeText(C.pix).then(ok).catch(()=>{const t=document.createElement('textarea');t.value=C.pix;t.style.cssText='position:fixed;left:-9999px';document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(_){alert(C.pix)}document.body.removeChild(t)});else{const t=document.createElement('textarea');t.value=C.pix;t.style.cssText='position:fixed;left:-9999px';document.body.appendChild(t);t.select();try{document.execCommand('copy');ok()}catch(_){alert(C.pix)}document.body.removeChild(t)}}
-function abrirMP(){const link=C.mp[ped.lote];if(!link){const l=C.lotes[ped.lote]||{};window.open('https://wa.me/'+C.wpp+'?text='+encodeURIComponent('*Resenha Junina 2026*\nQuero pagar com cartão\n*Lote:* '+(l.nome||'')+'\n*Nome:* '+ped.nome),'_blank');return}window.open(link,'_blank')}
+// ─── HELPERS ──────────────────────────────────────────────
+function esc(s) {
+  return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : '';
+}
 
-async function enviarPedido(){if(_enviando)return;const btn=document.getElementById('btn-enviar');if(!btn)return;_enviando=true;btn.classList.add('btn-loading');btn.textContent='Enviando...';try{const qty=ped.qtd||1,l=C.lotes[ped.lote]||{preco:0,vagas:999};const ok=await TT(fbReservar(ped.lote,qty,l.vagas));if(!ok){alert('Vagas esgotadas. Tente outro lote.');_enviando=false;btn.classList.remove('btn-loading');btn.textContent='Já paguei — Enviar pedido';setTimeout(()=>location.reload(),1500);return}if(db&&ped.fone){try{const s=await db.collection('rj26_participantes').where('fone','==',ped.fone).where('lote','==',ped.lote).get();if(s.size>0&&!confirm('Já existe pedido com este WhatsApp.\nEnviar novo?')){try{await db.runTransaction(async tx=>{const r=db.collection('rj26_config').doc('vagas_'+ped.lote);const d=await tx.get(r);tx.set(r,{usadas:Math.max(0,(d.data()?.usadas||0)-qty)},{merge:true})})}catch(_){}_enviando=false;btn.classList.remove('btn-loading');btn.textContent='Já paguei — Enviar pedido';return}}catch(_){}}const nums=await fbNums(qty);const cods=nums.map(n=>(typeof n==='number'&&n<100000)?'RESENHA-'+String(n).padStart(4,'0'):'PED-'+String(n).slice(-6));ped.codigos=cods;ped.codigo=cods[0];ped.ts=Date.now();ped.status='aguardando';ped.origem='online';await fbRegistrar(ped,cods);ped.enviado=true;localStorage.setItem('rj26_pedido_cad',JSON.stringify(ped));btn.classList.remove('btn-loading');btn.textContent='Já paguei — Enviar pedido';_enviando=false;mostrarModal()}catch(e){console.warn(e);alert('Erro ao enviar. Verifique sua conexão.');_enviando=false;btn.classList.remove('btn-loading');btn.textContent='Já paguei — Enviar pedido'}}
+function showLoad(v) {
+  document.getElementById('loading').classList.toggle('on', v);
+}
 
-function mostrarModal(){document.getElementById('modal-cod').textContent=ped.codigo||'-';document.getElementById('modal-fone').textContent=ped.fone||'-';const btn=document.getElementById('btn-wpp-modal');btn.disabled=false;btn.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.857L0 24l6.335-1.521A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-1.74 0-3.398-.454-4.86-1.303l-.36-.214-3.733.897.933-3.641-.235-.374A9.804 9.804 0 0 1 2.182 12c0-5.43 4.388-9.818 9.818-9.818S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg> Avisar organizador no WhatsApp';document.getElementById('modal-wpp').classList.add('on')}
-function enviarWppModal(){const l=C.lotes[ped.lote],qty=ped.qtd||1,total=(qty*l.preco).toFixed(2).replace('.',',');const msg=encodeURIComponent('*Novo pedido - Resenha Junina 2026*\n\n*Nome:* '+ped.nome+'\n*WhatsApp:* '+ped.fone+'\n*Lote:* '+l.nome+'\n*Qtd:* '+qty+' ingresso'+(qty>1?'s':'')+'\n*Total:* R$'+total+' ('+(ped.metodoPgto==='mp'?'Mercado Pago':'Pix')+')\n*Pedido:* '+ped.codigo+'\n\nVerifique o pagamento e envie o ingresso.');const url='https://wa.me/'+C.wpp+'?text='+msg;let ok=false;try{const w=window.open(url,'_blank');if(w)ok=true}catch(_){}if(!ok)window.location.href=url;const btn=document.getElementById('btn-wpp-modal');btn.innerHTML='✓ Aviso enviado!';btn.style.background='#059669';btn.disabled=true;setTimeout(()=>{document.getElementById('modal-wpp').classList.remove('on')},2000)}
+const TT = (p, ms = 15000) => Promise.race([
+  p, new Promise((_, r) => setTimeout(() => r(new Error('Timeout')), ms))
+]);
 
-function mascaraFone(el){const v=el.value.replace(/\D/g,'').slice(0,11);if(v.length<=2)el.value=v.length?'('+v:'';else if(v.length<=6)el.value='('+v.slice(0,2)+') '+v.slice(2);else if(v.length<=10)el.value='('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);else el.value='('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7)}
-function togglePol(){const p=document.getElementById('pol-box');p.style.display=p.style.display==='block'?'none':'block'}
-(function(){const t=new Date(2026,5,13,21,0,0);function tick(){const d=t-new Date(),el=document.getElementById('countdown');if(!el)return;if(d<=0){el.textContent='A festa está acontecendo!';return}el.textContent=Math.floor(d/864e5)+'d '+String(Math.floor(d%864e5/36e5)).padStart(2,'0')+'h '+String(Math.floor(d%36e5/6e4)).padStart(2,'0')+'m '+String(Math.floor(d%6e4/1e3)).padStart(2,'0')+'s';setTimeout(tick,1000)}tick()})();
-function showPanel(name){document.getElementById('tabs').style.display='none';document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));const p=document.getElementById('panel-'+name);if(p)p.classList.add('on')}
+// ─── FIREBASE HELPERS ─────────────────────────────────────
+async function fbVagas(id) {
+  if (!db) return 0;
+  try {
+    const r = db.collection('rj26_config').doc('vagas_' + id);
+    const s = await r.get();
+    if (s.exists && typeof s.data().usadas === 'number') return s.data().usadas;
+    const snap = await db.collection('rj26_participantes').where('lote', '==', id).get();
+    return snap.size;
+  } catch(_) { return 0; }
+}
 
-(async function(){try{const s=localStorage.getItem('rj26_pedido_cad');if(s){const p=JSON.parse(s);if(p.codigo&&p.lote&&p.enviado&&p.lote===loteId){ped=p;if(!ped.qtd)ped.qtd=1;mostrarModal();return}}}catch(_){}showLoad(true);if(!loteId){showPanel('fechado');showLoad(false);return}if(!await tokenOk()){showPanel('fechado');showLoad(false);return}if(!C.lotes[loteId]){showPanel('fechado');showLoad(false);return}for(const id of Object.keys(C.lotes)){try{vagasData[id]=await fbVagas(id)}catch(_){vagasData[id]=0}}if((vagasData[loteId]||0)>=C.lotes[loteId].vagas){document.getElementById('msg-esgotado').textContent=C.lotes[loteId].nome+' esgotado';showPanel('esgotado');showLoad(false);return}ped.lote=loteId;renderLotes();document.getElementById('tabs').style.display='flex';showLoad(false)})();
+async function fbReservar(id, qty, max) {
+  if (!db) return true;
+  try {
+    const r = db.collection('rj26_config').doc('vagas_' + id);
+    const s = await r.get();
+    let u = 0;
+    if (s.exists && typeof s.data().usadas === 'number') u = s.data().usadas;
+    if (u + qty > max) return false;
+    await r.set({ usadas: u + qty, ts: Date.now() }, { merge: true });
+    return true;
+  } catch(_) { return true; }
+}
+
+async function fbNums(qty) {
+  if (!db) return Array.from({ length: qty }, (_, i) => Date.now() + i);
+  try {
+    const ref = db.collection('rj26_config').doc('contador');
+    return await db.runTransaction(async tx => {
+      const d = await tx.get(ref);
+      const n = d.exists ? (d.data().next || 16) : 16;
+      tx.set(ref, { next: n + qty }, { merge: true });
+      return Array.from({ length: qty }, (_, i) => n + i);
+    });
+  } catch(_) {
+    return Array.from({ length: qty }, (_, i) => Date.now() + i);
+  }
+}
+
+async function fbRegistrar(p, cods) {
+  if (!db) return;
+  const lote = C.lotes[p.lote] || { preco: 0 };
+  const mkData = (c, i) => ({
+    codigo: c, pedido: p.codigo,
+    nome: cods.length > 1 ? p.nome + ' (' + (i+1) + '/' + cods.length + ')' : p.nome,
+    fone: p.fone, lote: p.lote, valor: lote.preco,
+    pgto: 'Pendente', recebido: null, entrou: false,
+    origem: 'online', metodoPgto: p.metodoPgto || 'pix', ts: Date.now()
+  });
+  try {
+    const b = db.batch();
+    cods.forEach((c, i) => b.set(db.collection('rj26_participantes').doc(), mkData(c, i)));
+    await b.commit();
+  } catch(e) {
+    console.warn('Retry...');
+    await new Promise(r => setTimeout(r, 1500));
+    const b2 = db.batch();
+    cods.forEach((c, i) => b2.set(db.collection('rj26_participantes').doc(), mkData(c, i)));
+    await b2.commit();
+  }
+}
+
+async function tokenOk() {
+  if (!tokenUrl || tokenUrl.length < 6) return false;
+  // Tenta localStorage
+  try {
+    const a = JSON.parse(localStorage.getItem('rj26') || '{}');
+    if (a.vendas && a.vendas.token === tokenUrl && a.vendas.loteAtivo === loteId)
+      return !(a.vendas.expiresAt && Date.now() > a.vendas.expiresAt);
+  } catch(_) {}
+  // Tenta Firebase
+  if (db) {
+    try {
+      const d = await db.collection('rj26_config').doc('main').get();
+      if (d.exists) {
+        const v = d.data();
+        if (v.vendas && v.vendas.token === tokenUrl && v.vendas.loteAtivo === loteId)
+          return !(v.vendas.expiresAt && Date.now() > v.vendas.expiresAt);
+      }
+    } catch(_) { return true; }
+  }
+  if (!db) return true;
+  return false;
+}
+
+// ─── NAVEGAÇÃO (ABAS) ─────────────────────────────────────
+function goTab(n) {
+  if (n > curTab + 1) return;
+  curTab = n;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.className = 'tab' + (i === n ? ' active' : i < n ? ' done' : ' locked');
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  const p = document.getElementById('panel-' + n);
+  if (p) { p.classList.add('on'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+}
+
+function showPanel(name) {
+  document.getElementById('tabs').style.display = 'none';
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  const p = document.getElementById('panel-' + name);
+  if (p) p.classList.add('on');
+}
+
+// ─── LOTE & QUANTIDADE ───────────────────────────────────
+function renderLotes() {
+  const el = document.getElementById('lotes-list');
+  if (!el) return;
+  const l = C.lotes[loteId];
+  if (!l) return;
+  el.innerHTML = '<div class="lote-card selected">' +
+    '<div class="lote-top"><div>' +
+      '<div class="lote-nome">' + l.nome + '</div>' +
+      '<div class="lote-preco">R$ ' + l.preco + ',00</div>' +
+    '</div></div>' +
+    '<div class="qty-row">' +
+      '<span class="qty-label">Quantidade</span>' +
+      '<div class="qty-ctrl">' +
+        '<button class="qty-btn" onclick="mudaQty(-1)">−</button>' +
+        '<div class="qty-val" id="qty-val">' + ped.qtd + '</div>' +
+        '<button class="qty-btn" onclick="mudaQty(1)">+</button>' +
+      '</div>' +
+      '<span class="qty-total" id="qty-total">R$ ' + (ped.qtd * l.preco).toFixed(2).replace('.',',') + '</span>' +
+    '</div></div>';
+}
+
+function mudaQty(d) {
+  const l = C.lotes[ped.lote];
+  if (!l) return;
+  if (d > 0 && ped.metodoPgto === 'mp') return;
+  const mx = Math.min(5, l.vagas - (vagasData[ped.lote] || 0));
+  ped.qtd = Math.max(1, Math.min(mx, ped.qtd + d));
+  document.getElementById('qty-val').textContent = ped.qtd;
+  document.getElementById('qty-total').textContent = 'R$ ' + (ped.qtd * l.preco).toFixed(2).replace('.',',');
+}
+
+// ─── VALIDAÇÃO & IR PARA PAGAMENTO ────────────────────────
+function validarEIrPgto() {
+  if (!ped.lote) { alert('Selecione um lote'); return; }
+
+  const nome = document.getElementById('f-nome').value.trim();
+  const fone = document.getElementById('f-fone').value.trim();
+  const lgpd = document.getElementById('chk-lgpd').checked;
+  let ok = true, first = null;
+
+  // Validar nome
+  if (!nome || nome.split(' ').filter(w => w.length > 1).length < 2) {
+    document.getElementById('f-nome').classList.add('err');
+    document.getElementById('err-nome').style.display = 'block';
+    if (!first) first = document.getElementById('f-nome');
+    ok = false;
+  } else {
+    document.getElementById('f-nome').classList.remove('err');
+    document.getElementById('err-nome').style.display = 'none';
+  }
+
+  // Validar fone
+  if (!fone || fone.replace(/\D/g, '').length < 11) {
+    document.getElementById('f-fone').classList.add('err');
+    document.getElementById('err-fone').style.display = 'block';
+    if (!first) first = document.getElementById('f-fone');
+    ok = false;
+  } else {
+    document.getElementById('f-fone').classList.remove('err');
+    document.getElementById('err-fone').style.display = 'none';
+  }
+
+  // Validar LGPD
+  if (!lgpd) {
+    document.getElementById('err-lgpd').style.display = 'block';
+    if (!first) first = document.getElementById('chk-lgpd');
+    ok = false;
+  } else {
+    document.getElementById('err-lgpd').style.display = 'none';
+  }
+
+  if (!ok) { if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+
+  // Salvar dados
+  ped.nome = nome;
+  ped.fone = fone;
+  ped.email = document.getElementById('f-email').value.trim();
+
+  // Montar resumo
+  const l = C.lotes[ped.lote];
+  const total = (ped.qtd * l.preco).toFixed(2).replace('.', ',');
+  document.getElementById('resumo').innerHTML = [
+    '<div class="resumo-row"><span class="lbl">Evento</span><span class="val">Resenha Junina 2026</span></div>',
+    '<div class="resumo-row"><span class="lbl">Local</span><span class="val">Chácara Diniz</span></div>',
+    '<div class="resumo-row"><span class="lbl">Data</span><span class="val">13/06/2026 — 21h</span></div>',
+    '<div class="resumo-row"><span class="lbl">Lote</span><span class="val" style="color:var(--gold)">' + l.nome + '</span></div>',
+    '<div class="resumo-row"><span class="lbl">Qtd</span><span class="val">' + ped.qtd + ' ingresso' + (ped.qtd > 1 ? 's' : '') + '</span></div>',
+    '<div class="resumo-row"><span class="lbl">Nome</span><span class="val">' + esc(ped.nome) + '</span></div>',
+    '<div class="resumo-row"><span class="lbl">WhatsApp</span><span class="val">' + esc(ped.fone) + '</span></div>',
+    '<div class="resumo-total"><span class="lbl">Total</span><span class="val">R$ ' + total + '</span></div>'
+  ].join('');
+
+  document.getElementById('pgto-total').textContent = 'R$ ' + total;
+  document.getElementById('pix-chave').textContent = C.pix;
+  goTab(2);
+}
+
+// ─── PAGAMENTO ────────────────────────────────────────────
+function selPgto(tipo, el) {
+  document.querySelectorAll('.pgto-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.pgto-panel').forEach(p => p.classList.remove('on'));
+  el.classList.add('active');
+  document.getElementById('p-' + tipo).classList.add('on');
+  ped.metodoPgto = tipo;
+  if (tipo === 'mp' && ped.qtd > 1) { ped.qtd = 1; renderLotes(); }
+  const av = document.getElementById('mp-aviso');
+  if (av) av.style.display = tipo === 'mp' ? 'block' : 'none';
+}
+
+function copiarPix() {
+  const b = document.getElementById('pix-btn');
+  const ok = () => {
+    b.textContent = 'Copiado!';
+    b.style.background = '#059669';
+    setTimeout(() => { b.textContent = 'Copiar'; b.style.background = ''; }, 2000);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(C.pix).then(ok).catch(() => _fallbackCopy(ok));
+  } else {
+    _fallbackCopy(ok);
+  }
+}
+
+function _fallbackCopy(ok) {
+  const t = document.createElement('textarea');
+  t.value = C.pix;
+  t.style.cssText = 'position:fixed;left:-9999px';
+  document.body.appendChild(t);
+  t.select();
+  try { document.execCommand('copy'); ok(); }
+  catch(_) { alert(C.pix); }
+  document.body.removeChild(t);
+}
+
+function abrirMP() {
+  const link = C.mp[ped.lote];
+  if (!link) {
+    const l = C.lotes[ped.lote] || {};
+    const msg = encodeURIComponent('*Resenha Junina 2026*\nQuero pagar com cartão\n*Lote:* ' + (l.nome || '') + '\n*Nome:* ' + ped.nome);
+    window.open('https://wa.me/' + C.wpp + '?text=' + msg, '_blank');
+    return;
+  }
+  window.open(link, '_blank');
+}
+
+// ─── ENVIAR PEDIDO ────────────────────────────────────────
+async function enviarPedido() {
+  if (_enviando) return;
+  const btn = document.getElementById('btn-enviar');
+  if (!btn) return;
+  _enviando = true;
+  btn.classList.add('btn-loading');
+  btn.textContent = 'Enviando...';
+
+  try {
+    const qty = ped.qtd || 1;
+    const l = C.lotes[ped.lote] || { preco: 0, vagas: 999 };
+
+    // Reservar vagas
+    const ok = await TT(fbReservar(ped.lote, qty, l.vagas));
+    if (!ok) {
+      alert('Vagas esgotadas. Tente outro lote.');
+      _enviando = false; btn.classList.remove('btn-loading');
+      btn.textContent = 'Já paguei — Enviar pedido';
+      setTimeout(() => location.reload(), 1500);
+      return;
+    }
+
+    // Check duplicata
+    if (db && ped.fone) {
+      try {
+        const s = await db.collection('rj26_participantes')
+          .where('fone', '==', ped.fone).where('lote', '==', ped.lote).get();
+        if (s.size > 0 && !confirm('Já existe pedido com este WhatsApp.\nEnviar novo?')) {
+          try {
+            await db.runTransaction(async tx => {
+              const r = db.collection('rj26_config').doc('vagas_' + ped.lote);
+              const d = await tx.get(r);
+              tx.set(r, { usadas: Math.max(0, (d.data()?.usadas || 0) - qty) }, { merge: true });
+            });
+          } catch(_) {}
+          _enviando = false; btn.classList.remove('btn-loading');
+          btn.textContent = 'Já paguei — Enviar pedido';
+          return;
+        }
+      } catch(_) {}
+    }
+
+    // Gerar códigos
+    const nums = await fbNums(qty);
+    const cods = nums.map(n =>
+      (typeof n === 'number' && n < 100000) ? 'RESENHA-' + String(n).padStart(4, '0') : 'PED-' + String(n).slice(-6)
+    );
+
+    // Registrar
+    ped.codigos = cods;
+    ped.codigo = cods[0];
+    ped.ts = Date.now();
+    ped.status = 'aguardando';
+    ped.origem = 'online';
+
+    await fbRegistrar(ped, cods);
+    ped.enviado = true;
+    localStorage.setItem('rj26_pedido_cad', JSON.stringify(ped));
+
+    btn.classList.remove('btn-loading');
+    btn.textContent = 'Já paguei — Enviar pedido';
+    _enviando = false;
+    mostrarModal();
+
+  } catch(e) {
+    console.warn(e);
+    alert('Erro ao enviar. Verifique sua conexão.');
+    _enviando = false; btn.classList.remove('btn-loading');
+    btn.textContent = 'Já paguei — Enviar pedido';
+  }
+}
+
+// ─── MODAL WHATSAPP (OBRIGATÓRIO) ─────────────────────────
+function mostrarModal() {
+  document.getElementById('modal-cod').textContent = ped.codigo || '-';
+  document.getElementById('modal-fone').textContent = ped.fone || '-';
+  const btn = document.getElementById('btn-wpp-modal');
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.857L0 24l6.335-1.521A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-1.74 0-3.398-.454-4.86-1.303l-.36-.214-3.733.897.933-3.641-.235-.374A9.804 9.804 0 0 1 2.182 12c0-5.43 4.388-9.818 9.818-9.818S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg> Avisar organizador no WhatsApp';
+  document.getElementById('modal-wpp').classList.add('on');
+}
+
+function enviarWppModal() {
+  const l = C.lotes[ped.lote], qty = ped.qtd || 1;
+  const total = (qty * l.preco).toFixed(2).replace('.', ',');
+  const metodo = ped.metodoPgto === 'mp' ? 'Mercado Pago' : 'Pix';
+  const msg = encodeURIComponent(
+    '*Novo pedido - Resenha Junina 2026*\n\n' +
+    '*Nome:* ' + ped.nome + '\n*WhatsApp:* ' + ped.fone + '\n' +
+    '*Lote:* ' + l.nome + '\n*Qtd:* ' + qty + ' ingresso' + (qty > 1 ? 's' : '') + '\n' +
+    '*Total:* R$' + total + ' (' + metodo + ')\n' +
+    '*Pedido:* ' + ped.codigo + '\n\nVerifique o pagamento e envie o ingresso.'
+  );
+  const url = 'https://wa.me/' + C.wpp + '?text=' + msg;
+
+  let ok = false;
+  try { const w = window.open(url, '_blank'); if (w) ok = true; } catch(_) {}
+  if (!ok) window.location.href = url;
+
+  const btn = document.getElementById('btn-wpp-modal');
+  btn.innerHTML = '✓ Aviso enviado!';
+  btn.style.background = '#059669';
+  btn.disabled = true;
+  setTimeout(() => { document.getElementById('modal-wpp').classList.remove('on'); }, 2000);
+}
+
+// ─── UTILITÁRIOS ──────────────────────────────────────────
+function mascaraFone(el) {
+  const v = el.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length <= 2) el.value = v.length ? '(' + v : '';
+  else if (v.length <= 6) el.value = '(' + v.slice(0,2) + ') ' + v.slice(2);
+  else if (v.length <= 10) el.value = '(' + v.slice(0,2) + ') ' + v.slice(2,6) + '-' + v.slice(6);
+  else el.value = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+}
+
+function togglePol() {
+  const p = document.getElementById('pol-box');
+  p.style.display = p.style.display === 'block' ? 'none' : 'block';
+}
+
+// ─── COUNTDOWN ────────────────────────────────────────────
+(function() {
+  const t = new Date(2026, 5, 13, 21, 0, 0);
+  function tick() {
+    const d = t - new Date(), el = document.getElementById('countdown');
+    if (!el) return;
+    if (d <= 0) { el.textContent = 'A festa está acontecendo!'; return; }
+    el.textContent =
+      Math.floor(d / 864e5) + 'd ' +
+      String(Math.floor(d % 864e5 / 36e5)).padStart(2, '0') + 'h ' +
+      String(Math.floor(d % 36e5 / 6e4)).padStart(2, '0') + 'm ' +
+      String(Math.floor(d % 6e4 / 1e3)).padStart(2, '0') + 's';
+    setTimeout(tick, 1000);
+  }
+  tick();
+})();
+
+// ─── BOOT ─────────────────────────────────────────────────
+(async function() {
+  // Restaurar pedido salvo
+  try {
+    const s = localStorage.getItem('rj26_pedido_cad');
+    if (s) {
+      const p = JSON.parse(s);
+      if (p.codigo && p.lote && p.enviado && p.lote === loteId) {
+        ped = p;
+        if (!ped.qtd) ped.qtd = 1;
+        mostrarModal();
+        return;
+      }
+    }
+  } catch(_) {}
+
+  showLoad(true);
+
+  // Validações
+  if (!loteId) { showPanel('fechado'); showLoad(false); return; }
+  if (!await tokenOk()) { showPanel('fechado'); showLoad(false); return; }
+  if (!C.lotes[loteId]) { showPanel('fechado'); showLoad(false); return; }
+
+  // Carregar vagas
+  for (const id of Object.keys(C.lotes)) {
+    try { vagasData[id] = await fbVagas(id); } catch(_) { vagasData[id] = 0; }
+  }
+
+  // Verificar esgotado
+  if ((vagasData[loteId] || 0) >= C.lotes[loteId].vagas) {
+    document.getElementById('msg-esgotado').textContent = C.lotes[loteId].nome + ' esgotado';
+    showPanel('esgotado');
+    showLoad(false);
+    return;
+  }
+
+  // Iniciar
+  ped.lote = loteId;
+  renderLotes();
+  document.getElementById('tabs').style.display = 'flex';
+  showLoad(false);
+})();
+
 </script>
 </body>
 </html>
