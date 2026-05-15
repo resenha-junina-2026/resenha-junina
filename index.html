@@ -37,6 +37,10 @@ header{display:flex;align-items:center;justify-content:center;flex-direction:col
 .header-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--g);flex-shrink:0;}
 nav{display:flex;gap:1px;padding:0 20px;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg1);scrollbar-width:none;align-items:center;justify-content:center;}
 nav::-webkit-scrollbar{display:none;}
+*::-webkit-scrollbar{width:6px;height:6px;}
+*::-webkit-scrollbar-track{background:transparent;}
+*::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.12);border-radius:3px;}
+*::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.2);}
 nav{-webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);}
 nav button{background:transparent;border:none;color:var(--t3);padding:12px 14px;cursor:pointer;font-family:'Figtree',sans-serif;font-weight:500;font-size:13px;white-space:nowrap;transition:color 0.15s;display:flex;align-items:center;gap:6px;position:relative;}
 nav button::after{content:'';position:absolute;bottom:0;left:14px;right:14px;height:1.5px;background:var(--gold);opacity:0;transition:opacity 0.15s;}
@@ -70,7 +74,7 @@ main{padding:20px;max-width:1100px;margin:0 auto;}
 .tw{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border);-webkit-overflow-scrolling:touch;}
 .tw table{min-width:700px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-th{background:rgba(255,255,255,0.02);color:var(--t3);font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:0.8px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+th{background:var(--bg1);color:var(--t3);font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:0.8px;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:2;}
 td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:rgba(255,255,255,0.02);}
@@ -117,7 +121,7 @@ input.autofill{border-color:var(--g);background:var(--g-s);}
 .log-ul li:hover{background:rgba(255,255,255,0.02);}
 .log-ul li:first-child{background:var(--g-s);border-left:2px solid var(--g);}
 .ob-row{display:grid;grid-template-columns:1fr 64px 90px 80px 96px;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border);}
-.ob-row.hd{background:rgba(255,255,255,0.02);}
+.ob-row.hd{background:var(--bg1);position:sticky;top:0;z-index:2;}
 .ob-row.hd span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--t3);}
 .ob-row:hover{background:rgba(255,255,255,0.02);}
 @media(max-width:600px){.ob-row{grid-template-columns:1fr 56px 74px 64px 80px;}}
@@ -127,7 +131,7 @@ input.autofill{border-color:var(--g);background:var(--g-s);}
 .fr .v.pos{color:var(--g);}.fr .v.neg{color:var(--r);}.fr .v.ye{color:var(--gold);}
 .bold{font-weight:600;}
 .pt-row{display:grid;grid-template-columns:1fr 95px 105px 90px;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--border);}
-.pt-row.hd{background:rgba(255,255,255,0.02);}
+.pt-row.hd{background:var(--bg1);position:sticky;top:0;z-index:2;}
 .pt-row.hd span{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--t3);}
 .pt-row:hover{background:rgba(255,255,255,0.02);}
 .alert{padding:10px 14px;border-radius:var(--r2);margin-bottom:10px;font-size:13px;font-weight:400;line-height:1.5;display:flex;gap:8px;}
@@ -378,11 +382,11 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
       <select id="bp-lote" onchange="renderPart()"><option value="">Todos os lotes</option><option value="1°">1°</option><option value="2°">2°</option><option value="3°">3°</option></select>
       <select id="bp-pgto" onchange="renderPart()"><option value="">Todos</option><option value="ok">Pagos</option><option value="pend">Pendentes</option><option value="online-pend">Online Pendente</option><option value="cortesia">Cortesia</option></select>
     </div>
-    <div class="tw desk-only"><table>
+    <div class="tw desk-only" style="max-height:600px;overflow-y:auto;"><table>
       <thead><tr><th>Codigo</th><th>Nome</th><th>WhatsApp</th><th>Lote</th><th>Pgto</th><th>Recebido</th><th>Status</th><th>Entrada</th><th>Acoes</th></tr></thead>
       <tbody id="t-part"></tbody>
     </table></div>
-    <div class="mob-only" id="t-part-cards"></div>
+    <div class="mob-only" id="t-part-cards" style="max-height:600px;overflow-y:auto;"></div>
     <div id="part-cnt" class="sm-txt muted tr" style="margin-top:8px;"></div>
   </div>
 </div>
@@ -485,7 +489,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
     </div>
     <div style="border:1px solid var(--border);border-radius:10px;">
       <div class="ob-row hd"><span>Bebida</span><span>Qtd</span><span>Preco Unit.</span><span>Total</span><span>Acoes</span></div>
-      <div id="ob-lista"></div>
+      <div id="ob-lista" style="max-height:400px;overflow-y:auto;"></div>
       <div class="ob-row" style="background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span class="bold">TOTAL</span><span></span><span></span><span class="v neg bold" id="ob-total"></span><span></span></div>
     </div>
   </div>
@@ -512,7 +516,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
     </div>
     <div style="border:1px solid var(--border);border-radius:10px;">
       <div class="ob-row hd"><span>Comida</span><span>Qtd</span><span>Preco Unit.</span><span>Total</span><span>Acoes</span></div>
-      <div id="of-lista"></div>
+      <div id="of-lista" style="max-height:400px;overflow-y:auto;"></div>
       <div class="ob-row" style="background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span class="bold">TOTAL</span><span></span><span></span><span class="v neg bold" id="of-total"></span><span></span></div>
     </div>
   </div>
@@ -525,7 +529,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
     <div class="panel">
       <div class="flex jb aic mb12"><div class="stitle" style="margin:0">Despesas Gerais</div><button class="btn bp sm" onclick="showDespForm()">+ Nova</button></div>
       <div id="form-desp" style="display:none;margin-bottom:10px;">
-        <div class="addrow" style="grid-template-columns:100px 1fr 90px auto;">
+        <div class="addrow" style="grid-template-columns:130px 1fr 90px auto;">
           <div class="fgl" style="margin:0"><label>Categoria</label><input type="text" id="d-cat" list="d-cats"><datalist id="d-cats"><option value="Infraestrutura"><option value="Shows"><option value="Decoracao"><option value="Outros"></datalist></div>
           <div class="fgl" style="margin:0"><label>Descricao</label><input type="text" id="d-desc"></div>
           <div class="fgl" style="margin:0"><label>Valor (R$)</label><input type="number" id="d-val" step="0.01" min="0"></div>
@@ -559,7 +563,7 @@ body{padding-bottom:env(safe-area-inset-bottom,0);}
     </div>
     <div style="border:1px solid var(--border);border-radius:10px;">
       <div class="pt-row hd"><span>Patrocinador</span><span>Valor</span><span>Status</span><span>Acoes</span></div>
-      <div id="pat-lista"></div>
+      <div id="pat-lista" style="max-height:500px;overflow-y:auto;"></div>
     </div>
   </div>
 </div>
@@ -738,7 +742,7 @@ const FIREBASE_CONFIG = {
 // AUTORIZACAO - emails que tem acesso ao admin
 // ══════════════════════════════════════════════
 const ADMIN_EMAILS = [
-  'diegoeroliveira@gmail.com',
+  'diegoeroliveia@gmail.com',
   'vitorcastro2162@gmail.com',
 ];
 
@@ -955,16 +959,46 @@ function fbSetupListeners(){
   });
   // Listeners separados para cada seção
   const u4=db.collection('rj26_config').doc('patrocinadores').onSnapshot(doc=>{
-    if(doc.exists&&doc.data().data){ST.patrocinadores=doc.data().data;save();renderPat();try{renderDash();}catch(_){}}
+    if(doc.exists&&doc.data().data){
+      const fbData=doc.data().data;
+      // Preservar IDs: se Firebase não tem id, atribuir sequencial
+      fbData.forEach((p,i)=>{if(!p.id)p.id=i+1;});
+      ST.patrocinadores=fbData;
+      // Atualizar counter de IDs
+      const maxId=Math.max(0,...fbData.map(p=>p.id||0));
+      if(maxId>=ST.ids.pat)ST.ids.pat=maxId+1;
+      save();renderPat();try{renderDash();}catch(_){}
+    }
   });
   const u5=db.collection('rj26_config').doc('despesas').onSnapshot(doc=>{
-    if(doc.exists&&doc.data().data){ST.despesas=doc.data().data;save();renderFin();try{renderDash();}catch(_){}}
+    if(doc.exists&&doc.data().data){
+      const fbData=doc.data().data;
+      fbData.forEach((d,i)=>{if(!d.id)d.id=i+1;});
+      ST.despesas=fbData;
+      const maxId=Math.max(0,...fbData.map(d=>d.id||0));
+      if(maxId>=ST.ids.desp)ST.ids.desp=maxId+1;
+      save();renderFin();try{renderDash();}catch(_){}
+    }
   });
   const u6=db.collection('rj26_config').doc('openbar').onSnapshot(doc=>{
-    if(doc.exists&&doc.data().data){ST.openbar=doc.data().data;save();renderOB();try{renderDash();}catch(_){}}
+    if(doc.exists&&doc.data().data){
+      const fbData=doc.data().data;
+      fbData.forEach((x,i)=>{if(!x.id)x.id=i+1;});
+      ST.openbar=fbData;
+      const maxId=Math.max(0,...fbData.map(x=>x.id||0));
+      if(maxId>=ST.ids.ob)ST.ids.ob=maxId+1;
+      save();renderOB();try{renderDash();}catch(_){}
+    }
   });
   const u7=db.collection('rj26_config').doc('openfood').onSnapshot(doc=>{
-    if(doc.exists&&doc.data().data){ST.openfood=doc.data().data;save();renderOF();try{renderDash();}catch(_){}}
+    if(doc.exists&&doc.data().data){
+      const fbData=doc.data().data;
+      fbData.forEach((x,i)=>{if(!x.id)x.id=i+1;});
+      ST.openfood=fbData;
+      const maxId=Math.max(0,...fbData.map(x=>x.id||0));
+      if(maxId>=ST.ids.of)ST.ids.of=maxId+1;
+      save();renderOF();try{renderDash();}catch(_){}
+    }
   });
   _fbListeners=[u1,u2,u3,u4,u5,u6,u7];
 
@@ -975,9 +1009,12 @@ function fbSetupListeners(){
       for(const nome of docs){
         const ref=db.collection('rj26_config').doc(nome);
         const snap=await ref.get();
-        if(!snap.exists && ST[nome] && ST[nome].length){
-          await ref.set({data:ST[nome]});
-          console.log('Upload inicial:',nome,ST[nome].length,'itens');
+        const fbData = snap.exists && snap.data().data ? snap.data().data : [];
+        const localData = ST[nome] || [];
+        // Upload se: doc não existe, ou local tem mais dados que Firebase
+        if(localData.length > 0 && localData.length > fbData.length){
+          await ref.set({data:localData});
+          console.log('Upload:',nome,localData.length,'itens (Firebase tinha',fbData.length+')');
         }
       }
       // Também garante que main tem ids
@@ -1126,7 +1163,7 @@ function autoValor(showH=false){const lote=document.getElementById('p-lote').val
 function showHint(id){const h=document.getElementById(id);if(h){h.classList.add('on');setTimeout(()=>h.classList.remove('on'),3000);}}
 function checkLoteCheio(){const l=document.getElementById('p-lote').value,w=document.getElementById('lote-warn');if(!w)return;if(cheio(l)){const prox=['1°','2°','3°'].find(x=>x!==l&&!cheio(x));w.style.display='block';w.innerHTML=prox?`<div class="alert ao">Lote ${l} esgotado. <button class="btn bgh sm" onclick="usarLote('${prox}')">Usar Lote ${prox}</button></div>`:`<div class="alert aw">Lote ${l} esgotado e sem alternativa.</div>`;}else w.style.display='none';}
 function usarLote(l){document.getElementById('p-lote').value=l;document.getElementById('lote-warn').style.display='none';autoValor(true);}
-function atualizarSelectLote(){const sel=document.getElementById('p-lote');if(!sel)return;const val=sel.value;sel.innerHTML=['1°','2°','3°'].map(l=>{const usadas=qtdLote(l),restam=VAGAS[l]-usadas,esgotado=restam<=0;return `<option value="${l}" ${val===l?'selected':''} ${esgotado&&val!==l?'disabled':''}>${l} Lote - R$${PRECO[l]} (${esgotado?'ESGOTADO':restam+' vagas'})</option>`;}).join('');}
+function atualizarSelectLote(){const sel=document.getElementById('p-lote');if(!sel)return;const val=sel.value;sel.innerHTML=['1°','2°','3°'].map(l=>{const usadas=qtdLote(l),restam=VAGAS[l]-usadas,esgotado=restam<=0;return `<option value="${l}" ${val===l?'selected':''}>${l} Lote - R$${PRECO[l]} (${esgotado?'ESGOTADO':restam+' vagas'})</option>`;}).join('');}
 
 // ══════════════════════════════════════════════
 // PARTICIPANTES CRUD
@@ -1326,7 +1363,7 @@ function renderFin(){
   const mar=fin.totRec>0?fin.saldo/fin.totRec*100:0;
   document.getElementById('fin-resumo').innerHTML=`<div class="fr"><span>Receita realizada</span><span class="v pos">${R(fin.totRec)}</span></div><div class="fr"><span>Open Bar</span><span class="v neg">-${R(fin.despOB)}</span></div><div class="fr"><span>Open Food</span><span class="v neg">-${R(fin.despOF)}</span></div><div class="fr"><span>Despesas gerais</span><span class="v neg">-${R(fin.despGeral)}</span></div><div class="fr"><span>Margem</span><span class="v ${mar>=0?'pos':'neg'}">${mar.toFixed(1)}%</span></div><div class="fr" style="border-top:2px solid var(--border);margin-top:6px;padding-top:9px;"><span class="bold" style="font-size:0.95rem">SALDO FINAL</span><span class="v ${fin.saldo>=0?'pos':'neg'} bold" style="font-size:1rem">${R(fin.saldo)}</span></div>`;
 }
-function renderDesps(){const total=ST.despesas.reduce((a,b)=>a+b.val,0);const cats={};ST.despesas.forEach(d=>{if(!cats[d.cat])cats[d.cat]=[];cats[d.cat].push(d);});let h='<div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;">';Object.entries(cats).forEach(([cat,items])=>items.forEach(d=>{h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);"><span class="badge bb" style="font-size:0.62rem">${esc(d.cat)}</span><span class="sm-txt">${esc(d.desc)}</span><span class="v neg bold sm-txt">${R(d.val)}</span><div class="flex gap8"><button class="btn bgh sm" onclick="editDesp(${d.id})">E</button><button class="btn bdn sm" onclick="delDesp(${d.id})">X</button></div></div>`;}));h+=`<div style="display:grid;grid-template-columns:90px 1fr 85px 75px;gap:6px;padding:7px 10px;background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span></span><span class="bold sm-txt">TOTAL</span><span class="v neg bold sm-txt">${R(total)}</span><span></span></div></div>`;document.getElementById('fin-desps').innerHTML=h;}
+function renderDesps(){const total=ST.despesas.reduce((a,b)=>a+b.val,0);const cats={};ST.despesas.forEach(d=>{if(!cats[d.cat])cats[d.cat]=[];cats[d.cat].push(d);});let h='<div style="border:1px solid var(--border);border-radius:9px;overflow:hidden;">';Object.entries(cats).forEach(([cat,items])=>items.forEach(d=>{h+=`<div style="display:grid;grid-template-columns:auto 1fr 85px 75px;align-items:center;gap:6px;padding:7px 10px;border-bottom:1px solid rgba(255,255,255,0.04);"><span class="badge bb" style="font-size:0.58rem;white-space:nowrap">${esc(d.cat)}</span><span class="sm-txt">${esc(d.desc)}</span><span class="v neg bold sm-txt">${R(d.val)}</span><div class="flex gap8"><button class="btn bgh sm" onclick="editDesp(${d.id})">E</button><button class="btn bdn sm" onclick="delDesp(${d.id})">X</button></div></div>`;}));h+=`<div style="display:grid;grid-template-columns:auto 1fr 85px 75px;gap:6px;padding:7px 10px;background:rgba(232,160,32,0.06);border-top:1px solid var(--border);"><span></span><span class="bold sm-txt">TOTAL</span><span class="v neg bold sm-txt">${R(total)}</span><span></span></div></div>`;document.getElementById('fin-desps').innerHTML=h;}
 function showDespForm(){document.getElementById('form-desp').style.display='block';document.getElementById('d-cat').focus();}
 function cancelDesp(){document.getElementById('form-desp').style.display='none';['d-cat','d-desc','d-val','d-eid'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function salvarDesp(){const cat=document.getElementById('d-cat').value.trim(),desc=document.getElementById('d-desc').value.trim(),val=parseFloat(document.getElementById('d-val').value)||0;if(!cat||!desc){alert('Preencha categoria e descricao');return;}const eid=document.getElementById('d-eid').value;if(eid){const idx=ST.despesas.findIndex(x=>x.id==eid);if(idx!==-1)ST.despesas[idx]={...ST.despesas[idx],cat,desc,val};}else ST.despesas.push({id:ST.ids.desp++,cat,desc,val});save();fbSyncDesp();cancelDesp();renderFin();renderDash();toast('Despesa salva!');}
